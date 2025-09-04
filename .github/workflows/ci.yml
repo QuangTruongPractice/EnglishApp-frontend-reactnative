@@ -20,4 +20,8 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          cd englishApp
+          npm install
+          npm run lint
+          npm test
