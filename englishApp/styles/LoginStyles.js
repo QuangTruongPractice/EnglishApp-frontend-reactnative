@@ -60,6 +60,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 10,
   },
+  googleSignInContainer: {
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  googleButton: {
+    width: 280,
+    height: 48,
+  },
 });
 
 export default styles;

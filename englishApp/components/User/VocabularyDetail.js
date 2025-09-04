@@ -79,7 +79,7 @@ const VocabularyDetail = ({ route }) => {
 
     try {
       const res = await fetch(
-        "https://satyr-dashing-officially.ngrok-free.app/quick-score",
+        "https://satyr-dashing-officially.ngrok-free.app/score-pronunciation",
         {
           method: "POST",
           headers: {

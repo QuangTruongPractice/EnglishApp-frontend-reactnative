@@ -7,10 +7,13 @@ import {
   ScrollView,
 } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
+import {
+  GoogleSigninButton,
+} from '@react-native-google-signin/google-signin';
 import styles from "../../styles/LoginStyles";
 import Loading from "../layout/Loading";
 
-const LoginScreen = ({ formData, msg, loading, onInputChange, onLogin, nav }) => {
+const LoginScreen = ({ formData, msg, loading, onInputChange, onLogin, onGoogleSignIn, nav }) => {
   const fields = [
     {
       label: "Tên đăng nhập",
@@ -86,12 +89,24 @@ const LoginScreen = ({ formData, msg, loading, onInputChange, onLogin, nav }) =>
               <Text style={styles.link}>Quên mật khẩu?</Text>
             </TouchableOpacity>
 
+            <View style={styles.googleSignInContainer}>
+              <GoogleSigninButton
+                style={styles.googleButton}
+                size={GoogleSigninButton.Size.Wide}
+                color={GoogleSigninButton.Color.Light}
+                onPress={onGoogleSignIn}
+                disabled={loading}
+              />
+            </View>
+
             <View style={styles.registerContainer}>
               <Text>Bạn chưa có tài khoản? </Text>
               <TouchableOpacity onPress={() => nav.navigate("Register")}>
                 <Text style={styles.link}>Đăng ký</Text>
               </TouchableOpacity>
             </View>
+
+            
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

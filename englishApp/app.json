@@ -20,10 +20,24 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.tranquangtruong25.englishApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.395593925572-31tub3bcdhu95v65m1dept3rdvb3p77c"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7a3b441d-941b-46f9-9de6-0ae859c13bd9"
+      }
     }
   }
 }

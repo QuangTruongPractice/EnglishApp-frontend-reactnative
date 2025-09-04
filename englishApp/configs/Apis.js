@@ -26,6 +26,7 @@ export const endpoints = {
     'reset-password': '/reset-password',
     'verify-otp': '/verified-otp',
     'change-password': '/change-password',
+    'google-login': '/auth/google-signin',
 };
 
 const Apis = axios.create({

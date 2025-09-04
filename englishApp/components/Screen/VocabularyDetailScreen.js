@@ -227,15 +227,6 @@ const VocabularyDetailScreen = ({
   // Main render
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Flashcard Phát Âm</Text>
-        <IconButton 
-          icon="refresh" 
-          onPress={() => handleFlashcardInteraction(true)} 
-        />
-      </View>
-
       {/* Category Tags */}
       <View style={styles.categoryContainer}>
         <Text style={styles.categoryTag}>

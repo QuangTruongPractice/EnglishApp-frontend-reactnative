@@ -138,3 +138,8 @@ export const changePasswordRequest = async (email, newPassword) => {
   });
   return res.data;
 }
+
+export const googleLogin = async (idToken, email) => {
+  const res = await Apis.post(endpoints["google-login"], { idToken, email });
+  return res.data;
+}
