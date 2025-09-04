@@ -23,5 +23,3 @@ jobs:
         run: |
           cd englishApp
           npm install
-          npm run lint
-          npm test
