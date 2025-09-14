@@ -40,6 +40,10 @@ const SubTopicDetail = ({ route }) => {
     loadTopicDetails();
   };
 
+  const handleGoBack = () => {
+    nav.goBack();
+  };
+
   useEffect(() => {
     if (subTopicId) {
       loadTopicDetails();
@@ -58,6 +62,7 @@ const SubTopicDetail = ({ route }) => {
       onNavigateVocabulary={(id) =>
         nav.navigate("VocabularyDetail", { vocabularyId: id })
       }
+      onGoBack={handleGoBack}
     />
   );
 };

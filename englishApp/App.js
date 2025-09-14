@@ -20,6 +20,7 @@ import QuizDetail from "./components/User/QuizDetail";
 import Toast from "react-native-toast-message";
 import ForgotPassword from "./components/Auth/ForgotPassword";
 import ChangePassword from "./components/Auth/ChangePassword";
+import LeaderBoard from "./components/User/LeaderBoard";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -100,47 +101,32 @@ export default function App() {
                 <Stack.Screen
                   name="TopicDetail"
                   component={TopicDetail}
-                  options={{
-                    headerShown: true,
-                    title: "Chi tiết Topic",
-                    headerBackTitleVisible: false,
-                  }}
+                  options={{headerShown: false}}
                 />
                 <Stack.Screen
                   name="SubTopicDetail"
                   component={SubTopicDetail}
-                  options={{
-                    headerShown: true,
-                    title: "Chi tiết SubTopic",
-                    headerBackTitleVisible: false,
-                  }}
+                  options={{headerShown: false}}
                 />
                 <Stack.Screen
                   name="VocabularyDetail"
                   component={VocabularyDetail}
-                  options={{
-                    headerShown: true,
-                    title: "Chi tiết Vocabulary",
-                    headerBackTitleVisible: false,
-                  }}
+                  options={{headerShown: false}}
                 />
                 <Stack.Screen
                   name="VideoDetail"
                   component={VideoDetail}
-                  options={{
-                    headerShown: true,
-                    title: "Chi tiết Video",
-                    headerBackTitleVisible: false,
-                  }}
+                  options={{ headerShown: false }}
                 />
                 <Stack.Screen
                   name="QuizDetail"
                   component={QuizDetail}
-                  options={{
-                    headerShown: true,
-                    title: "Chi tiết Quiz",
-                    headerBackTitleVisible: false,
-                  }}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="LeaderBoard"
+                  component={LeaderBoard}
+                  options={{ headerShown: false }}
                 />
               </>
             ) : (

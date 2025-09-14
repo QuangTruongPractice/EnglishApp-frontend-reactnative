@@ -9,6 +9,35 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     elevation: 4,
   },
+  // Header
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#c297f0ff",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  backHeaderButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+  },
+  headerTitleMain: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+    flex: 1,
+  },
+  headerSpacer: {
+    width: 40,
+  },
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
@@ -102,24 +131,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAF5FF",
     borderRadius: 12,
     padding: 20,
-  },
-  audioPlayer: {
-    alignItems: "center",
-  },
-  audioDetails: {
-    alignItems: "center",
-    marginVertical: 12,
-  },
-  audioTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1F2937",
-    textAlign: "center",
-  },
-  audioSubtitle: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginTop: 4,
   },
   playButton: {
     backgroundColor: "#9333EA",
@@ -279,6 +290,22 @@ const styles = StyleSheet.create({
   },
   audioSubmitButton: {
     backgroundColor: "#9333EA",
+  },
+  audioContent: {
+    backgroundColor: "#FAF5FF",
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  audioInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  audioLabel: {
+    fontSize: 16,
+    color: "#6B7280",
+    marginLeft: 8,
   },
   textSubmitButton: {
     backgroundColor: "#059669",

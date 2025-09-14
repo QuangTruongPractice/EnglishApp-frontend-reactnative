@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import TopicDetailScreen from "../Screen/TopicDetailScreen";
 import { fetchMainTopicsDetail } from "../../configs/LoadData";
+import { useNavigation } from "@react-navigation/native";
 
 const TopicDetail = ({ route }) => {
   const { topicId } = route.params;
-
   const [subTopics, setSubTopics] = useState([]);
   const [topicInfo, setTopicInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const nav = useNavigation();
 
   const loadTopicDetails = async () => {
     try {
@@ -35,6 +36,10 @@ const TopicDetail = ({ route }) => {
     }
   };
 
+  const handleGoBack = () => {
+    nav.goBack();
+  };
+
   useEffect(() => {
     if (topicId) {
       loadTopicDetails();
@@ -56,6 +61,7 @@ const TopicDetail = ({ route }) => {
       refreshing={refreshing}
       onRefresh={onRefresh}
       reload={loadTopicDetails}
+      onGoBack={handleGoBack}
     />
   );
 };

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { Audio } from "expo-av";
-import { fetchQuizDetail } from "../../configs/LoadData";
+import { fetchQuizDetail, doQuiz } from "../../configs/LoadData";
 import QuizDetailScreen from "../Screen/QuizDetailScreen";
+import { useNavigation } from "@react-navigation/native";
 
 const QuizDetail = ({ route, navigation }) => {
   const { quizId } = route.params;
@@ -11,10 +12,10 @@ const QuizDetail = ({ route, navigation }) => {
   const [error, setError] = useState(null);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [sound, setSound] = useState();
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const nav = useNavigation();
 
   const loadQuizDetail = async () => {
     try {
@@ -35,11 +36,31 @@ const QuizDetail = ({ route, navigation }) => {
       let url = quizDetail.text;
       const { sound } = await Audio.Sound.createAsync({ uri: url });
       setSound(sound);
-      setIsPlaying(true);
       await sound.playAsync();
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.didJustFinish) setIsPlaying(false);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const loadSoundCorrect = async () => {
+    try {
+      const { sound } = await Audio.Sound.createAsync({
+        uri: "https://www.myinstants.com/media/sounds/duolingo-correct.mp3",
       });
+      setSound(sound);
+      await sound.playAsync();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const loadSoundWrong = async () => {
+    try {
+      const { sound } = await Audio.Sound.createAsync({
+        uri: "https://www.myinstants.com/media/sounds/duolingo-wrong.mp3",
+      });
+      setSound(sound);
+      await sound.playAsync();
     } catch (e) {
       console.error(e);
     }
@@ -50,7 +71,7 @@ const QuizDetail = ({ route, navigation }) => {
     setSelectedAnswer(answerId);
   };
 
-  const handleSubmitAnswer = () => {
+  const handleSubmitAnswer = async () => {
     if (!selectedAnswer) {
       Alert.alert("Thông báo", "Vui lòng chọn một đáp án trước khi tiếp tục.");
       return;
@@ -63,20 +84,33 @@ const QuizDetail = ({ route, navigation }) => {
 
     if (selectedAnswerObj?.isCorrect) {
       setSnackbarMessage("🎉 Chính xác! Bạn đã chọn đúng đáp án.");
+      loadSoundCorrect();
     } else {
       setSnackbarMessage("❌ Sai rồi! Hãy xem đáp án đúng được đánh dấu.");
+      loadSoundWrong();
     }
     setShowSnackbar(true);
+    await doQuiz(quizId);
   };
 
   const handleTryAgain = () => {
     setSelectedAnswer(null);
     setShowResult(false);
-    setIsPlaying(false);
   };
 
   const handleGoBack = () => {
     navigation.goBack();
+  };
+  const getCorrectAnswerId = () => {
+    if (!quizDetail?.answers) return null;
+    const correctAnswer = quizDetail.answers.find(answer => answer.isCorrect);
+    return correctAnswer?.id || null;
+  };
+
+  const checkIsAnswerCorrect = () => {
+    if (!selectedAnswer || !quizDetail?.answers) return false;
+    const selectedAnswerObj = quizDetail.answers.find(a => a.id === selectedAnswer);
+    return selectedAnswerObj?.isCorrect || false;
   };
 
   useEffect(() => {
@@ -96,9 +130,10 @@ const QuizDetail = ({ route, navigation }) => {
       error={error}
       selectedAnswer={selectedAnswer}
       showResult={showResult}
-      isPlaying={isPlaying}
       showSnackbar={showSnackbar}
       snackbarMessage={snackbarMessage}
+      correctAnswerId={getCorrectAnswerId()}
+      isAnswerCorrect={checkIsAnswerCorrect()}
       onReload={loadQuizDetail}
       onAnswerSelect={handleAnswerSelect}
       onSubmitAnswer={handleSubmitAnswer}

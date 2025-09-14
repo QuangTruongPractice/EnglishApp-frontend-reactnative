@@ -83,7 +83,7 @@ const ProgressScreen = ({
                 mode="contained"
                 icon="play"
                 compact
-                onPress={() => onVideoPress?.(item.video.youtubeUrl)}
+                onPress={() => nav.navigate("VideoDetail", { videoId: item.video.id })}
                 style={styles.videoButton}
               >
                 Xem video

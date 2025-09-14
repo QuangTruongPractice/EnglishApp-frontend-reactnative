@@ -21,12 +21,14 @@ export const endpoints = {
     'user-vocabulary-progress': '/secure/learning-progress/vocabulary',
     'view-flashcard': (id) => `/secure/vocabulary/${id}/view-flashcard`,
     'practice-pronunciation': (id) => `/secure/vocabulary/${id}/practice-pronunciation`,
+    'do-quiz': (id) => `/secure/quiz/${id}/quiz-progress`,
     'quiz': '/quiz',
     'quiz-detail': (id) => `/quiz/${id}`,
     'reset-password': '/reset-password',
     'verify-otp': '/verified-otp',
     'change-password': '/change-password',
     'google-login': '/auth/google-signin',
+    'leader-board': '/secure/leader-board',
 };
 
 const Apis = axios.create({

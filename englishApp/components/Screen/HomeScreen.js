@@ -6,7 +6,7 @@ import {
   Image,
   RefreshControl,
 } from "react-native";
-import { Card, Button, Searchbar } from "react-native-paper";
+import { Card, Button, Searchbar, IconButton } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Loading from "../layout/Loading";
 import styles from "../../styles/HomeStyles";
@@ -78,12 +78,22 @@ const HomeScreen = ({
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Searchbar
-          placeholder="Tìm Topics..."
-          onChangeText={(t) => search(t, setQ)}
-          value={q}
-          style={styles.searchBar}
-        />
+        <View style={styles.searchContainer}>
+          <Searchbar
+            placeholder="Tìm Topics..."
+            onChangeText={(t) => search(t, setQ)}
+            value={q}
+            style={[styles.searchBar, styles.searchBarWithIcon]}
+          />
+          <IconButton
+            icon="trophy"
+            size={24}
+            iconColor="#f45b69"
+            style={styles.leaderboardIcon}
+            onPress={() => nav.navigate("LeaderBoard")}
+          />
+        </View>
+
 
         {mainTopics.length === 0 ? (
           <View style={styles.emptyContainer}>

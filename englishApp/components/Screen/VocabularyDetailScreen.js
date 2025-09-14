@@ -1,4 +1,3 @@
-import React from "react";
 import {
   View,
   Text,
@@ -7,7 +6,9 @@ import {
   Modal,
   ScrollView,
 } from "react-native";
-import { Button, Card, IconButton } from "react-native-paper";
+import { Button, Card } from "react-native-paper";
+import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../../styles/VocabularyDetailStyles";
 
 const VocabularyDetailScreen = ({
@@ -28,9 +29,8 @@ const VocabularyDetailScreen = ({
   resetPronunciationResult,
   getScoreColor,
   getScoreText,
+  onGoBack,
 }) => {
-
-  // Pronunciation result modal
   const renderPronunciationResult = () => {
     if (!pronunciationResult) return null;
 
@@ -41,136 +41,147 @@ const VocabularyDetailScreen = ({
         presentationStyle="pageSheet"
         onRequestClose={closeResultModal}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Kết Quả Đánh Giá Phát Âm</Text>
-            <IconButton icon="close" onPress={closeResultModal} />
-          </View>
-
-          <ScrollView style={styles.modalContent}>
-            {/* Overall Score */}
-            <Card style={styles.scoreCard}>
-              <View style={styles.scoreContainer}>
-                <Text style={styles.scoreLabel}>Điểm Tổng</Text>
-                <Text
-                  style={[
-                    styles.totalScore,
-                    { color: getScoreColor(pronunciationResult.total_score) },
-                  ]}
-                >
-                  {pronunciationResult.total_score}/100
-                </Text>
-                <Text
-                  style={[
-                    styles.scoreStatus,
-                    { color: getScoreColor(pronunciationResult.total_score) },
-                  ]}
-                >
-                  {getScoreText(pronunciationResult.total_score)}
-                </Text>
-              </View>
-            </Card>
-
-            {/* Detailed Scores */}
-            <View style={styles.detailScores}>
-              <View style={styles.scoreRow}>
-                <Text style={styles.scoreRowLabel}>Độ chính xác</Text>
-                <View style={styles.scoreRowValue}>
-                  <Text
-                    style={[
-                      styles.scoreNumber,
-                      { color: getScoreColor(pronunciationResult.accuracy) },
-                    ]}
-                  >
-                    {pronunciationResult.accuracy}%
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.scoreRow}>
-                <Text style={styles.scoreRowLabel}>Độ trưng bày</Text>
-                <View style={styles.scoreRowValue}>
-                  <Text
-                    style={[
-                      styles.scoreNumber,
-                      { color: getScoreColor(pronunciationResult.fluency) },
-                    ]}
-                  >
-                    {pronunciationResult.fluency}%
-                  </Text>
-                </View>
-              </View>
+        <SafeAreaView style={styles.modalSafeArea}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>🎯 Kết Quả Đánh Giá Phát Âm</Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={closeResultModal}
+              >
+                <Text style={styles.closeButtonText}>✕</Text>
+              </TouchableOpacity>
             </View>
 
-            {/* Expected vs Actual */}
-            <Card style={styles.comparisonCard}>
-              <Text style={styles.comparisonTitle}>So Sánh</Text>
+            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+              {/* Overall Score */}
+              <Card style={styles.scoreCard}>
+                <Card.Content style={styles.scoreContainer}>
+                  <Text style={styles.scoreLabel}>Điểm Tổng Thể</Text>
+                  <View style={styles.scoreCircle}>
+                    <Text style={[styles.totalScore, { color: getScoreColor(pronunciationResult.total_score) }]}>
+                      {pronunciationResult.total_score}
+                    </Text>
+                    <Text style={styles.scoreOutOf}>/100</Text>
+                  </View>
+                  <Text style={[styles.scoreStatus, { color: getScoreColor(pronunciationResult.total_score) }]}>
+                    {getScoreText(pronunciationResult.total_score)}
+                  </Text>
+                </Card.Content>
+              </Card>
 
-              <View style={styles.textComparison}>
-                <Text style={styles.expectedLabel}>Câu mẫu:</Text>
-                <Text style={styles.expectedText}>
-                  {pronunciationResult.expected}
-                </Text>
-              </View>
-
-              <View style={styles.textComparison}>
-                <Text style={styles.actualLabel}>Bạn đã nói:</Text>
-                <Text style={styles.actualText}>
-                  {pronunciationResult.transcription}
-                </Text>
-              </View>
-            </Card>
-
-            {/* Feedback */}
-            {pronunciationResult.feedback &&
-              pronunciationResult.feedback.length > 0 && (
-                <Card style={styles.feedbackCard}>
-                  <Text style={styles.feedbackTitle}>💡 Gợi Ý Cải Thiện</Text>
-                  {pronunciationResult.feedback.map((feedback, index) => (
-                    <View key={index} style={styles.feedbackItem}>
-                      <Text style={styles.feedbackBullet}>•</Text>
-                      <Text style={styles.feedbackText}>{feedback}</Text>
+              <View style={styles.detailScores}>
+                <Card style={styles.scoreRow}>
+                  <Card.Content style={styles.scoreRowContent}>
+                    <View style={styles.scoreRowLeft}>
+                      <Text style={styles.scoreRowIcon}>🎯</Text>
+                      <Text style={styles.scoreRowLabel}>Độ chính xác</Text>
                     </View>
-                  ))}
+                    <Text style={[styles.scoreNumber, { color: getScoreColor(pronunciationResult.accuracy) }]}>
+                      {pronunciationResult.accuracy}%
+                    </Text>
+                  </Card.Content>
                 </Card>
-              )}
-          </ScrollView>
 
-          <View style={styles.modalActions}>
-            <Button
-              mode="contained"
-              style={styles.tryAgainButton}
-              onPress={resetPronunciationResult}
-            >
-              Thử Lại
-            </Button>
-            <Button
-              mode="outlined"
-              style={styles.continueButton}
-              onPress={closeResultModal}
-            >
-              Tiếp Tục
-            </Button>
+                <Card style={styles.scoreRow}>
+                  <Card.Content style={styles.scoreRowContent}>
+                    <View style={styles.scoreRowLeft}>
+                      <Text style={styles.scoreRowIcon}>🌊</Text>
+                      <Text style={styles.scoreRowLabel}>Độ thuần thục</Text>
+                    </View>
+                    <Text style={[styles.scoreNumber, { color: getScoreColor(pronunciationResult.fluency) }]}>
+                      {pronunciationResult.fluency}%
+                    </Text>
+                  </Card.Content>
+                </Card>
+              </View>
+
+              {/* Expected vs Actual */}
+              <Card style={styles.comparisonCard}>
+                <Card.Content>
+                  <Text style={styles.comparisonTitle}>📝 So Sánh Kết Quả</Text>
+                  
+                  <View style={styles.textComparison}>
+                    <Text style={styles.expectedLabel}>✅ Câu mẫu:</Text>
+                    <View style={styles.expectedTextContainer}>
+                      <Text style={styles.expectedText}>
+                        {pronunciationResult.expected_text}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.textComparison}>
+                    <Text style={styles.actualLabel}>🎤 Bạn đã nói:</Text>
+                    <View style={styles.actualTextContainer}>
+                      <Text style={styles.actualText}>
+                        {pronunciationResult.transcription}
+                      </Text>
+                    </View>
+                  </View>
+                </Card.Content>
+              </Card>
+
+              {/* Feedback */}
+              {pronunciationResult.pronunciation_feedback &&
+                pronunciationResult.pronunciation_feedback.length > 0 && (
+                  <Card style={styles.feedbackCard}>
+                    <Card.Content>
+                      <Text style={styles.feedbackTitle}>💡 Gợi Ý Cải Thiện</Text>
+                      {pronunciationResult.pronunciation_feedback.map((feedback, index) => (
+                        <View key={index} style={styles.feedbackItem}>
+                          <Text style={styles.feedbackBullet}>•</Text>
+                          <Text style={styles.feedbackText}>{feedback}</Text>
+                        </View>
+                      ))}
+                    </Card.Content>
+                  </Card>
+                )}
+            </ScrollView>
+
+            <View style={styles.modalActions}>
+              <Button
+                mode="contained"
+                style={styles.tryAgainButton}
+                buttonColor="#F45B69"
+                onPress={resetPronunciationResult}
+              >
+                🔄 Thử Lại
+              </Button>
+              
+              <Button
+                mode="outlined"
+                style={styles.continueButton}
+                textColor="white"
+                onPress={closeResultModal}
+              >
+                ➡️ Tiếp Tục
+              </Button>
+            </View>
           </View>
-        </View>
+        </SafeAreaView>
       </Modal>
     );
   };
 
-  // Flashcard content
   const renderFlashcard = () => {
     if (!showAnswer) {
-      // Question Side
       return (
-        <TouchableOpacity onPress={() => handleFlashcardInteraction(true)}>
-          <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>Định nghĩa</Text>
+        <TouchableOpacity
+          onPress={() => handleFlashcardInteraction(true)}
+          activeOpacity={0.9}
+        >
+          <Card.Content style={styles.cardContent}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>📖 Định nghĩa</Text>
+              <View style={styles.cardDecoration} />
+            </View>
+            
             <Text style={styles.definition}>{vocabulary.definition}</Text>
             <Text style={styles.vietnamese}>{vocabulary.vnDefinition}</Text>
 
             {vocabulary.example && (
               <View style={styles.exampleContainer}>
-                <Text style={styles.exampleTitle}>Ví dụ</Text>
+                <Text style={styles.exampleTitle}>💬 Ví dụ</Text>
                 <Text style={styles.example}>{vocabulary.example}</Text>
                 {vocabulary.vnExample && (
                   <Text style={styles.exampleVi}>{vocabulary.vnExample}</Text>
@@ -178,112 +189,166 @@ const VocabularyDetailScreen = ({
               </View>
             )}
 
-            <TouchableOpacity style={styles.previousButton}>
-              <Text style={styles.previousText}>← Nhấn để xem mặt trước</Text>
-            </TouchableOpacity>
-          </View>
+            <View style={styles.flipHint}>
+              <Text style={styles.flipHintText}>👆 Nhấn để xem từ vựng</Text>
+              <View style={styles.flipIndicator} />
+            </View>
+          </Card.Content>
         </TouchableOpacity>
       );
     }
 
     // Answer Side
     return (
-      <TouchableOpacity onPress={() => handleFlashcardInteraction(false)}>
-        <View style={styles.answerCard}>
+      <TouchableOpacity
+        onPress={() => handleFlashcardInteraction(false)}
+        activeOpacity={0.9}
+      >
+        <Card.Content style={styles.answerCard}>
+          <View style={styles.answerDecoration} />
           <Text style={styles.answerWord}>{vocabulary.word}</Text>
-          <Text style={styles.pronunciation}>
-            {`/ ${vocabulary.phonetic} /`}
-          </Text>
+          <Text style={styles.pronunciation}>{vocabulary.phonetic}</Text>
           <Text style={styles.translation}>{vocabulary.vnWord}</Text>
-
-          <TouchableOpacity style={styles.nextButton}>
-            <Text style={styles.nextText}>→ Nhấn để xem mặt sau</Text>
-          </TouchableOpacity>
-        </View>
+          
+          <View style={styles.flipHint}>
+            <Text style={styles.flipHintTextWhite}>👆 Nhấn để xem định nghĩa</Text>
+            <View style={styles.flipIndicatorWhite} />
+          </View>
+        </Card.Content>
       </TouchableOpacity>
     );
   };
 
-  // Loading state
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#4A90E2" />
-        <Text style={styles.loadingText}>Loading vocabularies...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centerContainer}>
+          <Card style={styles.loadingCard}>
+            <Card.Content style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#F45B69" />
+              <Text style={styles.loadingText}>Đang tải từ vựng...</Text>
+            </Card.Content>
+          </Card>
+        </View>
+      </SafeAreaView>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>{error}</Text>
-        <Button onPress={loadVocabulary}>Retry</Button>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centerContainer}>
+          <Card style={styles.errorCard}>
+            <Card.Content style={styles.errorContainer}>
+              <Text style={styles.errorIcon}>😞</Text>
+              <Text style={styles.errorText}>{error}</Text>
+              <Button
+                mode="contained"
+                buttonColor="#F45B69"
+                onPress={loadVocabulary}
+              >
+                🔄 Thử lại
+              </Button>
+            </Card.Content>
+          </Card>
+        </View>
+      </SafeAreaView>
     );
   }
 
-  // Main render
   return (
-    <View style={styles.container}>
-      {/* Category Tags */}
-      <View style={styles.categoryContainer}>
-        <Text style={styles.categoryTag}>
-          {vocabulary.wordTypes?.[0]?.type}
-        </Text>
-        <Text style={styles.categorySubtag}>
-          {vocabulary.subTopics?.[0]?.name}
-        </Text>
-      </View>
-
-      {/* Flashcard */}
-      <Card style={styles.mainCard}>
-        {renderFlashcard()}
-      </Card>
-
-      {/* Audio Section */}
-      <View style={styles.audioContainer}>
-        <Text style={styles.audioTitle}>🔊 Phát âm mẫu</Text>
-        <Button 
-          mode="contained" 
-          style={styles.playButton} 
-          onPress={loadSound}
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.headerContainer}>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={onGoBack}
+          activeOpacity={0.7}
         >
-          ▶ Nghe phát âm
-        </Button>
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitleMain}>{vocabulary?.word || "Vocabulary Details"}</Text>
+        <View style={styles.headerSpacer} />
       </View>
-
-      {/* Practice Section */}
-      <View style={styles.practiceContainer}>
-        <Text style={styles.practiceTitle}>🎤 Luyện phát âm</Text>
-        <Text style={styles.practiceSubtitle}>
-          Hãy nói: "{vocabulary.example}"
-        </Text>
-        <Button
-          mode="contained"
-          style={styles.recordButton}
-          buttonColor={recording ? "#EF4444" : "#22C55E"}
-          onPress={recording ? stopRecording : startRecording}
-          disabled={isProcessing}
-        >
-          {isProcessing
-            ? "Đang xử lý..."
-            : recording
-            ? "⏹ Dừng & Gửi"
-            : "🎤 Bắt đầu nói"}
-        </Button>
-
-        {isProcessing && (
-          <View style={styles.processingContainer}>
-            <ActivityIndicator size="small" color="#3B82F6" />
-            <Text style={styles.processingText}>Đang đánh giá phát âm...</Text>
+      <View style={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Category Tags */}
+          <View style={styles.categoryContainer}>
+            <View style={styles.categoryTag}>
+              <Text style={styles.categoryTagText}>
+                {vocabulary.wordTypes?.[0]?.type}
+              </Text>
+            </View>
+            
+            <View style={styles.categorySubtag}>
+              <Text style={styles.categorySubtagText}>
+                {vocabulary.subTopics?.[0]?.name}
+              </Text>
+            </View>
           </View>
-        )}
-      </View>
 
-      {renderPronunciationResult()}
-    </View>
+          {/* Flashcard */}
+          <Card style={[styles.mainCard, showAnswer ? styles.answerCardStyle : styles.questionCardStyle]}>
+            {renderFlashcard()}
+          </Card>
+
+          {/* Audio Section */}
+          <Card style={styles.sectionCard}>
+            <Card.Content>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionIcon}>🔊</Text>
+                <Text style={styles.audioTitle}>Phát âm mẫu</Text>
+              </View>
+              
+              <Button
+                mode="contained"
+                buttonColor="#4ECDC4"
+                style={styles.playButton}
+                onPress={loadSound}
+              >
+                ▶️ Nghe phát âm
+              </Button>
+            </Card.Content>
+          </Card>
+
+          {/* Practice Section */}
+          <Card style={styles.sectionCard}>
+            <Card.Content>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionIcon}>🎤</Text>
+                <Text style={styles.practiceTitle}>Luyện phát âm</Text>
+              </View>
+              
+              <Text style={styles.practiceSubtitle}>
+                Hãy nói: "<Text style={styles.practiceExample}>{vocabulary.example}</Text>"
+              </Text>
+              
+              <Button
+                mode="contained"
+                buttonColor={recording ? "#EF4444" : "#22C55E"}
+                style={styles.recordButton}
+                onPress={recording ? stopRecording : startRecording}
+                disabled={isProcessing}
+              >
+                {isProcessing
+                  ? "⏳ Đang xử lý..."
+                  : recording
+                  ? "⏹️ Dừng & Gửi"
+                  : "🎤 Bắt đầu nói"}
+              </Button>
+
+              {isProcessing && (
+                <View style={styles.processingContainer}>
+                  <ActivityIndicator size="small" color="#F45B69" />
+                  <Text style={styles.processingText}>Đang đánh giá phát âm của bạn...</Text>
+                </View>
+              )}
+            </Card.Content>
+          </Card>
+        </ScrollView>
+
+        {renderPronunciationResult()}
+      </View>
+    </SafeAreaView>
   );
 };
 

@@ -1,4 +1,4 @@
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, TouchableOpacity } from "react-native";
 import {
   ActivityIndicator,
   Card,
@@ -10,6 +10,7 @@ import {
   ProgressBar,
 } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
 import styles from "../../styles/QuizDetailStyles";
 import { useEffect } from "react";
@@ -20,8 +21,9 @@ const QuizDetailScreen = ({
   error,
   selectedAnswer,
   showResult,
-  isPlaying,
   snackbarMessage,
+  correctAnswerId, 
+  isAnswerCorrect, 
   onReload,
   onAnswerSelect,
   onSubmitAnswer,
@@ -47,6 +49,46 @@ const QuizDetailScreen = ({
     </View>
   );
 
+  const getAnswerCardStyle = (answerId) => {
+    const baseStyle = [styles.answerCard];
+    
+    if (!showResult) {
+      if (selectedAnswer === answerId) {
+        baseStyle.push(styles.selectedAnswerCard);
+      }
+    } else {
+      if (answerId === correctAnswerId) {
+        baseStyle.push(styles.correctCard);
+      } else if (selectedAnswer === answerId && !isAnswerCorrect) {
+        baseStyle.push(styles.wrongCard);
+      } else {
+        baseStyle.push(styles.inactiveCard);
+      }
+    }
+    
+    return baseStyle;
+  };
+
+  const getAnswerTextStyle = (answerId) => {
+    const baseStyle = [styles.answerText];
+    
+    if (!showResult) {
+      if (selectedAnswer === answerId) {
+        baseStyle.push(styles.selectedAnswerText);
+      }
+    } else {
+      if (answerId === correctAnswerId) {
+        baseStyle.push(styles.correctText);
+      } else if (selectedAnswer === answerId && !isAnswerCorrect) {
+        baseStyle.push(styles.wrongText);
+      } else {
+        baseStyle.push(styles.inactiveText);
+      }
+    }
+    
+    return baseStyle;
+  };
+
   useEffect(() => {
     if (showResult && snackbarMessage) {
       Toast.show({
@@ -64,6 +106,17 @@ const QuizDetailScreen = ({
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.headerContainer}>
+        <TouchableOpacity 
+          style={styles.backHeaderButton} 
+          onPress={onGoBack}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitleMain}>Quay lại</Text>
+        <View style={styles.headerSpacer} />
+      </View>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -107,31 +160,18 @@ const QuizDetailScreen = ({
         <Card style={styles.contentCard} mode="elevated">
           <Card.Content>
             {quizDetail.type === "AUDIO" ? (
-              <Surface style={styles.audioContainer} elevation={2}>
-                <View style={styles.audioPlayer}>
-                  <IconButton
-                    icon="volume-high"
-                    iconColor="#9333EA"
-                    size={32}
-                    onPress={loadSound}
-                  />
-                  <View style={styles.audioDetails}>
-                    <Text style={styles.audioTitle}>Nhấn để nghe câu hỏi</Text>
-                    <Text style={styles.audioSubtitle}>
-                      {isPlaying ? "Đang phát..." : "Sẵn sàng phát"}
-                    </Text>
+              <TouchableOpacity onPress={loadSound} activeOpacity={0.7}>
+                <Surface style={styles.audioContent} elevation={1}>
+                  <View style={styles.audioInfo}>
+                    <IconButton
+                      icon="volume-high"
+                      iconColor="#9333EA"
+                      size={24}
+                    />
+                    <Text style={styles.audioLabel}>Nhấn để nghe câu hỏi</Text>
                   </View>
-                  <Button
-                    mode="contained"
-                    onPress={loadSound}
-                    style={styles.playButton}
-                    icon={isPlaying ? "pause" : "play"}
-                    loading={isPlaying}
-                  >
-                    {isPlaying ? "Đang phát..." : "Phát"}
-                  </Button>
-                </View>
-              </Surface>
+                </Surface>
+              </TouchableOpacity>
             ) : (
               <Surface style={styles.textContainer} elevation={2}>
                 <Text style={styles.textQuestion}>{quizDetail.text}</Text>
@@ -150,25 +190,16 @@ const QuizDetailScreen = ({
             </Text>
             <View style={styles.answersContainer}>
               {quizDetail.answers?.map((answer, index) => {
-                const isSelected = selectedAnswer === answer.id;
                 return (
                   <Card
                     key={answer.id}
-                    style={[
-                      styles.answerCard,
-                      isSelected && styles.selectedAnswerCard,
-                    ]}
+                    style={getAnswerCardStyle(answer.id)}
                     mode="outlined"
                     onPress={() => onAnswerSelect(answer.id)}
                     disabled={showResult}
                   >
                     <Card.Content style={styles.answerContent}>
-                      <Text
-                        style={[
-                          styles.answerText,
-                          isSelected && styles.selectedAnswerText,
-                        ]}
-                      >
+                      <Text style={getAnswerTextStyle(answer.id)}>
                         {String.fromCharCode(65 + index)}. {answer.answer}
                       </Text>
                     </Card.Content>

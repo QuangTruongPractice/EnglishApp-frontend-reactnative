@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import VideoDetailScreen from "../Screen/VideoDetailScreen";
 import { updateVideoProgress, fetchVideoDetail } from "../../configs/LoadData";
+import { useNavigation } from "@react-navigation/native";
 
 const VideoDetail = ({ route }) => {
   const { videoId } = route.params;
@@ -11,8 +12,10 @@ const VideoDetail = ({ route }) => {
   const [selectedSubtitle, setSelectedSubtitle] = useState(null);
   const [translatedTexts, setTranslatedTexts] = useState({});
   const [translatingIds, setTranslatingIds] = useState(new Set());
+  const [isPlayerReady, setIsPlayerReady] = useState(false); 
   const webViewRef = useRef(null);
   const lastSaveTimeRef = useRef(0);
+  const nav = useNavigation();
 
   const saveProgress = useCallback(async (progress, immediate = false) => {
       const now = Date.now();
@@ -30,6 +33,10 @@ const VideoDetail = ({ route }) => {
     [videoId]
   );
 
+  const handleGoBack = () => {
+    nav.goBack();
+  };
+
   const handleWebViewMessage = useCallback(
     (event) => {
       try {
@@ -42,6 +49,9 @@ const VideoDetail = ({ route }) => {
         };
 
         switch (data.event) {
+          case "video-ready":
+            setIsPlayerReady(true); 
+            break;
           case "video-progress":
             if (progress.isPlaying) {
               saveProgress(progress);
@@ -55,6 +65,9 @@ const VideoDetail = ({ route }) => {
             break;
           case "video-ended":
             saveProgress(progress, true);
+            break;
+          case "seek-completed":
+            console.log("Seeked to:", data.time);
             break;
         }
       } catch (error) {
@@ -84,14 +97,32 @@ const VideoDetail = ({ route }) => {
   }, [videoId]);
 
   const handleSubtitleClick = useCallback((subtitle) => {
+    console.log("Subtitle clicked:", subtitle);
     setSelectedSubtitle(subtitle);
-    webViewRef.current?.postMessage(
-      JSON.stringify({
-        action: "seekTo",
-        time: subtitle.startTime,
-      })
-    );
-  }, []);
+    
+    if (isPlayerReady && webViewRef.current && subtitle.startTime !== undefined) {
+      const seekTime = typeof subtitle.startTime === 'string' 
+        ? parseFloat(subtitle.startTime) 
+        : subtitle.startTime;
+      
+      console.log("Seeking to time:", seekTime);
+      
+      setTimeout(() => {
+        webViewRef.current?.postMessage(
+          JSON.stringify({
+            action: "seekTo",
+            time: seekTime,
+          })
+        );
+      }, 100);
+    } else {
+      console.warn("Player not ready or invalid startTime:", {
+        isPlayerReady,
+        hasWebViewRef: !!webViewRef.current,
+        startTime: subtitle.startTime
+      });
+    }
+  }, [isPlayerReady]);
 
   const translateText = useCallback(
     async (subtitle) => {
@@ -156,6 +187,7 @@ const VideoDetail = ({ route }) => {
 
     let player;
     let progressTimer;
+    let isPlayerReady = false;
 
     window.onYouTubeIframeAPIReady = () => {
       player = new YT.Player('player', {
@@ -167,10 +199,23 @@ const VideoDetail = ({ route }) => {
           rel: 0,
           showinfo: 0,
           modestbranding: 1,
-          iv_load_policy: 3
+          iv_load_policy: 3,
+          start: ${video?.progress?.currentTime || 0}
         },
         events: {
-          onReady: () => postMessage({ event: 'video-ready', videoDuration: player.getDuration() }),
+          onReady: (event) => {
+            isPlayerReady = true;
+            postMessage({ 
+              event: 'video-ready', 
+              videoDuration: player.getDuration() 
+            });
+            
+            // Nếu có progress từ trước, seek đến vị trí đó
+            const savedTime = ${video?.progress?.currentTime || 0};
+            if (savedTime > 0) {
+              player.seekTo(savedTime, true);
+            }
+          },
           onStateChange: handleStateChange
         }
       });
@@ -200,17 +245,42 @@ const VideoDetail = ({ route }) => {
       }
     };
 
-    const postMessage = (data) => window.ReactNativeWebView?.postMessage(JSON.stringify(data));
+    const postMessage = (data) => {
+      if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+        window.ReactNativeWebView.postMessage(JSON.stringify(data));
+      }
+    };
 
     window.addEventListener('message', (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.action === 'seekTo' && player) {
-          player.seekTo(data.time);
+        console.log('Received message:', data);
+        
+        if (data.action === 'seekTo' && player && isPlayerReady) {
+          const seekTime = parseFloat(data.time);
+          console.log('Seeking to:', seekTime);
+          
+          if (!isNaN(seekTime) && seekTime >= 0) {
+            player.seekTo(seekTime, true);
+            
+            // Gửi confirm về React Native
+            setTimeout(() => {
+              postMessage({
+                event: 'seek-completed',
+                time: seekTime,
+                currentTime: player.getCurrentTime()
+              });
+            }, 500);
+          }
         }
       } catch (e) {
-        console.error('Message error:', e);
+        console.error('Message parsing error:', e);
       }
+    });
+
+    // Thêm event listener cho document để catch message từ React Native
+    document.addEventListener('message', (event) => {
+      window.dispatchEvent(new MessageEvent('message', { data: event.data }));
     });
   </script>
 </body>
@@ -221,6 +291,10 @@ const VideoDetail = ({ route }) => {
     loadData();
   }, [videoId]);
 
+  useEffect(() => {
+    setIsPlayerReady(false);
+  }, [video?.videoId]);
+
   const screenProps = {
     video,
     subtitles,
@@ -229,7 +303,8 @@ const VideoDetail = ({ route }) => {
     selectedSubtitle,
     translatedTexts,
     translatingIds,
-    
+
+    handleGoBack,
     loadData,
     handleSubtitleClick,
     translateText,

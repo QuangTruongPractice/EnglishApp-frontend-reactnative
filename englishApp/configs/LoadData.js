@@ -92,9 +92,7 @@ export const fetchVocabularyDetail = async (vocabularyId) => {
 export const viewFlashcard = async (vocabularyId) => {
   try {
     const token = await AsyncStorage.getItem("token");
-    console.info("API URL:", endpoints["view-flashcard"](vocabularyId));
     await authApis(token).put(endpoints["view-flashcard"](vocabularyId));
-    console.info("success");
   } catch (error) {
     console.error("Error calling viewFlashcard:", error);
   }
@@ -104,9 +102,18 @@ export const practicePronunciation = async (vocabularyId) => {
   try {
     const token = await AsyncStorage.getItem("token");
     await authApis(token).put(endpoints["practice-pronunciation"](vocabularyId));
-    console.info("success");
   } catch (error) {
     console.error("Error calling practicePronunciation:", error);
+  }
+};
+
+export const doQuiz = async (quizId) => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    await authApis(token).put(endpoints["do-quiz"](quizId));
+    console.info("success");
+  } catch (error) {
+    console.error("Error calling doQuiz:", error);
   }
 };
 
@@ -141,5 +148,11 @@ export const changePasswordRequest = async (email, newPassword) => {
 
 export const googleLogin = async (idToken, email) => {
   const res = await Apis.post(endpoints["google-login"], { idToken, email });
+  return res.data;
+}
+
+export const fetchLeaderBoard = async () => {
+  const token = await AsyncStorage.getItem("token");
+  const res = await authApis(token).get(endpoints["leader-board"]);
   return res.data;
 }

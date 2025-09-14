@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Audio } from "expo-av";
 import VocabularyDetailScreen from "../Screen/VocabularyDetailScreen";
 import { fetchVocabularyDetail, viewFlashcard, practicePronunciation } from "../../configs/LoadData";
+import { useNavigation } from "@react-navigation/native";
 
 const VocabularyDetail = ({ route }) => {
   const { vocabularyId } = route.params;
@@ -14,7 +15,7 @@ const VocabularyDetail = ({ route }) => {
   const [pronunciationResult, setPronunciationResult] = useState(null);
   const [showResultModal, setShowResultModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+  const nav = useNavigation();
   const hasViewedFlashcard = useRef(false);
   const hasPracticedPronunciation = useRef(false);
   const currentVocabularyId = useRef(null);
@@ -37,6 +38,10 @@ const VocabularyDetail = ({ route }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoBack = () => {
+    nav.goBack();
   };
 
   const loadSound = async () => {
@@ -76,7 +81,7 @@ const VocabularyDetail = ({ route }) => {
       name: "recording.wav",
     });
     formData.append("expected_text", vocabulary.example);
-
+    
     try {
       const res = await fetch(
         "https://satyr-dashing-officially.ngrok-free.app/score-pronunciation",
@@ -94,6 +99,7 @@ const VocabularyDetail = ({ route }) => {
       setShowResultModal(true);
       
       if (!hasPracticedPronunciation.current) {
+        console.info(vocabularyId);
         await practicePronunciation(vocabularyId);
         hasPracticedPronunciation.current = true;
       }
@@ -173,6 +179,7 @@ const VocabularyDetail = ({ route }) => {
       resetPronunciationResult={resetPronunciationResult}
       getScoreColor={getScoreColor}
       getScoreText={getScoreText}
+      onGoBack={handleGoBack}
     />
   );
 };

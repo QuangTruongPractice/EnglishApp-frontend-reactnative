@@ -10,6 +10,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
     paddingHorizontal: 16,
   },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  searchBarWithIcon: {
+    flex: 1,
+    marginRight: 8,
+  },
+  leaderboardIcon: {
+    backgroundColor: "rgba(244, 91, 105, 0.1)",
+    borderRadius: 8,
+  },
   centerContainer: {
     flex: 1,
     justifyContent: "center",
@@ -96,6 +110,5 @@ const styles = StyleSheet.create({
     color: "#666",
   },
 });
-
 
 export default styles;
