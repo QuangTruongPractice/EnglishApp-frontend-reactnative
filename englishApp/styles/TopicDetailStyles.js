@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#667eea",
+    backgroundColor: "#F45B69FF",
   },
   loadingText: {
     color: "#fff",

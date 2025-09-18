@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Audio } from "expo-av";
 import VocabularyDetailScreen from "../Screen/VocabularyDetailScreen";
-import { fetchVocabularyDetail, viewFlashcard, practicePronunciation } from "../../configs/LoadData";
+import {
+  fetchVocabularyDetail,
+  viewFlashcard,
+  practicePronunciation,
+} from "../../configs/LoadData";
 import { useNavigation } from "@react-navigation/native";
 
 const VocabularyDetail = ({ route }) => {
@@ -16,6 +20,7 @@ const VocabularyDetail = ({ route }) => {
   const [showResultModal, setShowResultModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const nav = useNavigation();
+  const [processView, setProcessView] = useState(false);
   const hasViewedFlashcard = useRef(false);
   const hasPracticedPronunciation = useRef(false);
   const currentVocabularyId = useRef(null);
@@ -26,7 +31,7 @@ const VocabularyDetail = ({ route }) => {
       const response = await fetchVocabularyDetail(vocabularyId);
       const data = response.result;
       setVocabulary(data);
-      
+
       if (currentVocabularyId.current !== vocabularyId) {
         hasViewedFlashcard.current = false;
         hasPracticedPronunciation.current = false;
@@ -81,7 +86,7 @@ const VocabularyDetail = ({ route }) => {
       name: "recording.wav",
     });
     formData.append("expected_text", vocabulary.example);
-    
+
     try {
       const res = await fetch(
         "https://satyr-dashing-officially.ngrok-free.app/score-pronunciation",
@@ -97,7 +102,7 @@ const VocabularyDetail = ({ route }) => {
       const data = await res.json();
       setPronunciationResult(data);
       setShowResultModal(true);
-      
+
       if (!hasPracticedPronunciation.current) {
         console.info(vocabularyId);
         await practicePronunciation(vocabularyId);
@@ -112,15 +117,19 @@ const VocabularyDetail = ({ route }) => {
     }
   };
 
-
-
   const handleFlashcardInteraction = async (showAnswerValue) => {
     setShowAnswer(showAnswerValue);
-    
-    if (!hasViewedFlashcard.current) {
-      console.info(vocabularyId);
+
+    if (hasViewedFlashcard.current || processView) return; // đã xem hoặc đang xử lý thì bỏ qua
+
+    setProcessView(true);
+    try {
       await viewFlashcard(vocabularyId);
       hasViewedFlashcard.current = true;
+    } catch (err) {
+      console.error("Error in handleFlashcardInteraction:", err);
+    } finally {
+      setProcessView(false);
     }
   };
 
@@ -132,7 +141,7 @@ const VocabularyDetail = ({ route }) => {
     setShowResultModal(false);
     setPronunciationResult(null);
   };
-  
+
   const getScoreColor = (score) => {
     if (score >= 80) return "#10B981";
     if (score >= 60) return "#F59E0B";
