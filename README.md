@@ -17,13 +17,16 @@ Frontend cho hệ thống học tiếng Anh với Flashcard tích hợp chấm �
 
 3. Cài đặt
 Clone dự án
-git clone https://github.com/QuangTruongPractice/socialNetwork-Frontend.git
+git clone https://github.com/QuangTruongPractice/EnglishApp-frontend-reactnative.git
 
 Cài đặt dependencies
 npm install
 
 Chạy dev mode
-npm start
+npm run:android hoặc npm run:ios để chạy trên máy ảo.
+
+hoặc tải file apk từ https://expo.dev/accounts/tranquangtruong25/projects/englishApp/builds/1a3907b1-e0b8-4a7a-9d93-ca413d39a145
+Trước khi sử dụng hãy kiểm tra https://englishapp-go7r.onrender.com/ đã mở chưa, và hãy chạy FastAPI để có thể chấm điểm.
 
 4. Chức năng chính
 Trang chủ: hiển thị chủ đề, bảng xếp hạng.
