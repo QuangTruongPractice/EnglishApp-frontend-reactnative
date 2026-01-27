@@ -4,10 +4,10 @@ import { useNavigation } from "@react-navigation/native";
 import { loadProfile, login, googleLogin } from "../../configs/LoadData";
 import { MyDispatchContext } from "../../configs/Context";
 import LoginScreen from "../Screen/LoginScreen";
-import {
-  GoogleSignin,
-  statusCodes,
-} from "@react-native-google-signin/google-signin";
+// import {
+//   GoogleSignin,
+//   statusCodes,
+// } from "@react-native-google-signin/google-signin";
 import keys from "../../key";
 
 const Login = () => {
@@ -62,6 +62,7 @@ const Login = () => {
     }
   };
 
+  /*
   const handleGoogleLogin = async () => {
     setLoading(true);
     setMsg("");
@@ -97,7 +98,9 @@ const Login = () => {
       setLoading(false);
     }
   };
+  */
 
+  /*
   GoogleSignin.configure({
     webClientId: keys.webClientId,
     scopes: ["https://www.googleapis.com/auth/drive.readonly"],
@@ -105,6 +108,7 @@ const Login = () => {
     forceCodeForRefreshToken: true, 
     iosClientId: keys.iosClientId,
   });
+  */
 
   return (
     <LoginScreen
@@ -113,7 +117,7 @@ const Login = () => {
       loading={loading}
       onInputChange={handleInputChange}
       onLogin={handleLogin}
-      onGoogleSignIn={handleGoogleLogin}
+      onGoogleSignIn={() => alert("Chức năng Google Sign-in tạm khóa trong Expo Go")}
       nav={nav}
     />
   );

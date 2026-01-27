@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = 'https://englishapp-go7r.onrender.com/english/api/';
+const BASE_URL = 'http://192.168.1.204:8080/english/api/';
 
 export const endpoints = {
     'main-topics': '/main-topics',

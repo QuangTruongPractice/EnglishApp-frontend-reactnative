@@ -4,22 +4,67 @@ on:
   push:
     branches:
       - main
+      - master
+      - develop
   pull_request:
+    branches:
+      - main
+      - master
+      - develop
 
 jobs:
-  ci:
+  lint:
+    name: ESLint Check
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'npm'
+          cache-dependency-path: englishApp/package-lock.json
 
       - name: Install dependencies
-        run: |
-          cd englishApp
-          npm install
+        working-directory: ./englishApp
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: ./englishApp
+        run: npm run lint
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: englishApp/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./englishApp
+        run: npm ci
+
+      - name: Run tests
+        working-directory: ./englishApp
+        run: npm test -- --coverage
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          working-directory: ./englishApp
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false

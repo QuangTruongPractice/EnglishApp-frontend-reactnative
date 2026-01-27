@@ -20,6 +20,10 @@
         "foregroundImage": "./assets/logo-image.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ],
       "edgeToEdgeEnabled": true,
       "package": "com.tranquangtruong25.englishApp"
     },
@@ -27,12 +31,7 @@
       "favicon": "./assets/logo-image.png"
     },
     "plugins": [
-      [
-        "@react-native-google-signin/google-signin",
-        {
-          "iosUrlScheme": "com.googleusercontent.apps.395593925572-31tub3bcdhu95v65m1dept3rdvb3p77c"
-        }
-      ]
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "eas": {

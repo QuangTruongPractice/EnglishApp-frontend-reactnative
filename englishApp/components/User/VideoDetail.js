@@ -4,7 +4,7 @@ import { updateVideoProgress, fetchVideoDetail } from "../../configs/LoadData";
 import { useNavigation } from "@react-navigation/native";
 
 const VideoDetail = ({ route }) => {
-  const { videoId } = route.params;
+  const { videoId: initialVideoId } = route.params;
   const [video, setVideo] = useState(null);
   const [subtitles, setSubtitles] = useState([]);
   const [error, setError] = useState(null);
@@ -12,70 +12,70 @@ const VideoDetail = ({ route }) => {
   const [selectedSubtitle, setSelectedSubtitle] = useState(null);
   const [translatedTexts, setTranslatedTexts] = useState({});
   const [translatingIds, setTranslatingIds] = useState(new Set());
-  const [isPlayerReady, setIsPlayerReady] = useState(false); 
-  const webViewRef = useRef(null);
+  const [playing, setPlaying] = useState(false);
+  const playerRef = useRef(null);
   const lastSaveTimeRef = useRef(0);
   const nav = useNavigation();
 
+  // Robust YouTube ID extraction
+  const extractYouTubeId = (input) => {
+    if (input === undefined || input === null) return null;
+    const strInput = String(input);
+    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+    const match = strInput.match(regex);
+    return match ? match[1] : strInput;
+  };
+
+  const videoId = extractYouTubeId(initialVideoId);
+
   const saveProgress = useCallback(async (progress, immediate = false) => {
-      const now = Date.now();
-      if (!immediate && now - lastSaveTimeRef.current < 5000) return;
+    const now = Date.now();
+    if (!immediate && now - lastSaveTimeRef.current < 5000) return;
 
-      lastSaveTimeRef.current = now;
+    lastSaveTimeRef.current = now;
 
-      try {
-        await updateVideoProgress(progress, videoId);
-        console.info(Math.round(progress.currentTime));
-      } catch (error) {
-        console.error("Failed to save progress:", error);
-      }
-    },
-    [videoId]
-  );
+    try {
+      await updateVideoProgress(progress, videoId);
+      console.info(Math.round(progress.currentTime));
+    } catch (error) {
+      console.error("Failed to save progress:", error);
+    }
+  }, [videoId]);
 
   const handleGoBack = () => {
     nav.goBack();
   };
 
-  const handleWebViewMessage = useCallback(
-    (event) => {
-      try {
-        const data = JSON.parse(event.nativeEvent.data);
-
-        const progress = {
-          currentTime: data.currentTime || 0,
-          duration: data.videoDuration || 0,
-          isPlaying: data.isPlaying || false,
-        };
-
-        switch (data.event) {
-          case "video-ready":
-            setIsPlayerReady(true); 
-            break;
-          case "video-progress":
-            if (progress.isPlaying) {
-              saveProgress(progress);
-            }
-            break;
-          case "video-played":
-            saveProgress(progress, true);
-            break;
-          case "video-paused":
-            saveProgress(progress, true);
-            break;
-          case "video-ended":
-            saveProgress(progress, true);
-            break;
-          case "seek-completed":
-            console.log("Seeked to:", data.time);
-            break;
+  const handleStateChange = useCallback(
+    async (state) => {
+      if (state === "playing") {
+        setPlaying(true);
+      } else if (state === "paused" || state === "ended") {
+        setPlaying(false);
+        const currentTime = await playerRef.current?.getCurrentTime();
+        const duration = await playerRef.current?.getDuration();
+        if (currentTime !== undefined) {
+          saveProgress({ currentTime, duration, isPlaying: false }, true);
         }
-      } catch (error) {
-        console.error("Error parsing WebView message:", error);
       }
     },
     [saveProgress]
   );
+
+  // Periodic progress saving during playback
+  useEffect(() => {
+    let interval;
+    if (playing) {
+      interval = setInterval(async () => {
+        const currentTime = await playerRef.current?.getCurrentTime();
+        const duration = await playerRef.current?.getDuration();
+        if (currentTime !== undefined) {
+          saveProgress({ currentTime, duration, isPlaying: true });
+        }
+      }, 5000);
+    }
+    return () => clearInterval(interval);
+  }, [playing, saveProgress]);
 
   const loadData = useCallback(async () => {
     if (loading) return;
@@ -94,35 +94,21 @@ const VideoDetail = ({ route }) => {
     } finally {
       setLoading(false);
     }
-  }, [videoId]);
+  }, [videoId, loading]);
 
   const handleSubtitleClick = useCallback((subtitle) => {
     console.log("Subtitle clicked:", subtitle);
     setSelectedSubtitle(subtitle);
-    
-    if (isPlayerReady && webViewRef.current && subtitle.startTime !== undefined) {
-      const seekTime = typeof subtitle.startTime === 'string' 
-        ? parseFloat(subtitle.startTime) 
+
+    if (playerRef.current && subtitle.startTime !== undefined) {
+      const seekTime = typeof subtitle.startTime === 'string'
+        ? parseFloat(subtitle.startTime)
         : subtitle.startTime;
-      
+
       console.log("Seeking to time:", seekTime);
-      
-      setTimeout(() => {
-        webViewRef.current?.postMessage(
-          JSON.stringify({
-            action: "seekTo",
-            time: seekTime,
-          })
-        );
-      }, 100);
-    } else {
-      console.warn("Player not ready or invalid startTime:", {
-        isPlayerReady,
-        hasWebViewRef: !!webViewRef.current,
-        startTime: subtitle.startTime
-      });
+      playerRef.current.seekTo(seekTime, true);
     }
-  }, [isPlayerReady]);
+  }, []);
 
   const translateText = useCallback(
     async (subtitle) => {
@@ -167,133 +153,9 @@ const VideoDetail = ({ route }) => {
       .padStart(2, "0")}`;
   }, []);
 
-  const generateYoutubeHTML = useCallback(() => {
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { margin: 0; padding: 0; background: #000; overflow: hidden; }
-    #player { width: 100vw; height: 100vh; }
-  </style>
-</head>
-<body>
-  <div id="player"></div>
-  <script>
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.head.appendChild(tag);
-
-    let player;
-    let progressTimer;
-    let isPlayerReady = false;
-
-    window.onYouTubeIframeAPIReady = () => {
-      player = new YT.Player('player', {
-        height: '100%',
-        width: '100%',
-        videoId: '${video?.videoId}',
-        playerVars: {
-          playsinline: 1,
-          rel: 0,
-          showinfo: 0,
-          modestbranding: 1,
-          iv_load_policy: 3,
-          start: ${video?.progress?.currentTime || 0}
-        },
-        events: {
-          onReady: (event) => {
-            isPlayerReady = true;
-            postMessage({ 
-              event: 'video-ready', 
-              videoDuration: player.getDuration() 
-            });
-            
-            // Nếu có progress từ trước, seek đến vị trí đó
-            const savedTime = ${video?.progress?.currentTime || 0};
-            if (savedTime > 0) {
-              player.seekTo(savedTime, true);
-            }
-          },
-          onStateChange: handleStateChange
-        }
-      });
-    };
-
-    const handleStateChange = (event) => {
-      const duration = player.getDuration();
-      const currentTime = player.getCurrentTime();
-      const baseData = { currentTime, videoDuration: duration };
-
-      clearInterval(progressTimer);
-      
-      if (event.data === YT.PlayerState.PLAYING) {
-        postMessage({ ...baseData, event: 'video-played', isPlaying: true });
-        progressTimer = setInterval(() => {
-          postMessage({
-            event: 'video-progress',
-            currentTime: player.getCurrentTime(),
-            videoDuration: duration,
-            isPlaying: true
-          });
-        }, 1000);
-      } else if (event.data === YT.PlayerState.PAUSED) {
-        postMessage({ ...baseData, event: 'video-paused', isPlaying: false });
-      } else if (event.data === YT.PlayerState.ENDED) {
-        postMessage({ ...baseData, event: 'video-ended', currentTime: duration, isPlaying: false });
-      }
-    };
-
-    const postMessage = (data) => {
-      if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-        window.ReactNativeWebView.postMessage(JSON.stringify(data));
-      }
-    };
-
-    window.addEventListener('message', (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('Received message:', data);
-        
-        if (data.action === 'seekTo' && player && isPlayerReady) {
-          const seekTime = parseFloat(data.time);
-          console.log('Seeking to:', seekTime);
-          
-          if (!isNaN(seekTime) && seekTime >= 0) {
-            player.seekTo(seekTime, true);
-            
-            // Gửi confirm về React Native
-            setTimeout(() => {
-              postMessage({
-                event: 'seek-completed',
-                time: seekTime,
-                currentTime: player.getCurrentTime()
-              });
-            }, 500);
-          }
-        }
-      } catch (e) {
-        console.error('Message parsing error:', e);
-      }
-    });
-
-    // Thêm event listener cho document để catch message từ React Native
-    document.addEventListener('message', (event) => {
-      window.dispatchEvent(new MessageEvent('message', { data: event.data }));
-    });
-  </script>
-</body>
-</html>`;
-  }, [video]);
-
   useEffect(() => {
     loadData();
   }, [videoId]);
-
-  useEffect(() => {
-    setIsPlayerReady(false);
-  }, [video?.videoId]);
 
   const screenProps = {
     video,
@@ -303,16 +165,18 @@ const VideoDetail = ({ route }) => {
     selectedSubtitle,
     translatedTexts,
     translatingIds,
+    playing,
 
     handleGoBack,
     loadData,
     handleSubtitleClick,
     translateText,
     formatTime,
-    handleWebViewMessage,
-    
-    webViewRef,
-    youtubeHTML: generateYoutubeHTML(),
+    handleStateChange,
+
+    playerRef,
+    videoId: extractYouTubeId(video?.videoId) || videoId,
+    initialTime: video?.progress?.currentTime || 0,
   };
 
   return <VideoDetailScreen {...screenProps} />;

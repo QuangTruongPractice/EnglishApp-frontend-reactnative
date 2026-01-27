@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Card, Chip, IconButton } from "react-native-paper";
-import { WebView } from "react-native-webview";
+import YoutubePlayer from "react-native-youtube-iframe";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import Loading from "../layout/Loading";
@@ -14,14 +14,16 @@ const VideoDetailScreen = ({
   selectedSubtitle,
   translatedTexts,
   translatingIds,
+  playing,
   handleGoBack,
   loadData,
   handleSubtitleClick,
   translateText,
   formatTime,
-  handleWebViewMessage,
-  webViewRef,
-  youtubeHTML,
+  handleStateChange,
+  playerRef,
+  videoId,
+  initialTime,
 }) => {
   if (loading) {
     return (
@@ -60,8 +62,8 @@ const VideoDetailScreen = ({
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerContainer}>
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={handleGoBack}
           activeOpacity={0.7}
         >
@@ -74,16 +76,17 @@ const VideoDetailScreen = ({
         <Card style={styles.videoCard}>
           <Card.Content>
             <View style={styles.videoPlayerContainer}>
-              <WebView
-                ref={webViewRef}
-                style={styles.videoPlayer}
-                source={{ html: youtubeHTML }}
-                onMessage={handleWebViewMessage}
-                javaScriptEnabled={true}
-                domStorageEnabled={true}
-                startInLoadingState={true}
-                allowsFullscreenVideo={true}
-                mediaPlaybackRequiresUserAction={false}
+              <YoutubePlayer
+                ref={playerRef}
+                height={220} // Approximate 16:9 for most devices
+                play={playing}
+                videoId={videoId}
+                onChangeState={handleStateChange}
+                initialPlayerParams={{
+                  start: Math.round(initialTime),
+                  rel: 0,
+                  modestbranding: 1,
+                }}
               />
             </View>
 

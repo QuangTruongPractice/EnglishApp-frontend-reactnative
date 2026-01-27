@@ -2,8 +2,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useReducer } from "react";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { MyUserContext, MyDispatchContext } from "./configs/Context";
+import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import MyUserReducer from "./reducers/MyUserReducer";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
@@ -101,17 +101,17 @@ export default function App() {
                 <Stack.Screen
                   name="TopicDetail"
                   component={TopicDetail}
-                  options={{headerShown: false}}
+                  options={{ headerShown: false }}
                 />
                 <Stack.Screen
                   name="SubTopicDetail"
                   component={SubTopicDetail}
-                  options={{headerShown: false}}
+                  options={{ headerShown: false }}
                 />
                 <Stack.Screen
                   name="VocabularyDetail"
                   component={VocabularyDetail}
-                  options={{headerShown: false}}
+                  options={{ headerShown: false }}
                 />
                 <Stack.Screen
                   name="VideoDetail"
