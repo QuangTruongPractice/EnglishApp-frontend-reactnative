@@ -48,7 +48,8 @@
     "babel-jest": "^29.7.0",
     "@babel/preset-env": "^7.20.0",
     "@babel/plugin-transform-flow-strip-types": "^7.20.0",
-    "@expo/vector-icons": "^14.0.0"
+    "@expo/vector-icons": "^14.0.0",
+    "metro-react-native-babel-preset": "^0.77.0"
   },
   "private": true
 }
