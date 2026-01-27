@@ -44,6 +44,3 @@ jest.mock('react-native-safe-area-context', () => {
         SafeAreaConsumer: ({ children }) => children(inset),
     };
 });
-
-// Silence Animated warning
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
