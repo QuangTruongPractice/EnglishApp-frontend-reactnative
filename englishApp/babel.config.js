@@ -1,6 +1,6 @@
 module.exports = function (api) {
-    api.cache(true);
     const isTest = api.env('test');
+    api.cache.using(() => isTest);
     return {
         presets: [
             isTest ? 'module:metro-react-native-babel-preset' : 'babel-preset-expo'
