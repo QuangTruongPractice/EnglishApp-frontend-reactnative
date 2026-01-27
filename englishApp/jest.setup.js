@@ -20,12 +20,17 @@ jest.mock('@expo/vector-icons', () => ({
     Octicons: 'Icon',
     SimpleLineIcons: 'Icon',
     Zocial: 'Icon',
-}));
+}), { virtual: true });
 
 // Provide a mock for react-native-vector-icons since jest-expo maps back to @expo/vector-icons
 jest.mock('react-native-vector-icons/MaterialIcons', () => 'Icon', { virtual: true });
 jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => 'Icon', { virtual: true });
 jest.mock('react-native-vector-icons/Ionicons', () => 'Icon', { virtual: true });
+jest.mock('react-native-vector-icons', () => ({
+    MaterialIcons: 'Icon',
+    Ionicons: 'Icon',
+    MaterialCommunityIcons: 'Icon',
+}), { virtual: true });
 
 // Mock react-native-safe-area-context
 jest.mock('react-native-safe-area-context', () => {
