@@ -37,13 +37,13 @@ const TopicDetailScreen = ({
   const renderSubTopicItem = (item, index) => {
     const colors = [
       "#F45B69FF",
-      "#FF7B72FF", 
-      "#FF9E80FF", 
-      "#FFB6B9FF", 
-      "#D7263DFF", 
-      "#FFA69EFF", 
+      "#FF7B72FF",
+      "#FF9E80FF",
+      "#FFB6B9FF",
+      "#D7263DFF",
+      "#FFA69EFF",
     ];
-    
+
     const cardColor = colors[index % colors.length];
 
     return (
@@ -125,8 +125,8 @@ const TopicDetailScreen = ({
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerContainer}>
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={onGoBack}
           activeOpacity={0.7}
         >
@@ -162,7 +162,7 @@ const TopicDetailScreen = ({
 
           <View style={styles.heroContent}>
             <Text style={styles.heroTitle}>{topicInfo?.name || "Topic"}</Text>
-            
+
             <View style={styles.heroStats}>
               <View style={styles.statBadge}>
                 <Ionicons name="folder" size={16} color="#F45B69FF" />
@@ -189,7 +189,7 @@ const TopicDetailScreen = ({
                 <Ionicons name="library-outline" size={64} color="#ccc" />
                 <Text style={styles.emptyTitle}>No Subtopics Available</Text>
                 <Text style={styles.emptyText}>
-                  This topic doesn't have any subtopics yet.
+                  This topic doesn&apos;t have any subtopics yet.
                 </Text>
               </View>
             </View>

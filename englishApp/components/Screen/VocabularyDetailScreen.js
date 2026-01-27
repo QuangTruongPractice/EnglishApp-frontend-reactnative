@@ -100,7 +100,7 @@ const VocabularyDetailScreen = ({
               <Card style={styles.comparisonCard}>
                 <Card.Content>
                   <Text style={styles.comparisonTitle}>📝 So Sánh Kết Quả</Text>
-                  
+
                   <View style={styles.textComparison}>
                     <Text style={styles.expectedLabel}>✅ Câu mẫu:</Text>
                     <View style={styles.expectedTextContainer}>
@@ -147,7 +147,7 @@ const VocabularyDetailScreen = ({
               >
                 🔄 Thử Lại
               </Button>
-              
+
               <Button
                 mode="outlined"
                 style={styles.continueButton}
@@ -175,7 +175,7 @@ const VocabularyDetailScreen = ({
               <Text style={styles.cardTitle}>📖 Định nghĩa</Text>
               <View style={styles.cardDecoration} />
             </View>
-            
+
             <Text style={styles.definition}>{vocabulary.definition}</Text>
             <Text style={styles.vietnamese}>{vocabulary.vnDefinition}</Text>
 
@@ -209,7 +209,7 @@ const VocabularyDetailScreen = ({
           <Text style={styles.answerWord}>{vocabulary.word}</Text>
           <Text style={styles.pronunciation}>{vocabulary.phonetic}</Text>
           <Text style={styles.translation}>{vocabulary.vnWord}</Text>
-          
+
           <View style={styles.flipHint}>
             <Text style={styles.flipHintTextWhite}>👆 Nhấn để xem định nghĩa</Text>
             <View style={styles.flipIndicatorWhite} />
@@ -259,8 +259,8 @@ const VocabularyDetailScreen = ({
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerContainer}>
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={onGoBack}
           activeOpacity={0.7}
         >
@@ -278,7 +278,7 @@ const VocabularyDetailScreen = ({
                 {vocabulary.wordTypes?.[0]?.type}
               </Text>
             </View>
-            
+
             <View style={styles.categorySubtag}>
               <Text style={styles.categorySubtagText}>
                 {vocabulary.subTopics?.[0]?.name}
@@ -298,7 +298,7 @@ const VocabularyDetailScreen = ({
                 <Text style={styles.sectionIcon}>🔊</Text>
                 <Text style={styles.audioTitle}>Phát âm mẫu</Text>
               </View>
-              
+
               <Button
                 mode="contained"
                 buttonColor="#4ECDC4"
@@ -317,11 +317,11 @@ const VocabularyDetailScreen = ({
                 <Text style={styles.sectionIcon}>🎤</Text>
                 <Text style={styles.practiceTitle}>Luyện phát âm</Text>
               </View>
-              
+
               <Text style={styles.practiceSubtitle}>
-                Hãy nói: "<Text style={styles.practiceExample}>{vocabulary.example}</Text>"
+                Hãy nói: {'"'}<Text style={styles.practiceExample}>{vocabulary.example}</Text>{'"'}
               </Text>
-              
+
               <Button
                 mode="contained"
                 buttonColor={recording ? "#EF4444" : "#22C55E"}
@@ -332,8 +332,8 @@ const VocabularyDetailScreen = ({
                 {isProcessing
                   ? "⏳ Đang xử lý..."
                   : recording
-                  ? "⏹️ Dừng & Gửi"
-                  : "🎤 Bắt đầu nói"}
+                    ? "⏹️ Dừng & Gửi"
+                    : "🎤 Bắt đầu nói"}
               </Button>
 
               {isProcessing && (

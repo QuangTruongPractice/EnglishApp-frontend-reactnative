@@ -35,11 +35,11 @@ const SubTopicDetailScreen = ({
   const renderVocabularyItem = (item, index) => {
     const colors = [
       "#F45B69FF",
-      "#FF7B72FF", 
-      "#FF9E80FF", 
-      "#FFB6B9FF", 
-      "#D7263DFF", 
-      "#FFA69EFF", 
+      "#FF7B72FF",
+      "#FF9E80FF",
+      "#FFB6B9FF",
+      "#D7263DFF",
+      "#FFA69EFF",
     ];
 
     const cardColor = colors[index % colors.length];
@@ -189,7 +189,7 @@ const SubTopicDetailScreen = ({
                 <Ionicons name="book-outline" size={64} color="#ccc" />
                 <Text style={styles.emptyTitle}>No Vocabularies Available</Text>
                 <Text style={styles.emptyText}>
-                  This subtopic doesn't have any vocabularies yet.
+                  This subtopic doesn&apos;t have any vocabularies yet.
                 </Text>
               </View>
             </View>

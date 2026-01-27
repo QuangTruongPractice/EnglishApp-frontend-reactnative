@@ -21,7 +21,7 @@ const VideoDetail = ({ route }) => {
   const extractYouTubeId = (input) => {
     if (input === undefined || input === null) return null;
     const strInput = String(input);
-    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+    const regex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/i;
     const match = strInput.match(regex);
     return match ? match[1] : strInput;
   };

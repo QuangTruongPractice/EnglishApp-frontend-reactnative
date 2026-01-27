@@ -141,7 +141,7 @@ const ProgressScreen = ({
                 {item.vocabulary.definition}
               </Text>
               <Text variant="bodySmall" style={styles.exampleText}>
-                "{item.vocabulary.example}"
+                {'"'}{item.vocabulary.example}{'"'}
               </Text>
             </View>
 
@@ -156,7 +156,7 @@ const ProgressScreen = ({
                 {item.vocabulary.vnDefinition}
               </Text>
               <Text variant="bodySmall" style={styles.exampleText}>
-                "{item.vocabulary.vnExample}"
+                {'"'}{item.vocabulary.vnExample}{'"'}
               </Text>
             </View>
 
@@ -278,11 +278,10 @@ const ProgressScreen = ({
               <Text variant="headlineSmall" style={styles.summaryNumberGreen}>
                 {activeTab === "video"
                   ? `${Math.round((completedVideos / totalVideos) * 100) || 0}%`
-                  : `${
-                      Math.round(
-                        (completedVocabulary / totalVocabulary) * 100
-                      ) || 0
-                    }%`}
+                  : `${Math.round(
+                    (completedVocabulary / totalVocabulary) * 100
+                  ) || 0
+                  }%`}
               </Text>
               <Text variant="bodySmall">Tỷ lệ hoàn thành</Text>
             </Card.Content>
