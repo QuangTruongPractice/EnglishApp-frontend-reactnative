@@ -85,7 +85,6 @@ jest.mock('react-native-screens', () => {
 // Mock react-native-paper
 jest.mock('react-native-paper', () => {
     const React = require('react');
-    const { View } = require('react-native');
 
     const MockComponent = (name) => {
         const Component = (props) => React.createElement(name, props);
@@ -142,14 +141,18 @@ jest.mock('@react-navigation/bottom-tabs', () => {
 jest.mock('@react-native-community/datetimepicker', () => {
     const React = require('react');
     const { View } = require('react-native');
-    return (props) => React.createElement(View, props);
+    const MockDateTimePicker = (props) => React.createElement(View, props);
+    MockDateTimePicker.displayName = 'DateTimePicker';
+    return MockDateTimePicker;
 });
 
 // Mock react-native-vector-icons
 jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => {
     const React = require('react');
     const { View } = require('react-native');
-    return (props) => React.createElement(View, props);
+    const MockIcon = (props) => React.createElement(View, props);
+    MockIcon.displayName = 'MaterialCommunityIcons';
+    return MockIcon;
 });
 
 // Mock toast
