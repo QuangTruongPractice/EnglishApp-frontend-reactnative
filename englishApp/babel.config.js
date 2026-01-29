@@ -3,10 +3,11 @@ module.exports = function (api) {
     api.cache.using(() => isTest);
     return {
         presets: [
-            isTest ? 'module:metro-react-native-babel-preset' : 'babel-preset-expo'
+            isTest ? 'module:metro-react-native-babel-preset' : 'babel-preset-expo',
+            '@babel/preset-flow'
         ],
         plugins: [
-            ['@babel/plugin-transform-flow-strip-types', { allowDeclareFields: true }]
+            ['@babel/plugin-transform-flow-strip-types', { allowDeclareFields: true, all: true }]
         ]
     };
 };
