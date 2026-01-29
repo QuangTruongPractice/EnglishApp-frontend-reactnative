@@ -9,7 +9,7 @@ module.exports = function (api) {
         ],
         overrides: [
             {
-                test: /[\\/]node_modules[\\/]/,
+                test: (filename) => filename && filename.includes('node_modules'),
                 plugins: [
                     ['@babel/plugin-transform-flow-strip-types', { allowDeclareFields: true, all: true }]
                 ]

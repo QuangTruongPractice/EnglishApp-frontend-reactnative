@@ -6,7 +6,7 @@ module.exports = {
     },
 
     transformIgnorePatterns: [
-        'node_modules/(?!(jest-)?react-native|@react-native|expo(nent)?|@expo(nent)?/.*|@expo/vector-icons|@react-navigation|react-navigation|@react-native-async-storage/async-storage|react-native-paper|react-native-webview)',
+        'node_modules/(?!(jest-)?react-native|@react-native|expo(nent)?|@expo(nent)?/.*|@expo/vector-icons|@react-navigation|react-navigation|@react-native-async-storage/async-storage|react-native-paper|react-native-webview|react-native-safe-area-context|react-native-screens)',
     ],
 
     moduleNameMapper: {
