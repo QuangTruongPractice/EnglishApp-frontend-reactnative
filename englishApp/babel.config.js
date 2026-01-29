@@ -1,9 +1,10 @@
 module.exports = function (api) {
     api.cache(true);
     return {
-        presets: ['babel-preset-expo'],
+        presets: [
+            ['babel-preset-expo', { disableHermesParser: true }]
+        ],
         plugins: [
-            ['@babel/plugin-syntax-flow', { all: true }],
             ['@babel/plugin-transform-flow-strip-types', { allowDeclareFields: true, all: true }]
         ],
         overrides: [
