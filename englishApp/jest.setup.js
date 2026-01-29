@@ -44,3 +44,27 @@ jest.mock('react-native-safe-area-context', () => {
         SafeAreaConsumer: ({ children }) => children(inset),
     };
 });
+
+// Mock expo-av
+jest.mock('expo-av', () => ({
+    Audio: {
+        Sound: jest.fn(),
+        setIsEnabledAsync: jest.fn(),
+        setAudioModeAsync: jest.fn(),
+    },
+    Video: {
+        props: {
+            resizeMode: {},
+        },
+    },
+}));
+
+// Mock react-native-webview
+jest.mock('react-native-webview', () => {
+    const React = require('react');
+    const { View } = require('react-native');
+    return {
+        default: (props) => React.createElement(View, props),
+        WebView: (props) => React.createElement(View, props),
+    };
+});

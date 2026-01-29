@@ -1,19 +1,17 @@
 module.exports = function (api) {
-    api.cache(true);
+    const isTest = api.env('test');
+    api.cache.using(() => isTest);
+
+    if (isTest) {
+        return {
+            presets: ['module:@react-native/babel-preset'],
+            plugins: [
+                ['@babel/plugin-transform-flow-strip-types', { allowDeclareFields: true, all: true }]
+            ]
+        };
+    }
+
     return {
-        presets: [
-            ['babel-preset-expo', { disableHermesParser: true }]
-        ],
-        plugins: [
-            ['@babel/plugin-transform-flow-strip-types', { allowDeclareFields: true, all: true }]
-        ],
-        overrides: [
-            {
-                test: (filename) => filename && filename.includes('node_modules'),
-                plugins: [
-                    ['@babel/plugin-transform-flow-strip-types', { allowDeclareFields: true, all: true }]
-                ]
-            }
-        ]
+        presets: ['babel-preset-expo']
     };
 };
