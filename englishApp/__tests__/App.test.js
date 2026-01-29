@@ -5,7 +5,7 @@ import App from '../App';
 // Simple smoke test to verify the app renders without crashing
 describe('App', () => {
     it('renders without crashing', () => {
-        const { container } = render(<App />);
-        expect(container).toBeTruthy();
+        const { toJSON } = render(<App />);
+        expect(toJSON()).toBeTruthy();
     });
 });

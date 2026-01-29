@@ -1,0 +1,81 @@
+
+> englishapp@1.0.0 test
+> jest --coverage
+
+PASS __tests__/App.test.js
+  App
+    √ renders without crashing (972 ms)
+
+------------------------------|---------|----------|---------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------
+File                          | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                                                                                         
+------------------------------|---------|----------|---------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------
+All files                     |    7.33 |     0.31 |    0.37 |    7.78 |                                                                                                                                                           
+ englishApp                   |    23.8 |     8.33 |      25 |    23.8 |                                                                                                                                                           
+  .eslintrc.js                |       0 |      100 |     100 |       0 | 1                                                                                                                                                         
+  App.js                      |   27.77 |     8.33 |      25 |   27.77 | 29-48                                                                                                                                                     
+  index.js                    |       0 |      100 |     100 |       0 | 8                                                                                                                                                         
+  jest.config.js              |       0 |      100 |     100 |       0 | 1                                                                                                                                                         
+  key.js                      |       0 |        0 |       0 |       0 |                                                                                                                                                           
+ englishApp/components/Auth   |    2.13 |        0 |       0 |    2.35 |                                                                                                                                                           
+  ChangePassword.js           |    2.94 |        0 |       0 |    3.03 | 8-74                                                                                                                                                      
+  ForgotPassword.js           |    2.56 |        0 |       0 |    2.56 | 8-92                                                                                                                                                      
+  Login.js                    |    2.94 |        0 |       0 |    3.03 | 14-120                                                                                                                                                    
+  Register.js                 |    1.25 |        0 |       0 |    1.53 | 9-156                                                                                                                                                     
+ englishApp/components/Screen |    7.14 |        0 |       0 |    7.37 |                                                                                                                                                           
+  ChangePasswordScreen.js     |   14.28 |        0 |       0 |   14.28 | 28-117                                                                                                                                                    
+  ForgotPasswordScreen.js     |   33.33 |        0 |       0 |   33.33 | 30-127                                                                                                                                                    
+  HomeScreen.js               |    8.33 |        0 |       0 |    8.33 | 28-106                                                                                                                                                    
+  LeaderBoardScreen.js        |      20 |        0 |       0 |      20 | 17-66                                                                                                                                                     
+  LoginScreen.js              |   11.11 |        0 |       0 |   11.11 | 17-104                                                                                                                                                    
+  ProfileScreen.js            |    4.16 |        0 |       0 |    4.34 | 36-200                                                                                                                                                    
+  ProgressScreen.js           |    5.55 |        0 |       0 |    5.55 | 37-335                                                                                                                                                    
+  QuizDetailScreen.js         |    2.56 |        0 |       0 |    2.77 | 34-198                                                                                                                                                    
+  QuizScreen.js               |    5.88 |        0 |       0 |    5.88 | 26-199                                                                                                                                                    
+  RegisterScreen.js           |   11.11 |        0 |       0 |   11.11 | 29-173                                                                                                                                                    
+  SubTopicDetailScreen.js     |    5.55 |        0 |       0 |    5.88 | 25-207                                                                                                                                                    
+  TopicDetailScreen.js        |    5.26 |        0 |       0 |    5.55 | 25-206                                                                                                                                                    
+  VideoDetailScreen.js        |    12.5 |        0 |       0 |    12.5 | 28-133,161-195                                                                                                                                            
+  VideoScreen.js              |    9.09 |        0 |       0 |    9.09 | 26-109                                                                                                                                                    
+  VocabularyDetailScreen.js   |    5.88 |        0 |       0 |    6.25 | 34-259                                                                                                                                                    
+ englishApp/components/User   |    1.84 |        0 |       0 |    1.98 |                                                                                                                                                           
+  Home.js                     |    2.12 |        0 |       0 |    2.43 | 7-68                                                                                                                                                      
+  LeaderBoard.js              |    2.63 |        0 |       0 |    2.63 | 9-77                                                                                                                                                      
+  Profile.js                  |    2.38 |        0 |       0 |    2.38 | 9-82                                                                                                                                                      
+  Progress.js                 |    2.27 |        0 |       0 |    2.43 | 7-76                                                                                                                                                      
+  Quiz.js                     |    2.32 |        0 |       0 |    2.77 | 6-60                                                                                                                                                      
+  QuizDetail.js               |    1.21 |        0 |       0 |    1.31 | 9-142                                                                                                                                                     
+  SubTopicDetail.js           |    3.33 |        0 |       0 |    3.33 | 7-63                                                                                                                                                      
+  TopicDetail.js              |    3.22 |        0 |       0 |    3.33 | 7-55                                                                                                                                                      
+  Video.js                    |    2.17 |        0 |       0 |    2.43 | 6-70                                                                                                                                                      
+  VideoDetail.js              |    1.06 |        0 |       0 |    1.14 | 7-182                                                                                                                                                     
+  VocabularyDetail.js         |    1.01 |        0 |       0 |    1.07 | 12-172                                                                                                                                                    
+ englishApp/components/layout |      50 |      100 |       0 |      50 |                                                                                                                                                           
+  Loading.js                  |      50 |      100 |       0 |      50 | 4                                                                                                                                                         
+ englishApp/configs           |   25.83 |        0 |       0 |   26.49 |                                                                                                                                                           
+  Apis.js                     |      20 |        0 |       0 |   20.68 | 7-26,44,56-58,63-75                                                                                                                                       
+  Context.js                  |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  LoadData.js                 |   26.13 |        0 |       0 |   26.74 | 5-9,13-18,22-24,28-29,33-34,38-41,45-48,52-56,60-62,66-70,74-75,83-84,88-89,93-97,102-106,111-116,121-123,127-128,132-133,137-138,142-146,150-151,155-157 
+ englishApp/reducers          |      20 |        0 |       0 |      20 |                                                                                                                                                           
+  MyUserReducer.js            |      20 |        0 |       0 |      20 | 2-8                                                                                                                                                       
+ englishApp/styles            |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  ChangePasswordStyles.js     |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  ForgotPasswordStyles.js     |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  HomeStyles.js               |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  LeaderBoardStyles.js        |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  LoginStyles.js              |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  ProfileStyles.js            |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  ProgressStyles.js           |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  QuizDetailStyles.js         |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  QuizStyles.js               |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  RegisterStyles.js           |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  SubTopicDetailStyles.js     |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  TopicDetailStyles.js        |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  VideoDetailStyles.js        |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  VideoStyles.js              |     100 |      100 |     100 |     100 |                                                                                                                                                           
+  VocabularyDetailStyles.js   |     100 |      100 |     100 |     100 |                                                                                                                                                           
+------------------------------|---------|----------|---------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        5.541 s
+Ran all test suites.
