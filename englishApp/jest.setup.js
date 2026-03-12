@@ -188,3 +188,32 @@ jest.mock('react-native-webview', () => {
         WebView: (props) => React.createElement(View, props),
     };
 });
+
+// Mock react-native-google-signin
+jest.mock('@react-native-google-signin/google-signin', () => {
+    const React = require('react');
+    const { View } = require('react-native');
+    
+    const mockComponent = (props) => React.createElement(View, props);
+    
+    return {
+        GoogleSignin: {
+            configure: jest.fn(),
+            hasPlayServices: jest.fn(() => Promise.resolve(true)),
+            signIn: jest.fn(() => Promise.resolve({
+                data: {
+                    idToken: 'mock-id-token',
+                    user: { email: 'mock@example.com' }
+                }
+            })),
+            signOut: jest.fn(),
+            isSignedIn: jest.fn(),
+        },
+        GoogleSigninButton: mockComponent,
+        statusCodes: {
+            SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED',
+            IN_PROGRESS: 'IN_PROGRESS',
+            PLAY_SERVICES_NOT_AVAILABLE: 'PLAY_SERVICES_NOT_AVAILABLE',
+        },
+    };
+});
