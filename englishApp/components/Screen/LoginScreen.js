@@ -3,13 +3,13 @@ import {
   TouchableOpacity,
   Image,
   KeyboardAvoidingView,
-  SafeAreaView,
   ScrollView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput, Button, Text } from "react-native-paper";
-// import {
-//   GoogleSigninButton,
-// } from '@react-native-google-signin/google-signin';
+import {
+  GoogleSigninButton,
+} from '@react-native-google-signin/google-signin';
 import styles from "../../styles/LoginStyles";
 import Loading from "../layout/Loading";
 
@@ -89,7 +89,7 @@ const LoginScreen = ({ formData, msg, loading, onInputChange, onLogin, onGoogleS
               <Text style={styles.link}>Quên mật khẩu?</Text>
             </TouchableOpacity>
 
-            {/* <View style={styles.googleSignInContainer}>
+            <View style={styles.googleSignInContainer}>
               <GoogleSigninButton
                 style={styles.googleButton}
                 size={GoogleSigninButton.Size.Wide}
@@ -97,7 +97,7 @@ const LoginScreen = ({ formData, msg, loading, onInputChange, onLogin, onGoogleS
                 onPress={onGoogleSignIn}
                 disabled={loading}
               />
-            </View> */}
+            </View>
 
             <View style={styles.registerContainer}>
               <Text>Bạn chưa có tài khoản? </Text>

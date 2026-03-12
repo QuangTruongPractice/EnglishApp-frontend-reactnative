@@ -23,7 +23,7 @@ const Profile = () => {
       await AsyncStorage.removeItem("token");
       dispatch({ type: "logout" });
     } catch (error) {
-      console.error("Lỗi khi đăng xuất:", error);
+      // console.error("Lỗi khi đăng xuất:", error);
     }
   };
 
@@ -73,7 +73,7 @@ const Profile = () => {
       const response = await updateProfile(formData);
       dispatch({ type: "login", payload: response });
     } catch (err) {
-      console.error("Lỗi cập nhật dữ liệu:", err);
+      // console.error("Lỗi cập nhật dữ liệu:", err);
     } finally {
       setLoading(false);
     }

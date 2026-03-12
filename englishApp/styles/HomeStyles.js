@@ -56,9 +56,9 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    marginHorizontal: 8,
     backgroundColor: "white",
     borderRadius: 12,
+    width: "100%",
   },
   imageContainer: {
     height: 120,
@@ -108,6 +108,73 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: "#666",
+  },
+  // Split layout styles
+  shortcutContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 20,
+    gap: 12,
+  },
+  dailyPracticeButton: {
+    flex: 0.7,
+    backgroundColor: '#1a1a1a',
+    padding: 20,
+    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+  },
+  dailyPracticeTextContainer: {
+    flex: 1,
+  },
+  dailyPracticeTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  dailyPracticeSubtitle: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  savedVocaButton: {
+    flex: 0.3,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+  savedVocaText: {
+    color: '#1a1a1a',
+    fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  sectionHeader: {
+    marginVertical: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#1f2937",
+    marginBottom: 12,
   },
 });
 

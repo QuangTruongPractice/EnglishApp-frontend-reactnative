@@ -36,9 +36,9 @@ const VideoDetail = ({ route }) => {
 
     try {
       await updateVideoProgress(progress, videoId);
-      console.info(Math.round(progress.currentTime));
+      // console.info(Math.round(progress.currentTime));
     } catch (error) {
-      console.error("Failed to save progress:", error);
+      // console.error("Failed to save progress:", error);
     }
   }, [videoId]);
 
@@ -97,16 +97,16 @@ const VideoDetail = ({ route }) => {
   }, [videoId, loading]);
 
   const handleSubtitleClick = useCallback((subtitle) => {
-    console.log("Subtitle clicked:", subtitle);
+    // console.log("Subtitle clicked:", subtitle);
     setSelectedSubtitle(subtitle);
 
     if (playerRef.current && subtitle.startTime !== undefined) {
-      const seekTime = typeof subtitle.startTime === 'string'
-        ? parseFloat(subtitle.startTime)
-        : subtitle.startTime;
-
-      console.log("Seeking to time:", seekTime);
-      playerRef.current.seekTo(seekTime, true);
+        const seekTime = typeof subtitle.startTime === 'string'
+          ? parseFloat(subtitle.startTime)
+          : subtitle.startTime;
+  
+        // console.log("Seeking to time:", seekTime);
+        playerRef.current.seekTo(seekTime, true);
     }
   }, []);
 
@@ -133,7 +133,7 @@ const VideoDetail = ({ route }) => {
           }));
         }
       } catch (error) {
-        console.error("Translation error:", error);
+        // console.error("Translation error:", error);
       } finally {
         setTranslatingIds((prev) => {
           const newSet = new Set(prev);

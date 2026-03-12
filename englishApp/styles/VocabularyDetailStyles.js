@@ -1,549 +1,861 @@
-import { StyleSheet, Dimensions } from "react-native";
-
-const { width: screenWidth } = Dimensions.get('window');
+import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
   // Main Layout
   safeArea: {
     flex: 1,
-    backgroundColor: '#F45B69',
+    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
-    backgroundColor: '#FFF5F6',
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    backgroundColor: '#fff',
   },
-  centerContainer: {
+  scrollView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFF5F6',
+  },
+  contentPadding: {
     paddingHorizontal: 20,
+    paddingBottom: 40,
   },
   // Header
- headerContainer: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F45B69FF',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
   },
-  backButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  headerTitleMain: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    flex: 1,
-  },
-  headerSpacer: {
-    width: 40,
-  },
-
-  // Loading & Error States
-  loadingCard: {
-    borderRadius: 20,
-    elevation: 8,
-    backgroundColor: 'white',
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  errorCard: {
-    borderRadius: 20,
-    elevation: 8,
-    backgroundColor: 'white',
-  },
-  errorContainer: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  errorIcon: {
-    fontSize: 60,
-    marginBottom: 16,
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 24,
-  },
-
-  // Category Tags
-  categoryContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  categoryTag: {
-    backgroundColor: '#F45B69',
-    borderRadius: 15,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 12,
-    elevation: 3,
-  },
-  categoryTagText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
+  headerTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#666',
+    letterSpacing: 2,
     textTransform: 'uppercase',
   },
-  categorySubtag: {
-    backgroundColor: 'rgba(244, 91, 105, 0.1)',
+  iconButton: {
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: '#f5f5f7',
+  },
+  // Practice Header
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 15,
+  },
+  progressBarContainer: {
+    width: "100%",
+    height: 6,
+    backgroundColor: "#f1f5f9",
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: "#6366f1",
+    borderRadius: 3,
+  },
+  stepIndicator: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#64748b",
+    marginTop: 4,
+    letterSpacing: 1,
+  },
+
+  // Word Section
+  wordHero: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+  },
+  levelBadge: {
+    borderWidth: 1,
+    borderColor: '#D4AF37',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  levelDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#D4AF37',
+    marginRight: 6,
+  },
+  levelText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#D4AF37',
+  },
+  mainWord: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    textAlign: 'center',
+    flexShrink: 1,
+    // fontFamily: 'serif', // Fallback for specific serif look
+  },
+  phoneticContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    flexWrap: 'wrap',
+  },
+  phoneticText: {
+    fontSize: 22,
+    color: '#666',
+    marginRight: 15,
+    fontFamily: 'monospace',
+    flexShrink: 1,
+  },
+  playIconBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#6366f1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+
+  // Tags
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 30,
+  },
+  tagPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1.5,
+  },
+  tagText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+
+  // Definitions Section
+  sectionInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  meaningCount: {
+    fontSize: 13,
+    color: '#888',
+  },
+
+  // Meaning Card
+  meaningCard: {
+    backgroundColor: '#f8f9fc',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#f0f2f5',
+  },
+  meaningHeader: {
+    marginBottom: 15,
+  },
+  meaningHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  indexCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#2d3436',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  indexText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  typeBadge: {
+    backgroundColor: '#ffeded',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  typeText: {
+    color: '#ef4444',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  vnWordText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    flexShrink: 1,
+    // fontFamily: 'serif',
+  },
+
+  // Definition Text
+  defContainer: {
+    marginBottom: 15,
+  },
+  defLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#999',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+    letterSpacing: 1,
+  },
+  defEn: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    lineHeight: 22,
+    marginBottom: 4,
+  },
+  defVn: {
+    fontSize: 15,
+    color: '#666',
+    fontStyle: 'italic',
+    lineHeight: 22,
+  },
+
+  // Example Block
+  exampleBlock: {
+    backgroundColor: '#2d343608',
+    borderRadius: 16,
+    padding: 16,
+    borderLeftWidth: 3,
+    borderLeftColor: '#ef4444',
+    marginBottom: 20,
+  },
+  exampleEn: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    lineHeight: 24,
+    marginBottom: 6,
+  },
+  highlight: {
+    color: '#D4AF37',
+    fontWeight: 'bold',
+  },
+  exampleVn: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
+  },
+
+  // Image Section
+  imageGrid: {
+    flexDirection: 'row',
+    height: 180,
+    gap: 10,
+    marginBottom: 20,
+  },
+  mainImage: {
+    flex: 2,
+    borderRadius: 16,
+    backgroundColor: '#f0f0f0',
+    overflow: 'hidden',
+  },
+  sideImages: {
+    flex: 1,
+    gap: 10,
+  },
+  smallImage: {
+    flex: 1,
+    borderRadius: 12,
+    backgroundColor: '#f0f0f0',
+    overflow: 'hidden',
+  },
+  img: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+
+  // Synonyms Section
+  synonymSection: {
+    marginTop: 10,
+  },
+  synonymList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 10,
+  },
+  synonymPill: {
+    backgroundColor: '#2d343610',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 10,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(244, 91, 105, 0.3)',
+    borderColor: '#2d343615',
   },
-  categorySubtagText: {
-    color: '#F45B69',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-
-  // Main Card
-  mainCard: {
-    marginBottom: 24,
-    borderRadius: 20,
-    elevation: 8,
-  },
-  questionCardStyle: {
-    backgroundColor: 'white',
-  },
-  answerCardStyle: {
-    backgroundColor: '#F45B69',
-  },
-
-  // Card Content - Question Side
-  cardContent: {
-    padding: 24,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1F2937',
-  },
-  cardDecoration: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#F45B69',
-    borderRadius: 2,
-  },
-  definition: {
-    fontSize: 18,
-    color: '#374151',
-    marginBottom: 12,
-    lineHeight: 28,
-    fontWeight: '400',
-  },
-  vietnamese: {
-    fontSize: 18,
-    color: '#F45B69',
-    marginBottom: 20,
-    lineHeight: 28,
-    fontWeight: '500',
-  },
-  exampleContainer: {
-    backgroundColor: '#F8FAFF',
-    padding: 16,
-    borderRadius: 15,
-    marginBottom: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: '#4338CA',
-  },
-  exampleTitle: {
-    fontSize: 16,
+  synonymText: {
+    fontSize: 13,
+    color: '#444',
     fontWeight: '600',
-    color: '#4338CA',
-    marginBottom: 12,
-  },
-  example: {
-    fontSize: 16,
-    color: '#374151',
-    marginBottom: 8,
-    fontStyle: 'italic',
-    lineHeight: 24,
-  },
-  exampleVi: {
-    fontSize: 16,
-    color: '#059669',
-    fontStyle: 'italic',
-    lineHeight: 24,
   },
 
-  // Flip Hints
-  flipHint: {
-    alignItems: 'center',
-    paddingTop: 16,
-  },
-  flipHintText: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  flipHintTextWhite: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  flipIndicator: {
-    width: 30,
-    height: 3,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 2,
-    marginTop: 8,
-  },
-  flipIndicatorWhite: {
-    width: 30,
-    height: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 2,
-    marginTop: 8,
-  },
-
-  // Card Content - Answer Side
-  answerCard: {
-    padding: 40,
-    alignItems: 'center',
-    position: 'relative',
-  },
-  answerDecoration: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  answerWord: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  pronunciation: {
-    fontSize: 20,
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  translation: {
-    fontSize: 22,
-    color: 'white',
-    marginBottom: 24,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-
-  // Section Cards
-  sectionCard: {
-    marginBottom: 20,
-    borderRadius: 16,
-    elevation: 5,
-    backgroundColor: 'white',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionIcon: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  audioTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
-  },
-  practiceTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
-  },
-  practiceSubtitle: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginBottom: 16,
-    lineHeight: 24,
-  },
-  practiceExample: {
-    fontWeight: '600',
-    color: '#F45B69',
-    fontStyle: 'italic',
-  },
-
-  // Buttons
-  playButton: {
-    borderRadius: 12,
-  },
-  recordButton: {
-    borderRadius: 12,
-  },
-  processingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 16,
-    padding: 12,
-    backgroundColor: 'rgba(244, 91, 105, 0.1)',
-    borderRadius: 10,
-  },
-  processingText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-
-  // Modal Styles
-  modalSafeArea: {
+  // States
+  center: {
     flex: 1,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#F45B69',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  closeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  closeButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+  loadingText: {
+    marginTop: 10,
+    color: '#666',
   },
-  modalContent: {
-    flex: 1,
+  errorText: {
+    color: '#ef4444',
+    textAlign: 'center',
     padding: 20,
   },
 
-  // Score Card
-  scoreCard: {
-    marginBottom: 20,
-    borderRadius: 20,
-    elevation: 8,
-    backgroundColor: 'white',
+  // Meaning Actions
+  meaningActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 10,
   },
-  scoreContainer: {
+  actionBtn: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 14,
+    gap: 8,
   },
-  scoreLabel: {
+  practiceBtn: {
+    backgroundColor: '#fff',
+    borderWidth: 1.5,
+    borderColor: '#f45b69',
+  },
+  practiceBtnText: {
+    color: '#f45b69',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  startBtn: {
+    backgroundColor: '#6366f1',
+  },
+  startBtnText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  doneBtn: {
+    backgroundColor: "#ecfdf5",
+    borderWidth: 1.5,
+    borderColor: "#10b981",
+  },
+  doneBtnText: {
+    color: "#10b981",
+    fontWeight: "700",
+    fontSize: 14,
+  },
+
+  // Practice Layout (Footer)
+  practiceFooter: {
+    padding: 20,
+    paddingBottom: 34,
+    borderTopWidth: 1,
+    borderTopColor: "#f1f5f9",
+    backgroundColor: '#fff',
+  },
+  nextBtn: {
+    backgroundColor: "#6366f1",
+    paddingVertical: 18,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 4,
+    shadowColor: "#6366f1",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  disabledBtn: {
+    backgroundColor: "#cbd5e1",
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  nextBtnText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
+
+  // Completion Screen (Mirror from DailyPracticeStyles)
+  completionContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+    backgroundColor: '#fff',
+  },
+  successCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#ecfdf5",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 30,
+  },
+  congratsTitle: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#1a1a1a",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  congratsDesc: {
+    fontSize: 16,
+    color: "#64748b",
+    textAlign: "center",
+    lineHeight: 24,
+    marginBottom: 40,
+  },
+
+  // Modal Styles (for Quiz)
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    height: '92%',
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  modalTitle: {
     fontSize: 18,
-    color: '#6B7280',
-    marginBottom: 16,
-    fontWeight: '500',
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+  },
+  quizScroll: {
+    flex: 1,
+    padding: 20,
+  },
+  toastContainer: {
+    zIndex: 9999,
+  },
+
+  // Recording Button States
+  recordingBtn: {
+    backgroundColor: '#fef2f2',
+    borderWidth: 1.5,
+    borderColor: '#ef4444',
+  },
+  recordingBtnText: {
+    color: '#ef4444',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+
+  // Practice Result Modal
+  practiceModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  practiceModalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+    alignItems: 'center',
+  },
+  practiceModalHandle: {
+    width: 40,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: '#e2e8f0',
+    marginBottom: 20,
+  },
+  practiceModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 20,
   },
   scoreCircle: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    borderWidth: 6,
-    borderColor: '#F45B69',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-    backgroundColor: 'white',
   },
-  totalScore: {
+  scoreValue: {
     fontSize: 36,
-    fontWeight: 'bold',
+    fontWeight: '900',
+    color: '#fff',
   },
-  scoreOutOf: {
+  scoreLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 2,
+  },
+  scoreMessage: {
     fontSize: 16,
-    color: '#9CA3AF',
+    fontWeight: '600',
+    color: '#1a1a1a',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  scoreExample: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  practiceCloseBtn: {
+    backgroundColor: '#6366f1',
+    paddingVertical: 16,
+    paddingHorizontal: 40,
+    borderRadius: 16,
+    width: '100%',
+    alignItems: 'center',
+  },
+  practiceCloseBtnText: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 16,
+  },
+  // ===== Pronunciation Analysis Modal (Light Theme) =====
+  pronContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  pronLoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pronLoadingText: {
+    marginTop: 16,
+    color: '#64748b',
+    fontSize: 15,
     fontWeight: '500',
   },
-  scoreStatus: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  pronScrollContent: {
+    padding: 20,
+    paddingBottom: 40,
   },
-
-  // Detailed Scores
-  detailScores: {
-    marginBottom: 20,
-  },
-  scoreRow: {
-    marginBottom: 12,
-    borderRadius: 15,
-    elevation: 3,
-    backgroundColor: 'white',
-  },
-  scoreRowContent: {
+  // Header
+  pronHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 16,
+    marginTop: 40,
   },
-  scoreRowLeft: {
+  pronHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  scoreRowIcon: {
-    fontSize: 20,
-    marginRight: 12,
+  pronHeaderDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#22c55e',
+    marginRight: 8,
   },
-  scoreRowLabel: {
+  pronHeaderLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#94a3b8',
+    letterSpacing: 1.5,
+  },
+  pronHeaderRight: {
+    alignItems: 'flex-end',
+  },
+  pronProcessingLabel: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontWeight: '600',
+  },
+  pronProcessingValue: {
     fontSize: 16,
-    color: '#374151',
+    color: '#1e293b',
+    fontWeight: '800',
+  },
+  // Expected Text
+  pronExpectedText: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#1e293b',
+    marginBottom: 24,
+    lineHeight: 36,
+  },
+  // Score Circles Row
+  pronScoresCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 20,
+    paddingVertical: 24,
+    paddingHorizontal: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  pronScoreCircleWrapper: {
+    alignItems: 'center',
+  },
+  pronScoreRing: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  pronScoreRingInner: {
+    alignItems: 'center',
+  },
+  pronScoreRingValue: {
+    fontSize: 28,
+    fontWeight: '900',
+  },
+  pronScoreRingSub: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontWeight: '600',
+    marginTop: -2,
+  },
+  pronScoreRingLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#94a3b8',
+    letterSpacing: 1,
+    marginTop: 10,
+  },
+  // Section Card
+  pronSectionCard: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  pronSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  pronSectionTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#64748b',
+    letterSpacing: 1.5,
+  },
+  pronStepBadge: {
+    backgroundColor: '#e0e7ff',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  pronStepBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#6366f1',
+  },
+  // Word Row
+  pronWordRow: {
+    marginBottom: 16,
+  },
+  pronWordInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  pronWordText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1e293b',
+  },
+  pronWordMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  pronWordTime: {
+    fontSize: 12,
+    color: '#94a3b8',
     fontWeight: '500',
   },
-  scoreNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-
-  // Comparison Card
-  comparisonCard: {
-    marginBottom: 20,
-    borderRadius: 16,
-    elevation: 5,
-    backgroundColor: 'white',
-  },
-  comparisonTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 20,
-  },
-  textComparison: {
-    marginBottom: 16,
-  },
-  expectedLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#059669',
-    marginBottom: 8,
-  },
-  expectedTextContainer: {
-    backgroundColor: '#ECFDF5',
-    padding: 16,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#10B981',
-  },
-  expectedText: {
-    fontSize: 16,
-    color: '#374151',
-    lineHeight: 24,
-  },
-  actualLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#DC2626',
-    marginBottom: 8,
-  },
-  actualTextContainer: {
-    backgroundColor: '#FEF2F2',
-    padding: 16,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#EF4444',
-  },
-  actualText: {
-    fontSize: 16,
-    color: '#374151',
-    lineHeight: 24,
-  },
-
-  // Feedback Card
-  feedbackCard: {
-    marginBottom: 20,
-    borderRadius: 16,
-    elevation: 5,
-    backgroundColor: '#FFF9E6',
-  },
-  feedbackTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#D97706',
-    marginBottom: 16,
-  },
-  feedbackItem: {
-    flexDirection: 'row',
-    marginBottom: 12,
-    alignItems: 'flex-start',
-  },
-  feedbackBullet: {
-    fontSize: 16,
-    color: '#D97706',
-    marginRight: 12,
-    fontWeight: 'bold',
-    marginTop: 2,
-  },
-  feedbackText: {
-    flex: 1,
+  pronWordPct: {
     fontSize: 15,
-    color: '#92400E',
-    lineHeight: 22,
+    fontWeight: '800',
   },
-
-  // Modal Actions
-  modalActions: {
+  pronBarTrack: {
+    height: 6,
+    backgroundColor: '#e2e8f0',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  pronBarFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  // Summary Row
+  pronSummaryRow: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
+    gap: 10,
+    marginBottom: 20,
+  },
+  pronSummaryBadgeCorrect: {
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  pronSummaryBadgeWrong: {
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  pronSummaryBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1e293b',
+  },
+  // Phoneme Grid
+  pronPhonemeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 20,
+  },
+  pronPhonemeCell: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  pronPhonemeCellText: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  pronPhonemeIndicator: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  // Phoneme Comparison
+  pronPhonemeComparison: {
+    marginTop: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  pronComparisonLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#94a3b8',
+    letterSpacing: 1,
+    marginBottom: 10,
+  },
+  pronPhonemeRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  pronPhonemeMiniCell: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    minWidth: 32,
+    alignItems: 'center',
+  },
+  pronPhonemeMiniText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  // Close Button
+  pronCloseBtn: {
+    backgroundColor: '#6366f1',
     paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 16,
+    alignItems: 'center',
+    marginTop: 10,
   },
-  tryAgainButton: {
-    flex: 1,
-    marginRight: 8,
-    borderRadius: 12,
-  },
-  continueButton: {
-    flex: 1,
-    marginLeft: 8,
-    borderRadius: 12,
-    borderColor: 'white',
+  pronCloseBtnText: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 16,
+    letterSpacing: 0.5,
   },
 });
+
 
 export default styles;

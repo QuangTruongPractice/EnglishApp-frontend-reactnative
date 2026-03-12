@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import SubTopicDetailScreen from "../Screen/SubTopicDetailScreen";
-import { fetchSubTopicsDetail } from "../../configs/LoadData";
+import { fetchSubTopicsDetail, toggleVocabularySave } from "../../configs/LoadData";
 
 const SubTopicDetail = ({ route }) => {
   const { subTopicId } = route.params;
@@ -26,7 +26,7 @@ const SubTopicDetail = ({ route }) => {
       });
       setVocabularies(data.vocabularies || []);
     } catch (ex) {
-      console.error(ex);
+      // console.error(ex);
       setError("Failed to load sub topic details. Please try again.");
     } finally {
       setLoading(false);
@@ -38,6 +38,21 @@ const SubTopicDetail = ({ route }) => {
     setRefreshing(true);
     setError(null);
     loadTopicDetails();
+  };
+
+  const handleToggleSave = async (vocabularyId) => {
+    try {
+      await toggleVocabularySave(vocabularyId);
+      // Update local state to reflect the change immediately
+      setVocabularies((prevVocabularies) =>
+        prevVocabularies.map((vocab) =>
+          vocab.id === vocabularyId ? { ...vocab, isSave: !vocab.isSave } : vocab
+        )
+      );
+    } catch (ex) {
+      // console.error("Error toggling vocabulary save:", ex);
+      // Optional: Show an error message to the user
+    }
   };
 
   const handleGoBack = () => {
@@ -59,6 +74,7 @@ const SubTopicDetail = ({ route }) => {
       refreshing={refreshing}
       onRefresh={onRefresh}
       onRetry={loadTopicDetails}
+      onToggleSave={handleToggleSave}
       onNavigateVocabulary={(id) =>
         nav.navigate("VocabularyDetail", { vocabularyId: id })
       }

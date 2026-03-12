@@ -10,6 +10,7 @@ const Progress = () => {
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("video");
+  const [activeVocaStatus, setActiveVocaStatus] = useState("ALL");
   const nav = useNavigation();
 
   const loadProgress = async () => {
@@ -21,7 +22,7 @@ const Progress = () => {
       setVideoProgress(videoRes.result);
       setVocabularyProgress(vocabularyRes.result);
     } catch (ex) {
-      console.error(ex);
+      // console.error(ex);
       setError("Không thể tải tiến độ học tập. Vui lòng thử lại.");
     } finally {
       setLoading(false);
@@ -53,12 +54,12 @@ const Progress = () => {
       : `${minutes}m`;
   };
 
-  const handleVideoPress = (videoUrl) => {
-    console.log("Open video:", videoUrl);
+  const handleVideoPress = () => {
+    // console.log("Open video:", videoUrl);
   };
 
-  const handleAudioPress = (audioUrl) => {
-    console.log("Play audio:", audioUrl);
+  const handleAudioPress = () => {
+    // console.log("Play audio:", audioUrl);
   };
 
   useEffect(() => {
@@ -68,15 +69,30 @@ const Progress = () => {
   const completedVideos =
     videoProgress?.filter((item) => item.isCompleted).length || 0;
   const totalVideos = videoProgress?.length || 0;
-  const completedVocabulary =
-    vocabularyProgress?.filter((item) => item.status === "COMPLETED").length ||
-    0;
-  const totalVocabulary = vocabularyProgress?.length || 0;
+
+  // Vocabulary counts
+  const vocaCounts = {
+    ALL: vocabularyProgress?.length || 0,
+    LEARNING: vocabularyProgress?.filter(v => v.status === "LEARNING").length || 0,
+    REVIEWING: vocabularyProgress?.filter(v => v.status === "REVIEWING").length || 0,
+    MASTERED: vocabularyProgress?.filter(v => v.status === "MASTERED").length || 0,
+  };
+
+  const filteredVocabulary = vocabularyProgress?.filter(item => {
+    if (activeVocaStatus === "ALL") return true;
+    return item.status === activeVocaStatus;
+  }) || [];
+
+  const completedVocabulary = vocaCounts.MASTERED;
+  const totalVocabulary = vocaCounts.ALL;
 
   return (
     <ProgressScreen
       videoProgress={videoProgress}
-      vocabularyProgress={vocabularyProgress}
+      vocabularyProgress={filteredVocabulary}
+      vocaCounts={vocaCounts}
+      activeVocaStatus={activeVocaStatus}
+      setActiveVocaStatus={setActiveVocaStatus}
       loading={loading}
       error={error}
       refreshing={refreshing}

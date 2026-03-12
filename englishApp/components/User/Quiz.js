@@ -29,7 +29,7 @@ const Quiz = () => {
         setPage(0); // hết trang
       }
     } catch (ex) {
-      console.error(ex);
+      // console.error(ex);
       setError("Failed to load quiz. Please try again.");
     } finally {
       setRefreshing(false);

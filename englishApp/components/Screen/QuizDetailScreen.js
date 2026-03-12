@@ -175,9 +175,6 @@ const QuizDetailScreen = ({
             ) : (
               <Surface style={styles.textContainer} elevation={2}>
                 <Text style={styles.textQuestion}>{quizDetail.text}</Text>
-                <Text style={styles.textInstruction}>
-                  Chọn nghĩa tiếng Việt phù hợp
-                </Text>
               </Surface>
             )}
           </Card.Content>

@@ -1,16 +1,16 @@
 import { useState, useContext } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import { loadProfile, login, googleLogin } from "../../configs/LoadData";
+import { login, googleLogin, loadProfile } from "../../configs/LoadData";
 import { MyDispatchContext } from "../../configs/Context";
 import LoginScreen from "../Screen/LoginScreen";
-// import {
-//   GoogleSignin,
-//   statusCodes,
-// } from "@react-native-google-signin/google-signin";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 import keys from "../../key";
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -43,18 +43,14 @@ const Login = () => {
         setLoading(true);
         const { username, password } = formData;
         const res = await login(username.trim(), password.trim());
-        if (res.code === 1000 && res.result.authenticated && res.result.token) {
-          const token = res.result.token;
-          await AsyncStorage.setItem("token", token);
-          console.info("Token:", token);
-
-          const userRes = await loadProfile(token);
-          console.info("User profile:", userRes);
-
-          dispatch({ type: "login", payload: userRes });
+        if (res.code === 1000) {
+          // console.log("Login success:", res.result);
+          await AsyncStorage.setItem("token", res.result.token);
+          // console.log("Token saved:", res.result.token);
+          onLogin();
         }
       } catch (error) {
-        console.log("Login error:", error);
+        // console.log("Login error:", error);
         setMsg("Đăng nhập thất bại. Vui lòng thử lại!");
       } finally {
         setLoading(false);
@@ -62,7 +58,6 @@ const Login = () => {
     }
   };
 
-  /*
   const handleGoogleLogin = async () => {
     setLoading(true);
     setMsg("");
@@ -76,15 +71,15 @@ const Login = () => {
         const token = authResponse.result.token;
 
         await AsyncStorage.setItem("token", token);
-        console.info("Token:", token);
+        // console.info("Token:", token);
 
         const userRes = await loadProfile(token);
-        console.info("User profile:", userRes);
+        // console.info("User profile:", userRes);
 
         dispatch({ type: "login", payload: userRes });
       }
     } catch (error) {
-      console.error("Google Sign-In Error:", error);
+      // console.error("Google Sign-In Error:", error);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         setMsg("Đăng nhập đã bị hủy");
       } else if (error.code === statusCodes.IN_PROGRESS) {
@@ -98,9 +93,7 @@ const Login = () => {
       setLoading(false);
     }
   };
-  */
 
-  /*
   GoogleSignin.configure({
     webClientId: keys.webClientId,
     scopes: ["https://www.googleapis.com/auth/drive.readonly"],
@@ -108,7 +101,6 @@ const Login = () => {
     forceCodeForRefreshToken: true, 
     iosClientId: keys.iosClientId,
   });
-  */
 
   return (
     <LoginScreen
@@ -117,7 +109,7 @@ const Login = () => {
       loading={loading}
       onInputChange={handleInputChange}
       onLogin={handleLogin}
-      onGoogleSignIn={() => alert("Chức năng Google Sign-in tạm khóa trong Expo Go")}
+      onGoogleSignIn={handleGoogleLogin}
       nav={nav}
     />
   );

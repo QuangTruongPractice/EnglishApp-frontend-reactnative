@@ -3,7 +3,6 @@ import { Alert } from "react-native";
 import { Audio } from "expo-av";
 import { fetchQuizDetail, doQuiz } from "../../configs/LoadData";
 import QuizDetailScreen from "../Screen/QuizDetailScreen";
-import { useNavigation } from "@react-navigation/native";
 
 const QuizDetail = ({ route, navigation }) => {
   const { quizId } = route.params;
@@ -15,7 +14,6 @@ const QuizDetail = ({ route, navigation }) => {
   const [sound, setSound] = useState();
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const nav = useNavigation();
 
   const loadQuizDetail = async () => {
     try {
@@ -24,7 +22,7 @@ const QuizDetail = ({ route, navigation }) => {
       const res = await fetchQuizDetail(quizId);
       setQuizDetail(res.result);
     } catch (ex) {
-      console.error(ex);
+      // console.error(ex);
       setError("Không thể tải chi tiết bài quiz. Vui lòng thử lại.");
     } finally {
       setLoading(false);
@@ -38,7 +36,7 @@ const QuizDetail = ({ route, navigation }) => {
       setSound(sound);
       await sound.playAsync();
     } catch (e) {
-      console.error(e);
+      // console.error(e);
     }
   };
 
@@ -50,7 +48,7 @@ const QuizDetail = ({ route, navigation }) => {
       setSound(sound);
       await sound.playAsync();
     } catch (e) {
-      console.error(e);
+      // console.error(e);
     }
   };
 
@@ -62,7 +60,7 @@ const QuizDetail = ({ route, navigation }) => {
       setSound(sound);
       await sound.playAsync();
     } catch (e) {
-      console.error(e);
+      // console.error(e);
     }
   };
 

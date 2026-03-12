@@ -28,7 +28,7 @@ const TopicDetail = ({ route }) => {
       setSubTopics(data.subTopics || []);
       setError(null);
     } catch (ex) {
-      console.error(ex);
+      // console.error(ex);
       setError("Failed to load topic details. Please try again.");
     } finally {
       setLoading(false);

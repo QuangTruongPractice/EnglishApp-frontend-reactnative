@@ -21,7 +21,7 @@ const LeaderBoard = () => {
       setLeaderBoard(data.leaderBoard);
       setCurrentUser(data.currentUser);
     } catch (e) {
-      console.error(e);
+      // console.error(e);
       setError("Không tải được bảng xếp hạng. Vui lòng thử lại.");
     } finally {
       setLoading(false);

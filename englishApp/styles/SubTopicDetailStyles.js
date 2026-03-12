@@ -1,75 +1,65 @@
-import { StyleSheet, Dimensions} from "react-native";
-
-const { height } = Dimensions.get("window");
+import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#f8f9ff",
+    backgroundColor: "#fff",
   },
-
-  // Loading States
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#F45B69FF",
+    backgroundColor: "#fff",
   },
   loadingText: {
-    color: "#fff",
+    color: "#1a1a1a",
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "600",
     marginTop: 20,
     textAlign: "center",
   },
-
-  // Error States
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#f45b69",
+    backgroundColor: "#fff",
   },
   errorContent: {
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderRadius: 20,
-    padding: 30,
+    backgroundColor: "#fef2f2",
+    borderRadius: 24,
+    padding: 32,
     width: "90%",
+    borderWidth: 1,
+    borderColor: '#fee2e2',
   },
   errorTitle: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "700",
+    color: "#991b1b",
+    fontSize: 22,
+    fontWeight: "800",
     marginTop: 20,
     marginBottom: 8,
     textAlign: "center",
   },
   errorText: {
-    color: "rgba(255,255,255,0.9)",
+    color: "#b91c1c",
     fontSize: 14,
     textAlign: "center",
-    lineHeight: 20,
-    marginBottom: 30,
+    lineHeight: 22,
+    marginBottom: 32,
   },
   retryButton: {
-    borderRadius: 25,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    overflow: "hidden",
-  },
-  retryButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 30,
-    paddingVertical: 12,
-    gap: 8,
+    borderRadius: 16,
+    backgroundColor: "#ef4444",
+    paddingHorizontal: 32,
+    paddingVertical: 14,
   },
   retryButtonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 
   // Header
@@ -77,29 +67,27 @@ export default StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#F45B69FF",
+    backgroundColor: "#fff",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
   },
   backButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    padding: 10,
+    borderRadius: 14,
+    backgroundColor: "#f1f5f9",
+  },
+  headerTitleContainer: {
+    flex: 1,
+    marginHorizontal: 16,
   },
   headerTitleMain: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "bold",
+    color: "#1a1a1a",
+    fontSize: 18,
+    fontWeight: "800",
     textAlign: "center",
-    flex: 1,
   },
   headerSpacer: {
-    width: 40,
+    width: 44,
   },
 
   // Container
@@ -111,20 +99,16 @@ export default StyleSheet.create({
   },
 
   heroSection: {
-    backgroundColor: "#F45B69FF",
     paddingHorizontal: 24,
-    paddingBottom: 30,
-    justifyContent: "flex-end",
-  },
-  heroContent: {
-    justifyContent: "flex-end",
+    paddingVertical: 32,
+    backgroundColor: "#fff",
   },
   heroTitle: {
-    color: "#fff",
-    fontSize: 28,
-    fontWeight: "700",
-    marginBottom: 16,
-    lineHeight: 34,
+    color: "#1a1a1a",
+    fontSize: 32,
+    fontWeight: "800",
+    marginBottom: 20,
+    letterSpacing: -0.5,
   },
   heroStats: {
     flexDirection: "row",
@@ -133,28 +117,39 @@ export default StyleSheet.create({
   statBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.9)",
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    gap: 6,
+    backgroundColor: "#f1f5f9",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    gap: 8,
   },
   heroStatText: {
-    color: "#333",
+    color: "#475569",
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 
-  // Content Section
-  contentSection: {
+  // Search Bar
+  searchBarContainer: {
+    paddingHorizontal: 24,
+    marginBottom: 24,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  searchText: {
     flex: 1,
-    backgroundColor: "#f8f9ff",
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    marginTop: -30,
-    paddingTop: 30,
-    paddingHorizontal: 20,
-    minHeight: height * 0.6,
+    marginLeft: 12,
+    fontSize: 15,
+    color: '#64748b',
+    fontWeight: '500',
   },
 
   // Empty State
@@ -162,37 +157,30 @@ export default StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 60,
+    paddingVertical: 80,
   },
   emptyContent: {
     alignItems: "center",
     padding: 40,
-    borderRadius: 20,
-    width: "100%",
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#333",
-    marginTop: 16,
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#1a1a1a",
+    marginTop: 20,
     marginBottom: 8,
   },
   emptyText: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: 15,
+    color: "#64748b",
     textAlign: "center",
-    lineHeight: 20,
+    lineHeight: 24,
   },
 
-  // Vocabularies Section
-  vocabulariesSection: {
+  // Vocabulary
+  vocabularySection: {
     flex: 1,
+    paddingHorizontal: 20,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -202,131 +190,123 @@ export default StyleSheet.create({
     paddingHorizontal: 4,
   },
   sectionTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#333",
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#1a1a1a",
   },
   sectionBadge: {
-    backgroundColor: "#F45B69FF",
-    borderRadius: 15,
-    minWidth: 30,
-    height: 30,
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "#f1f5f9",
+    borderRadius: 12,
     paddingHorizontal: 12,
+    paddingVertical: 4,
   },
   sectionCount: {
-    color: "#fff",
+    color: "#64748b",
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 
-  // Vocabulary Cards
-  vocabulariesList: {
-    gap: 16,
-  },
+  // Cards
   vocabularyCard: {
     backgroundColor: "#fff",
-    borderRadius: 16,
-    overflow: "hidden",
+    borderRadius: 24,
+    marginBottom: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
     elevation: 3,
-    flexDirection: "row",
-    borderLeftWidth: 4,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    overflow: 'hidden',
   },
-  leftBorder: {
-    width: 4,
-  },
-  vocabularyContent: {
+  cardContent: {
     flex: 1,
-    padding: 20,
+    padding: 24,
   },
   vocabularyHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 12,
+    marginBottom: 16,
   },
-  wordContainer: {
+  wordMainInfo: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: 8,
   },
   vocabularyWord: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#2c3e50",
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#1a1a1a",
+    marginBottom: 4,
+    letterSpacing: -0.3,
   },
-  typeBadge: {
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+  vocabularyPhonetic: {
+    fontSize: 14,
+    color: "#64748b",
+    fontStyle: "italic",
+    fontWeight: '500',
   },
-  typeText: {
-    fontSize: 12,
-    color: "#fff",
-    fontWeight: "600",
-  },
-  indexContainer: {
-    backgroundColor: "#f8f9ff",
-    borderRadius: 12,
-    width: 24,
-    height: 24,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  indexNumber: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#F45B69FF",
-  },
-
-  // Definition
-  vocabularyDefinition: {
-    fontSize: 15,
-    color: "#6c757d",
-    lineHeight: 22,
-    marginBottom: 12,
-  },
-
-  // Example
-  exampleContainer: {
-    backgroundColor: "#f8f9fa",
-    padding: 12,
-    borderRadius: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: "#e9ecef",
-    marginBottom: 16,
-    flexDirection: "row",
-    alignItems: "flex-start",
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
+    marginTop: 8,
+  },
+  levelBadge: {
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  levelText: {
+    fontSize: 11,
+    color: "#fff",
+    fontWeight: "800",
+    textTransform: 'uppercase',
+  },
+  saveButton: {
+    backgroundColor: '#f8fafc',
+    padding: 10,
+    borderRadius: 14,
+  },
+
+  vocabularyDefinition: {
+    fontSize: 16,
+    color: "#334155",
+    lineHeight: 24,
+    fontWeight: '500',
+    marginBottom: 16,
+  },
+
+  // Examples
+  exampleContainer: {
+    backgroundColor: "#f8fafc",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
   },
   exampleText: {
-    flex: 1,
     fontSize: 14,
-    color: "#6c757d",
+    color: "#475569",
     fontStyle: "italic",
-    lineHeight: 20,
+    lineHeight: 22,
+    fontWeight: '500',
   },
 
-  // Learn Button
+  // Learn
   learnButton: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 6,
-    alignSelf: "flex-start",
+    justifyContent: 'center',
+    borderRadius: 16,
+    paddingVertical: 14,
+    gap: 8,
+    width: '100%',
   },
   learnButtonText: {
     color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "700",
   },
 });

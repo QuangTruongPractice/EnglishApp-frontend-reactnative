@@ -22,7 +22,6 @@ const ProfileScreen = ({
   newLastName,
   dob,
   showDatePicker,
-  avatar,
   setEditingFirstName,
   setEditingLastName,
   setNewFirstName,

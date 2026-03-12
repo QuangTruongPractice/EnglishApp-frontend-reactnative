@@ -7,16 +7,19 @@ import {
   Button,
   ActivityIndicator,
   Surface,
-  Divider,
   IconButton,
   SegmentedButtons,
 } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../styles/ProgressStyles";
 
 const ProgressScreen = ({
   videoProgress,
   vocabularyProgress,
+  vocaCounts,
+  activeVocaStatus,
+  setActiveVocaStatus,
   loading,
   error,
   refreshing,
@@ -26,7 +29,6 @@ const ProgressScreen = ({
   formatDate,
   formatDuration,
   handleVideoPress,
-  handleAudioPress,
   completedVideos,
   totalVideos,
   completedVocabulary,
@@ -34,7 +36,7 @@ const ProgressScreen = ({
   nav,
   retry,
 }) => {
-  const VideoProgressCard = ({ item, onVideoPress, formatDate, formatDuration }) => {
+  const VideoProgressCard = ({ item, formatDate, formatDuration }) => {
     return (
       <TouchableOpacity
         onPress={() => nav.navigate("VideoDetail", { videoId: item.video.id })}
@@ -95,100 +97,51 @@ const ProgressScreen = ({
     );
   };
 
-  const VocabularyProgressCard = ({ item, onAudioPress, formatDate }) => {
+  const VocabularyProgressCard = ({ item }) => {
+    // Handle both nested structure (if any) and flat structure provided by the user
+    const data = item.vocabulary || item;
+
     return (
       <TouchableOpacity
         onPress={() =>
-          nav.navigate("VocabularyDetail", { vocabularyId: item.vocabulary.id })
+          nav.navigate("VocabularyDetail", { vocabularyId: data.id })
         }
         activeOpacity={0.7}
+        style={styles.vocaCard}
       >
-        <Card key={item.id} style={styles.card}>
-          <Card.Content style={styles.cardContent}>
-            {/* English Section */}
-            <View style={styles.vocabularySection}>
-              <View style={styles.vocabularyHeader}>
-                <View style={styles.vocabularyWordInfo}>
-                  <Text variant="titleLarge" style={styles.vocabularyWord}>
-                    {item.vocabulary.word}
-                  </Text>
-                  <Text variant="bodySmall" style={styles.vocabularyPhonetic}>
-                    {item.vocabulary.phonetic}
-                  </Text>
-                </View>
-                <View style={styles.vocabularyActions}>
-                  <IconButton
-                    icon="volume-high"
-                    size={20}
-                    iconColor="#2196F3"
-                    onPress={() => onAudioPress?.(item.vocabulary.audioUrl)}
-                  />
-                  <Chip
-                    textStyle={styles.statusChipText}
-                    style={[
-                      styles.statusChip,
-                      item.status === "COMPLETED"
-                        ? styles.statusChipCompleted
-                        : styles.statusChipInProgress,
-                    ]}
-                  >
-                    {item.status === "COMPLETED" ? "Hoàn thành" : "Đang học"}
-                  </Chip>
-                </View>
+        <View style={styles.vocaIconContainer}>
+          <IconButton icon="star" iconColor="#10B981" size={24} style={{ margin: 0 }} />
+        </View>
+
+        <View style={styles.vocaInfoContainer}>
+          <View style={styles.vocaMainLine}>
+            <Text style={styles.vocaWord}>{data.word}</Text>
+            {data.isSave && (
+              <Ionicons name="bookmark" size={16} color="#6366f1" style={{ marginLeft: 6, marginRight: 2 }} />
+            )}
+            {data.phonetic && (
+              <Text style={styles.vocaPhonetic}>{data.phonetic}</Text>
+            )}
+            {data.level && (
+              <View style={styles.vocaLevelBadge}>
+                <Text style={styles.vocaLevelText}>{data.level}</Text>
               </View>
-
-              <Text variant="bodyMedium" style={styles.definitionText}>
-                {item.vocabulary.definition}
+            )}
+          </View>
+          <View style={styles.vocaSecondLine}>
+            {data.wordTypes && data.wordTypes.length > 0 && (
+              <Text style={styles.vocaType}>
+                {data.wordTypes.map((t) => typeof t === 'string' ? t : t.type).join(", ")}
               </Text>
-              <Text variant="bodySmall" style={styles.exampleText}>
-                {'"'}{item.vocabulary.example}{'"'}
+            )}
+            {(data.vnWord || data.translation) && (
+              <Text style={styles.vocaTranslation}>
+                {data.wordTypes && data.wordTypes.length > 0 ? " · " : ""}
+                {data.vnWord || data.translation}
               </Text>
-            </View>
-
-            <Divider style={styles.divider} />
-
-            {/* Vietnamese Section */}
-            <View style={styles.vocabularySection}>
-              <Text variant="titleMedium" style={styles.vietnameseTitle}>
-                {item.vocabulary.vnWord}
-              </Text>
-              <Text variant="bodyMedium" style={styles.definitionText}>
-                {item.vocabulary.vnDefinition}
-              </Text>
-              <Text variant="bodySmall" style={styles.exampleText}>
-                {'"'}{item.vocabulary.vnExample}{'"'}
-              </Text>
-            </View>
-
-            {/* Tags */}
-            <View style={styles.tagsContainer}>
-              {item.vocabulary.wordTypes.map((type) => (
-                <Chip
-                  key={type.id}
-                  compact
-                  style={styles.wordTypeChip}
-                  textStyle={styles.chipText}
-                >
-                  {type.type}
-                </Chip>
-              ))}
-              {item.vocabulary.subTopics.map((topic) => (
-                <Chip
-                  key={topic.id}
-                  compact
-                  style={styles.topicChip}
-                  textStyle={styles.chipText}
-                >
-                  {topic.name}
-                </Chip>
-              ))}
-            </View>
-
-            <Text variant="bodySmall" style={styles.updateDate}>
-              Cập nhật: {formatDate(item.updatedAt)}
-            </Text>
-          </Card.Content>
-        </Card>
+            )}
+          </View>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -319,14 +272,52 @@ const ProgressScreen = ({
         {/* Vocabulary Tab Content */}
         {activeTab === "vocabulary" && (
           <>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.filterContainer}
+            >
+              {[
+                { label: "Tất cả", value: "ALL" },
+                { label: "Đang học", value: "LEARNING" },
+                { label: "Thành thạo", value: "MASTERED" },
+              ].map((filter) => (
+                <TouchableOpacity
+                  key={filter.value}
+                  onPress={() => setActiveVocaStatus(filter.value)}
+                  style={[
+                    styles.filterChip,
+                    activeVocaStatus === filter.value && styles.filterChipActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      activeVocaStatus === filter.value && styles.filterChipTextActive,
+                    ]}
+                  >
+                    {filter.label}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.filterChipCount,
+                      activeVocaStatus === filter.value && styles.filterChipCountActive,
+                    ]}
+                  >
+                    {vocaCounts[filter.value]}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
             <Text variant="titleLarge" style={styles.sectionTitle}>
-              📚 Tiến độ Từ vựng
+              📚 Danh sách từ vựng
             </Text>
             {vocabularyProgress?.length === 0 ? (
               <Card>
                 <Card.Content style={styles.emptyStateContainer}>
                   <Text variant="bodyMedium" style={styles.emptyStateText}>
-                    Bạn chưa học từ vựng nào
+                    Không có từ vựng nào trong danh mục này
                   </Text>
                 </Card.Content>
               </Card>
@@ -335,8 +326,6 @@ const ProgressScreen = ({
                 <VocabularyProgressCard
                   key={item.id}
                   item={item}
-                  onAudioPress={handleAudioPress}
-                  formatDate={formatDate}
                 />
               ))
             )}

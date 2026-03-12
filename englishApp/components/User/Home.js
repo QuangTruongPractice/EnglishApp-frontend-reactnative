@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import HomeScreen from "../Screen/HomeScreen";
-import { fetchAllMainTopics } from "../../configs/LoadData";
+import { fetchAllMainTopics, fetchRecommendedTopics } from "../../configs/LoadData";
+import { getCache, removeCache, CACHE_KEYS } from "../../utils/cache";
 
 const Home = () => {
   const [mainTopics, setMainTopics] = useState([]);
+  const [recommendedTopics, setRecommendedTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
@@ -12,14 +14,69 @@ const Home = () => {
   const [q, setQ] = useState("");
   const nav = useNavigation();
 
-  const loadMainTopics = async () => {
+  // Load cached data immediately on mount
+  useEffect(() => {
+    const loadFromCache = async () => {
+      try {
+        const cachedRecommended = await getCache(CACHE_KEYS.RECOMMENDED_TOPICS);
+        const cachedMain = await getCache(CACHE_KEYS.MAIN_TOPICS);
+
+        if (cachedRecommended) {
+          const recData = cachedRecommended.result?.content || (Array.isArray(cachedRecommended.result) ? cachedRecommended.result : []);
+          setRecommendedTopics(recData);
+        }
+
+        if (cachedMain) {
+          const mainData = cachedMain.result?.content || [];
+          // Filter cached main topics by cached recommended
+          const recommendedIds = (cachedRecommended?.result?.content || (Array.isArray(cachedRecommended?.result) ? cachedRecommended.result : [])).map(t => t.id);
+          const filteredMain = mainData.filter(t => !recommendedIds.includes(t.id));
+          
+          setMainTopics(filteredMain);
+          setLoading(false); // Hide loading since we have cached data
+          // console.info("[Home] UI updated using cached data.");
+        }
+      } catch (err) {
+        // console.error("Error loading from cache:", err);
+      }
+    };
+
+    loadFromCache();
+    loadMainTopics(); // Also trigger background refresh
+  }, []);
+
+  const loadMainTopics = async (isRefreshing = false) => {
     if (page <= 0) return;
     const isFirstPage = page === 1;
-    if (isFirstPage) setLoading(true);
+    
+    // Only show full loading if we don't have data and it's not a refresh
+    if (isFirstPage && mainTopics.length === 0 && !isRefreshing) {
+      setLoading(true);
+    }
 
     try {
+      let currentRecommendations = recommendedTopics;
+
+      // Fetch recommendations only on first page/refresh
+      if (isFirstPage && !q) {
+        try {
+          const recRes = await fetchRecommendedTopics();
+          const recData = recRes.result?.content || (Array.isArray(recRes.result) ? recRes.result : []);
+          setRecommendedTopics(recData);
+          currentRecommendations = recData;
+        } catch (err) {
+          // console.error("Failed to load recommended topics:", err);
+        }
+      }
+
       const res = await fetchAllMainTopics(page, q);
-      const newData = res.result.content;
+      let newData = res.result?.content || [];
+
+      // Filter out topics already in recommended list
+      if (currentRecommendations.length > 0) {
+        const recommendedIds = currentRecommendations.map(t => t.id);
+        newData = newData.filter(t => !recommendedIds.includes(t.id));
+      }
 
       if (isFirstPage) {
         setMainTopics(newData);
@@ -27,32 +84,45 @@ const Home = () => {
         setMainTopics((prev) => [...prev, ...newData]);
       }
 
-      if (res.result.last === true) setPage(0);
+      if (res.result?.last === true) setPage(0);
+      setError(null);
     } catch (ex) {
-      console.error(ex);
-      setError("Failed to load topics. Please try again.");
+      // console.error(ex);
+      // Only set error if we don't have any data to show
+      if (mainTopics.length === 0) {
+        setError("Failed to load topics. Please try again.");
+      }
     } finally {
       setRefreshing(false);
       setLoading(false);
     }
   };
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
     setPage(1);
     setError(null);
-    loadMainTopics();
+    
+    try {
+      // Explicitly clear cache keys on Pull-to-Refresh as requested
+      await removeCache(CACHE_KEYS.MAIN_TOPICS);
+      await removeCache(CACHE_KEYS.RECOMMENDED_TOPICS);
+    } catch (e) {
+      // console.error("Error clearing cache on refresh:", e);
+    }
+
+    loadMainTopics(true);
   };
 
   useEffect(() => {
-    loadMainTopics();
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      loadMainTopics();
-    }, 500);
-    return () => clearTimeout(timer);
+    // Skip the very first mount call since it's handled in the cache useEffect
+    if (page > 1 || q !== "") {
+      const timer = setTimeout(() => {
+        if (q) setRecommendedTopics([]);
+        loadMainTopics();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
   }, [q, page]);
 
   const loadMore = () => {
@@ -68,6 +138,7 @@ const Home = () => {
   return (
     <HomeScreen
       mainTopics={mainTopics}
+      recommendedTopics={recommendedTopics}
       q={q}
       setQ={setQ}
       search={search}
@@ -78,7 +149,10 @@ const Home = () => {
       page={page}
       nav={nav}
       error={error}
-      retry={loadMainTopics}
+      retry={() => {
+        setPage(1);
+        loadMainTopics();
+      }}
     />
   );
 };

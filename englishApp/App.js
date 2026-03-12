@@ -5,6 +5,11 @@ import { useReducer } from "react";
 import { MyUserContext, MyDispatchContext } from "./configs/Context";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import MyUserReducer from "./reducers/MyUserReducer";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect } from "react";
+import { getCache, removeCache, CACHE_KEYS } from "./utils/cache";
+import { loadProfile } from "./configs/LoadData";
+import { registerUnauthorizedHandler } from "./configs/Apis";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
 import Home from "./components/User/Home";
@@ -21,6 +26,11 @@ import Toast from "react-native-toast-message";
 import ForgotPassword from "./components/Auth/ForgotPassword";
 import ChangePassword from "./components/Auth/ChangePassword";
 import LeaderBoard from "./components/User/LeaderBoard";
+import Onboarding from "./components/User/Onboarding";
+import DailyPractice from "./components/User/DailyPractice";
+import Chatbot from "./components/User/Chatbot";
+import SaveVocabulary from "./components/User/SaveVocabulary";
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -43,6 +53,8 @@ const TabNavigator = () => {
             iconName = focused ? "chart-line" : "chart-line";
           } else if (route.name === "QuizTab") {
             iconName = focused ? "clipboard-list" : "clipboard-list";
+          } else if (route.name === "ChatbotTab") {
+            iconName = focused ? "robot" : "robot-outline";
           }
 
           return <Icon name={iconName} size={size} color={color} />;
@@ -72,6 +84,11 @@ const TabNavigator = () => {
         options={{ tabBarLabel: "Quiz" }}
       />
       <Tab.Screen
+        name="ChatbotTab"
+        component={Chatbot}
+        options={{ tabBarLabel: "Chatbot" }}
+      />
+      <Tab.Screen
         name="ProfileTab"
         component={Profile}
         options={{ tabBarLabel: "Profile" }}
@@ -82,6 +99,48 @@ const TabNavigator = () => {
 
 export default function App() {
   const [user, dispatch] = useReducer(MyUserReducer, null);
+
+  useEffect(() => {
+    const handleLogout = async () => {
+      // console.warn("[App] Session expired or unauthorized. Redirecting to login...");
+      await AsyncStorage.removeItem("token");
+      await removeCache(CACHE_KEYS.USER_PROFILE);
+      dispatch({ type: "logout" });
+      Toast.show({
+        type: 'info',
+        text1: 'Phiên làm việc hết hạn',
+        text2: 'Vui lòng đăng nhập lại.',
+      });
+    };
+
+    registerUnauthorizedHandler(handleLogout);
+
+    const initApp = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        if (token) {
+          // 1. Try to load from cache first for speed
+          const cachedUser = await getCache(CACHE_KEYS.USER_PROFILE);
+          if (cachedUser) {
+            // console.info("[App] Initializing user from cache.");
+            dispatch({ type: "login", payload: cachedUser });
+          }
+
+          // 2. Background refresh from API
+          try {
+            const freshUser = await loadProfile();
+            dispatch({ type: "login", payload: freshUser });
+          } catch (e) {
+            // console.debug("Background profile refresh skipped or handled by interceptor");
+          }
+        }
+      } catch (error) {
+        // console.error("Initialization error:", error);
+      }
+    };
+
+    initApp();
+  }, []);
 
   return (
     <MyUserContext.Provider value={user}>
@@ -128,6 +187,16 @@ export default function App() {
                   component={LeaderBoard}
                   options={{ headerShown: false }}
                 />
+                <Stack.Screen
+                  name="DailyPractice"
+                  component={DailyPractice}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="SaveVocabulary"
+                  component={SaveVocabulary}
+                  options={{ headerShown: false }}
+                />
               </>
             ) : (
               <>
@@ -149,6 +218,11 @@ export default function App() {
                 <Stack.Screen
                   name="ChangePassword"
                   component={ChangePassword}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="Onboarding"
+                  component={Onboarding}
                   options={{ headerShown: false }}
                 />
               </>

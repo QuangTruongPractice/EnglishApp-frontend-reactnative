@@ -129,7 +129,7 @@ const Register = () => {
           setMsg(response.message || "Đăng ký thất bại!");
         }
       } catch (error) {
-        console.error("Register error:", error);
+        // console.error("Register error:", error);
         if (error.response?.data?.message) {
           setMsg(error.response.data.message);
         } else {

@@ -30,7 +30,7 @@ const Video = () => {
         setPage(0);
       }
     } catch (ex) {
-      console.error(ex);
+      // console.error(ex);
       setError("Failed to load videos. Please try again.");
     } finally {
       setRefreshing(false);

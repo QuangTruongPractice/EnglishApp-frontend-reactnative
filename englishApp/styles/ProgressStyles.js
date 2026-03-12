@@ -52,7 +52,45 @@ export const styles = StyleSheet.create({
 
   // Tab navigation
   tabNavigation: {
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  filterChip: {
+    marginRight: 8,
+    borderRadius: 20,
+    backgroundColor: '#F0F2F5',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  filterChipActive: {
+    backgroundColor: '#6366F1',
+  },
+  filterChipText: {
+    fontSize: 14,
+    color: '#4B5563',
+    fontWeight: '500',
+  },
+  filterChipTextActive: {
+    color: '#FFFFFF',
+  },
+  filterChipCount: {
+    marginLeft: 6,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    fontSize: 12,
+    color: '#6B7280',
+    overflow: 'hidden',
+  },
+  filterChipCountActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    color: '#FFFFFF',
   },
 
   // Summary cards
@@ -236,9 +274,71 @@ export const styles = StyleSheet.create({
     fontSize: 10,
   },
 
-  // Update date
-  updateDate: {
-    color: '#666',
-    textAlign: 'right',
+  // New Vocabulary Card styles
+  vocaCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  vocaIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#E8F5E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  vocaInfoContainer: {
+    flex: 1,
+  },
+  vocaMainLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  vocaWord: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#111827',
+  },
+  vocaPhonetic: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginLeft: 8,
+  },
+  vocaLevelBadge: {
+    marginLeft: 12,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  vocaLevelText: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '600',
+  },
+  vocaSecondLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  vocaType: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: '#9CA3AF',
+  },
+  vocaTranslation: {
+    fontSize: 14,
+    color: '#4B5563',
+    marginLeft: 4,
   },
 });

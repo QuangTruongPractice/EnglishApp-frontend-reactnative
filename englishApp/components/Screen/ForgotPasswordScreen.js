@@ -11,7 +11,6 @@ import {
   Provider as PaperProvider,
   Text,
 } from "react-native-paper";
-import Toast from "react-native-toast-message";
 import styles from "../../styles/ForgotPasswordStyles";
 
 const ForgotPasswordScreen = ({
