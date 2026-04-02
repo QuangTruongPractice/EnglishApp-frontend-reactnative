@@ -8,7 +8,7 @@ import MyUserReducer from "./reducers/MyUserReducer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect } from "react";
 import { getCache, removeCache, CACHE_KEYS } from "./utils/cache";
-import { loadProfile } from "./configs/LoadData";
+import { loadProfile, fetchLearningProfile } from "./configs/LoadData";
 import { registerUnauthorizedHandler } from "./configs/Apis";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
@@ -28,6 +28,7 @@ import ChangePassword from "./components/Auth/ChangePassword";
 import LeaderBoard from "./components/User/LeaderBoard";
 import Onboarding from "./components/User/Onboarding";
 import DailyPractice from "./components/User/DailyPractice";
+import DailySession from "./components/User/DailySession";
 import Chatbot from "./components/User/Chatbot";
 import SaveVocabulary from "./components/User/SaveVocabulary";
 
@@ -129,7 +130,16 @@ export default function App() {
           // 2. Background refresh from API
           try {
             const freshUser = await loadProfile();
-            dispatch({ type: "login", payload: freshUser });
+            
+            // Kiểm tra Learning Profile
+            const learningProfile = await fetchLearningProfile();
+            
+            if (learningProfile && learningProfile.result?.onboardingCompleted) {
+              dispatch({ type: "login", payload: freshUser });
+            } else {
+              // Chưa hoàn thành onboarding -> hiển thị Login để redirect qua Onboarding
+              dispatch({ type: "logout" });
+            }
           } catch (e) {
             // console.debug("Background profile refresh skipped or handled by interceptor");
           }
@@ -190,6 +200,11 @@ export default function App() {
                 <Stack.Screen
                   name="DailyPractice"
                   component={DailyPractice}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="DailySession"
+                  component={DailySession}
                   options={{ headerShown: false }}
                 />
                 <Stack.Screen

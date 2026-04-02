@@ -1,13 +1,14 @@
 import { useState, useContext } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import { login, googleLogin, loadProfile } from "../../configs/LoadData";
+import { login, googleLogin, loadProfile, fetchLearningProfile } from "../../configs/LoadData";
 import { MyDispatchContext } from "../../configs/Context";
 import LoginScreen from "../Screen/LoginScreen";
-import {
-  GoogleSignin,
-  statusCodes,
-} from "@react-native-google-signin/google-signin";
+// Cấu hình Google Sign-In
+// import {
+//   GoogleSignin,
+//   statusCodes,
+// } from "@react-native-google-signin/google-signin";
 import keys from "../../key";
 
 const Login = ({ onLogin }) => {
@@ -44,13 +45,38 @@ const Login = ({ onLogin }) => {
         const { username, password } = formData;
         const res = await login(username.trim(), password.trim());
         if (res.code === 1000) {
-          // console.log("Login success:", res.result);
-          await AsyncStorage.setItem("token", res.result.token);
-          // console.log("Token saved:", res.result.token);
-          onLogin();
+          const token = res.result.token;
+          await AsyncStorage.setItem("token", token);
+          
+          // Lấy thông tin profile người dùng (Identity)
+          const userRes = await loadProfile();
+          
+          // Kiểm tra Learning Profile để xác định onboarding
+          try {
+            const learningProfile = await fetchLearningProfile();
+            console.log("📚 Learning Profile:", learningProfile);
+            
+            if (learningProfile && learningProfile.result?.onboardingCompleted) {
+              // Đã hoàn thành Onboarding -> Vào trang chủ
+              dispatch({ type: "login", payload: userRes });
+            } else {
+              // Chưa có hoặc chưa hoàn thành Onboarding -> Chuyển qua Onboarding
+              nav.navigate("Onboarding", { userData: userRes });
+            }
+          } catch (lpError) {
+            // Nếu lỗi (404 = chưa có profile) -> Chuyển qua Onboarding
+            console.log("📚 Learning Profile not found, redirecting to Onboarding");
+            nav.navigate("Onboarding", { userData: userRes });
+          }
+
+          if (onLogin && typeof onLogin === 'function') {
+            onLogin();
+          }
+        } else {
+          setMsg(res.message || "Đăng nhập thất bại!");
         }
       } catch (error) {
-        // console.log("Login error:", error);
+        console.log("Login error detail:", error);
         setMsg("Đăng nhập thất bại. Vui lòng thử lại!");
       } finally {
         setLoading(false);
@@ -58,6 +84,7 @@ const Login = ({ onLogin }) => {
     }
   };
 
+  /*
   const handleGoogleLogin = async () => {
     setLoading(true);
     setMsg("");
@@ -93,14 +120,21 @@ const Login = ({ onLogin }) => {
       setLoading(false);
     }
   };
+  */
 
+  const handleGoogleLogin = () => {
+    alert("Chức năng Google Sign-in tạm thời không khả dụng trên Expo Go. Vui lòng sử dụng tài khoản hệ thống.");
+  };
+
+  /*
   GoogleSignin.configure({
     webClientId: keys.webClientId,
     scopes: ["https://www.googleapis.com/auth/drive.readonly"],
     offlineAccess: true,
-    forceCodeForRefreshToken: true, 
+    forceCodeForRefreshToken: true,
     iosClientId: keys.iosClientId,
   });
+  */
 
   return (
     <LoginScreen

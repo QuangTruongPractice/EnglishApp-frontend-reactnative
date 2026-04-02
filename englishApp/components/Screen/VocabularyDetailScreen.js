@@ -603,7 +603,7 @@ const VocabularyDetailScreen = ({
                     <View style={styles.imageGrid}>
                       <View style={styles.mainImage}>
                         <Image 
-                          source={{ uri: typeof meaning.images[0] === 'string' ? meaning.images[0] : meaning.images[0].imageUrl }} 
+                          source={{ uri: (typeof meaning.images[0] === 'string' ? meaning.images[0] : meaning.images[0].imageUrl) || "https://res.cloudinary.com/dabb0yavq/image/upload/v1755275281/logo_png_oknyol.png" }} 
                           style={styles.img} 
                         />
                       </View>
@@ -611,14 +611,14 @@ const VocabularyDetailScreen = ({
                         <View style={styles.sideImages}>
                           <View style={styles.smallImage}>
                             <Image 
-                              source={{ uri: typeof meaning.images[1] === 'string' ? meaning.images[1] : meaning.images[1].imageUrl }} 
+                              source={{ uri: (typeof meaning.images[1] === 'string' ? meaning.images[1] : meaning.images[1].imageUrl) || "https://res.cloudinary.com/dabb0yavq/image/upload/v1755275281/logo_png_oknyol.png" }} 
                               style={styles.img} 
                             />
                           </View>
                           {meaning.images.length > 2 && (
                             <View style={styles.smallImage}>
                               <Image 
-                                source={{ uri: typeof meaning.images[2] === 'string' ? meaning.images[2] : meaning.images[2].imageUrl }} 
+                                source={{ uri: (typeof meaning.images[2] === 'string' ? meaning.images[2] : meaning.images[2].imageUrl) || "https://res.cloudinary.com/dabb0yavq/image/upload/v1755275281/logo_png_oknyol.png" }} 
                                 style={styles.img} 
                               />
                             </View>

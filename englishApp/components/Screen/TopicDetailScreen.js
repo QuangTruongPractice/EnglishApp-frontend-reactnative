@@ -82,7 +82,7 @@ const TopicDetailScreen = ({
       {topicInfo?.image && (
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: topicInfo.image }}
+            source={{ uri: topicInfo.image || "https://res.cloudinary.com/dabb0yavq/image/upload/v1755275281/logo_png_oknyol.png" }}
             style={styles.heroImage}
             resizeMode="cover"
           />

@@ -34,7 +34,7 @@ const HomeScreen = ({
       >
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: item.image }}
+            source={{ uri: item.image || "https://res.cloudinary.com/dabb0yavq/image/upload/v1755275281/logo_png_oknyol.png" }}
             style={styles.image}
             resizeMode="cover"
           />
@@ -59,7 +59,7 @@ const HomeScreen = ({
         <TouchableOpacity
           style={styles.dailyPracticeButton}
           activeOpacity={0.9}
-          onPress={() => nav.navigate("DailyPractice")}
+          onPress={() => nav.navigate("DailySession")}
         >
           <View style={styles.dailyPracticeTextContainer}>
             <Text style={styles.dailyPracticeTitle}>

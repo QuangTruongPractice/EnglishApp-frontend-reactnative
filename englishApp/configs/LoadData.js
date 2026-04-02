@@ -22,10 +22,10 @@ export const register = async (formDataToSend) => {
 export const loadProfile = async () => {
   const token = await AsyncStorage.getItem("token");
   const user = await authIdentityApis(token).get(endpoints["profile"]);
-  
+
   // Cache the profile
   setCache(CACHE_KEYS.USER_PROFILE, user.data);
-  
+
   return user.data;
 };
 
@@ -43,12 +43,12 @@ export const fetchAllMainTopics = async (page, q) => {
   let url = `${endpoints["main-topics"]}?page=${page}`;
   if (q) url += `&name=${q}`;
   const res = await LearningApis.get(url);
-  
+
   // Cache the first page of results (the most common view)
   if (page === 1 && !q) {
     setCache(CACHE_KEYS.MAIN_TOPICS, res.data);
   }
-  
+
   return res.data;
 };
 
@@ -64,10 +64,10 @@ export const updateProfile = async (formData) => {
   const response = await authIdentityApis(token).put(endpoints["profile"], formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-  
+
   // Update cache after successful update
   setCache(CACHE_KEYS.USER_PROFILE, response.data);
-  
+
   return response.data;
 };
 
@@ -139,10 +139,12 @@ export const changePasswordRequest = async (email, newPassword) => {
   return res.data;
 }
 
+/*
 export const googleLogin = async (idToken, email) => {
   const res = await IdentityApis.post(endpoints["google-login"], { idToken, email });
   return res.data;
 }
+*/
 
 export const fetchLeaderBoard = async () => {
   const token = await AsyncStorage.getItem("token");
@@ -156,9 +158,14 @@ export const generateQuiz = async (meanId) => {
 };
 
 export const fetchLearningProfile = async () => {
-  const token = await AsyncStorage.getItem("token");
-  const res = await authLearningApis(token).get(endpoints["learning-profile"]);
-  return res.data;
+  try {
+    const token = await AsyncStorage.getItem("token");
+    const res = await authLearningApis(token).get(endpoints["learning-profile"]);
+    return res.data;
+  } catch (error) {
+    // If 404 or other error, assume profile doesn't exist yet
+    return null;
+  }
 };
 
 export const createLearningProfile = async (data) => {
@@ -201,5 +208,35 @@ export const fetchRecommendedTopics = async () => {
   // Cache recommendations
   setCache(CACHE_KEYS.RECOMMENDED_TOPICS, res.data);
 
+  return res.data;
+};
+
+// ===== SESSION SERVICE =====
+
+export const fetchDailySession = async () => {
+  const token = await AsyncStorage.getItem("token");
+  console.log("🔑 TOKEN:", token ? `${token.substring(0, 30)}...` : "NULL");
+  const res = await authLearningApis(token).post(endpoints["session"], null);
+  return res.data;
+};
+
+export const submitQuizSession = async (sessionId, quizId, isCorrect) => {
+  const token = await AsyncStorage.getItem("token");
+  const url = `${endpoints["submit-quiz-session"](sessionId, quizId)}?isCorrect=${isCorrect}`;
+  const res = await authLearningApis(token).post(url, null);
+  return res.data;
+};
+
+export const submitWritingSession = async (sessionId, content) => {
+  const token = await AsyncStorage.getItem("token");
+  const res = await authLearningApis(token).post(endpoints["submit-writing-session"](sessionId), {
+    content,
+  });
+  return res.data;
+};
+
+export const checkSessionLevelUp = async (sessionId) => {
+  const token = await AsyncStorage.getItem("token");
+  const res = await authLearningApis(token).get(endpoints["check-level-up"](sessionId));
   return res.data;
 };

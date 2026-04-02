@@ -1,15 +1,15 @@
 import axios from "axios";
 
-const IDENTITY_BASE_URL = 'http://192.168.1.204:8081/identity/api/';
-const LEARNING_BASE_URL = 'http://192.168.1.204:8082/learning/api/';
-const CHATBOT_BASE_URL = 'http://192.168.1.204:8003/api/v1/';
-const SCORING_BASE_URL = 'https://satyr-dashing-officially.ngrok-free.app/v2/'
+const IDENTITY_BASE_URL = 'http://192.168.1.204:8080/identity/api';
+const LEARNING_BASE_URL = 'http://192.168.1.204:8090/learning/api';
+const CHATBOT_BASE_URL = 'http://192.168.1.204:8003/api/v1';
+const SCORING_BASE_URL = 'https://satyr-dashing-officially.ngrok-free.app/v2'
 
 export const endpoints = {
     // ===== IDENTITY SERVICE =====
     'login': '/login',
     'register': '/register',
-    'google-login': '/auth/google-signin',
+    // 'google-login': '/auth/google-signin',
     'profile': '/secure/profile',
     'reset-password': '/reset-password',
     'verify-otp': '/verified-otp',
@@ -17,16 +17,15 @@ export const endpoints = {
 
     // ===== LEARNING SERVICE =====
     // -- Main Topics --
-    'main-topics': '/main-topics',
-    'main-topics-detail': (id) => `/main-topics/${id}`,
+    'main-topics': '/secure/main-topics',
+    'main-topics-detail': (id) => `/secure/main-topics/${id}`,
     'main-topics-recommend': '/secure/learning-path',
     // -- Sub Topics --
-    'sub-topics-detail': (id) => `/sub-topics/${id}`,
+    'sub-topics-detail': (id) => `/secure/sub-topics/${id}`,
     // -- Vocabulary --
-    'vocabulary-detail': (id) => `/vocabulary/${id}`,
-    'save-vocabulary': '/vocabulary/save',
-    'toggle-vocabulary-save': (id) => `/vocabulary/${id}/toggle`,
-    'daily-vocabulary': '/secure/daily-vocabulary',
+    'vocabulary-detail': (id) => `/secure/vocabulary/${id}`,
+    'save-vocabulary': '/secure/vocabulary/save',
+    'toggle-vocabulary-save': (id) => `/secure/vocabulary/${id}/toggle`,
     'user-vocabulary-progress': '/secure/learning-progress/vocabulary',
     // -- Video --
     'video': '/videos',
@@ -39,6 +38,11 @@ export const endpoints = {
     'generate-quiz': '/quiz/generate',
     'submit-quiz': '/secure/quiz/submit',
     'quiz-detail': (id) => `/quiz/${id}`,
+    // -- Session --
+    'session': '/secure/sessions/daily',
+    'submit-quiz-session': (sessionId, quizId) => `/secure/sessions/${sessionId}/quiz/${quizId}/submit`,
+    'submit-writing-session': (sessionId) => `/secure/sessions/${sessionId}/writing/submit`,
+    'check-level-up': (sessionId) => `/secure/sessions/${sessionId}/levelup-check`,
     // -- Others --
     'leader-board': '/secure/leader-board',
     'learning-profile': '/secure/profile',
@@ -65,18 +69,19 @@ export const registerUnauthorizedHandler = (callback) => {
 // Helper to add interceptors to any instance
 const addInterceptors = (instance) => {
     instance.interceptors.request.use((config) => {
-        // console.log('📤 REQUEST:', config.method?.toUpperCase(), config.url);
-        // if (config.data) console.log('📦 DATA:', config.data);
+        console.log(`📤 REQUEST: [${config.method?.toUpperCase()}] ${config.baseURL}${config.url}`);
+        if (config.data) console.log('📦 DATA:', config.data);
         return config;
     });
 
     instance.interceptors.response.use(
         (response) => {
-            // console.log('📥 RESPONSE:', response.config.url);
-            
+            console.log(`📥 RESPONSE: [${response.status}] ${response.config.url}`);
+            if (response.data) console.log('✅ DATA:', response.data);
+
             // Check for HTML response when JSON was expected (Backend redirect)
             if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
-                // console.warn('⚠️ Received HTML instead of JSON. Possible session expiration.');
+                console.warn('⚠️ Received HTML instead of JSON. Possible session expiration.');
                 if (onUnauthorizedCallback) {
                     onUnauthorizedCallback();
                 }
@@ -85,19 +90,19 @@ const addInterceptors = (instance) => {
             return response;
         },
         (error) => {
-            // console.log('❌ ERROR:', error.config?.url);
+            console.log(`❌ ERROR: ${error.config?.url || 'Unknown URL'}`);
             if (error.response) {
-                // console.log('🔴 STATUS:', error.response.status);
-                
+                console.log(`🔴 STATUS: ${error.response.status}`);
+                console.log('🔴 DATA:', error.response.data);
+
                 // Handle 401 Unauthorized
                 if (error.response.status === 401 || error.response.status === 403) {
                     if (onUnauthorizedCallback) {
                         onUnauthorizedCallback();
                     }
                 }
-                // console.log('🔴 DATA:', error.response.data);
             } else {
-                // console.log('🌐 NETWORK ERROR:', error.message);
+                console.log('🌐 NETWORK ERROR:', error.message);
             }
             return Promise.reject(error);
         }

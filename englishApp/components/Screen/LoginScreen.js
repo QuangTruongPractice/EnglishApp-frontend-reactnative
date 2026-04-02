@@ -7,9 +7,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput, Button, Text } from "react-native-paper";
+/*
 import {
   GoogleSigninButton,
 } from '@react-native-google-signin/google-signin';
+*/
 import styles from "../../styles/LoginStyles";
 import Loading from "../layout/Loading";
 
@@ -89,6 +91,8 @@ const LoginScreen = ({ formData, msg, loading, onInputChange, onLogin, onGoogleS
               <Text style={styles.link}>Quên mật khẩu?</Text>
             </TouchableOpacity>
 
+            {/* Google Sign-in tạm khóa trong Expo Go */}
+            {/* 
             <View style={styles.googleSignInContainer}>
               <GoogleSigninButton
                 style={styles.googleButton}
@@ -98,6 +102,7 @@ const LoginScreen = ({ formData, msg, loading, onInputChange, onLogin, onGoogleS
                 disabled={loading}
               />
             </View>
+            */}
 
             <View style={styles.registerContainer}>
               <Text>Bạn chưa có tài khoản? </Text>

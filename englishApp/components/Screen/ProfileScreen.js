@@ -76,8 +76,9 @@ const ProfileScreen = ({
               <Image
                 source={{
                   uri:
-                    user.avatar ||
-                    "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                    (user.avatar && user.avatar.trim() !== "")
+                      ? user.avatar
+                      : "https://cdn-icons-png.flaticon.com/512/149/149071.png",
                 }}
                 style={styles.avatar}
               />
