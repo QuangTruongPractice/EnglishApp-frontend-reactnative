@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#2c3e50",
+    backgroundColor: "#7e2222",
     paddingHorizontal: 16,
     paddingVertical: 12,
     elevation: 4,
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#e53935',
     padding: 12,
     borderRadius: 8,
   },
@@ -102,33 +102,63 @@ const styles = StyleSheet.create({
     marginLeft: -8,
   },
   statusChip: {
-    backgroundColor: '#e8f5e8',
+    backgroundColor: '#fff0f0',
   },
-  progressContainer: {
-    marginTop: 8,
+  badgesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  progressText: {
+  badgeSegments: {
+    backgroundColor: '#fff0f0',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  badgeSegmentsText: {
+    color: '#e53935',
     fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
+    fontWeight: 'bold',
   },
-  progressBar: {
+  badgeStatus: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  badgeStatusText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  dateText: {
+    marginLeft: 'auto',
+    fontSize: 12,
+    color: '#999',
+  },
+  progressBarContainer: {
     height: 4,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#f0eaeb',
     borderRadius: 2,
     overflow: 'hidden',
+    marginBottom: 4,
   },
-  progressFill: {
+  progressBarFill: {
     height: '100%',
-    backgroundColor: '#2196f3',
+    backgroundColor: '#e53935',
     borderRadius: 2,
+  },
+  progressText: {
+    textAlign: 'right',
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#e53935',
   },
   subtitlesCard: {
     margin: 16,
     marginTop: 8,
   },
   subtitlesHeader: {
-    backgroundColor: '#2c3e50',
+    backgroundColor: '#7e2222',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -155,9 +185,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f0f0f0',
   },
   selectedSubtitle: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#fff0f0',
     borderLeftWidth: 4,
-    borderLeftColor: '#2196f3',
+    borderLeftColor: '#e53935',
   },
   subtitleContent: {
     flexDirection: 'row',
@@ -185,12 +215,12 @@ const styles = StyleSheet.create({
   translatedText: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#1976d2',
+    color: '#7e2222',
     fontStyle: 'italic',
     marginTop: 4,
     paddingLeft: 8,
     borderLeftWidth: 2,
-    borderLeftColor: '#1976d2',
+    borderLeftColor: '#7e2222',
   },
   translatingText: {
     fontSize: 12,

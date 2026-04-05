@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Audio } from "expo-av";
 import VocabularyDetailScreen from "../Screen/VocabularyDetailScreen";
 import { fetchVocabularyDetail, generateQuiz, submitQuiz, toggleVocabularySave } from "../../configs/LoadData";
-import { ScoringApis, endpoints } from "../../configs/Apis";
+import { AIApis, endpoints } from "../../configs/Apis";
 import { useNavigation } from "@react-navigation/native";
 import Toast from "react-native-toast-message";
 
@@ -39,7 +39,6 @@ const VocabularyDetail = ({ route }) => {
       const data = response.result;
       setVocabulary(data);
     } catch (e) {
-      // console.error(e);
       setError("Failed to load vocabulary details. Please try again.");
     } finally {
       setLoading(false);
@@ -67,7 +66,6 @@ const VocabularyDetail = ({ route }) => {
         });
       }
     } catch (err) {
-      // console.error("Error toggling save:", err);
       Toast.show({
         type: 'error',
         text1: 'Lỗi',
@@ -85,7 +83,7 @@ const VocabularyDetail = ({ route }) => {
       setSound(sound);
       await sound.playAsync();
     } catch (err) {
-      // console.error("Error playing sound:", err);
+      Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể phát âm thanh.' });
     }
   };
 
@@ -100,7 +98,6 @@ const VocabularyDetail = ({ route }) => {
       const res = await generateQuiz(meanId);
       setQuizData(res.result);
     } catch (err) {
-      // console.error("Error generating quiz:", err);
       Toast.show({
         type: 'error',
         text1: 'Lỗi',
@@ -147,7 +144,6 @@ const VocabularyDetail = ({ route }) => {
         setRecordingMeaningId(meaningId);
       }
     } catch (err) {
-      // console.error("Error starting recording:", err);
       Toast.show({
         type: 'error',
         text1: 'Lỗi',
@@ -173,7 +169,7 @@ const VocabularyDetail = ({ route }) => {
         }
       }
     } catch (e) {
-      // console.error("Error stopping recording:", e);
+      // Lỗi cleanup recording, bỏ qua
     } finally {
       recordingRef.current = null;
       stopRequestedRef.current = false;
@@ -204,7 +200,7 @@ const VocabularyDetail = ({ route }) => {
       });
       formData.append('expected_text', meaning.example);
 
-      const response = await ScoringApis.post(endpoints['get-score'], formData, {
+      const response = await AIApis.post(endpoints['get-score'], formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -216,7 +212,6 @@ const VocabularyDetail = ({ route }) => {
         data: response.data,
       });
     } catch (err) {
-      // console.error("Error scoring pronunciation:", err);
       Toast.show({
         type: 'error',
         text1: 'Lỗi',
@@ -253,7 +248,7 @@ const VocabularyDetail = ({ route }) => {
           await recordingRef.current.stopAndUnloadAsync();
         }
       } catch (e) {
-        // Ignore cleanup errors
+        // Lỗi cleanup recording cũ, bỏ qua
       }
       recordingRef.current = null;
     }
@@ -272,7 +267,7 @@ const VocabularyDetail = ({ route }) => {
       const { sound } = await Audio.Sound.createAsync({ uri });
       await sound.playAsync();
     } catch (e) {
-      // console.error(e);
+      // Lỗi phát âm thanh hiệu ứng, bỏ qua
     }
   };
 
@@ -304,7 +299,6 @@ const VocabularyDetail = ({ route }) => {
     // Gửi kết quả về server
     if (quizMeaningId) {
       submitQuiz(quizMeaningId, selectedAnsObj?.isCorrect).catch(() => {
-        // console.error("Lỗi khi gửi kết quả trắc nghiệm:", err);
       });
     }
   };
@@ -315,7 +309,7 @@ const VocabularyDetail = ({ route }) => {
       const { sound } = await Audio.Sound.createAsync({ uri: quizData.text });
       await sound.playAsync();
     } catch (e) {
-      // console.error(e);
+      // Lỗi phát âm thanh câu hỏi, bỏ qua
     }
   };
 

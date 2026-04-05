@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-toast-message";
@@ -129,7 +129,6 @@ const Register = () => {
           setMsg(response.message || "Đăng ký thất bại!");
         }
       } catch (error) {
-        // console.error("Register error:", error);
         if (error.response?.data?.message) {
           setMsg(error.response.data.message);
         } else {

@@ -1,6 +1,10 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+﻿import AsyncStorage from "@react-native-async-storage/async-storage";
 import { endpoints, IdentityApis, LearningApis, authIdentityApis, authLearningApis } from "./Apis";
 import { setCache, CACHE_KEYS } from "../utils/cache";
+
+const getToken = async () => {
+  return await AsyncStorage.getItem("token");
+};
 
 export const login = async (username, password) => {
   const res = await IdentityApis.post(endpoints["login"], {
@@ -20,7 +24,7 @@ export const register = async (formDataToSend) => {
 };
 
 export const loadProfile = async () => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   const user = await authIdentityApis(token).get(endpoints["profile"]);
 
   // Cache the profile
@@ -30,19 +34,22 @@ export const loadProfile = async () => {
 };
 
 export const fetchMainTopicsDetail = async (topicId) => {
-  const response = await LearningApis.get(endpoints["main-topics-detail"](topicId));
+  const token = await getToken();
+  const response = await authLearningApis(token).get(endpoints["main-topics-detail"](topicId));
   return response.data;
 };
 
 export const fetchSubTopicsDetail = async (subTopicId) => {
-  const response = await LearningApis.get(endpoints["sub-topics-detail"](subTopicId));
+  const token = await getToken();
+  const response = await authLearningApis(token).get(endpoints["sub-topics-detail"](subTopicId));
   return response.data;
 };
 
 export const fetchAllMainTopics = async (page, q) => {
+  const token = await getToken();
   let url = `${endpoints["main-topics"]}?page=${page}`;
   if (q) url += `&name=${q}`;
-  const res = await LearningApis.get(url);
+  const res = await authLearningApis(token).get(url);
 
   // Cache the first page of results (the most common view)
   if (page === 1 && !q) {
@@ -53,14 +60,20 @@ export const fetchAllMainTopics = async (page, q) => {
 };
 
 export const fetchAllVideos = async (page, q) => {
+  const token = await getToken();
   let url = `${endpoints["video"]}?page=${page}`;
   if (q) url += `&title=${q}`;
-  const res = await LearningApis.get(url);
+  const res = await authLearningApis(token).get(url);
+
+  if (page === 1 && !q) {
+    setCache(CACHE_KEYS.VIDEO, res.data);
+  }
+
   return res.data;
 };
 
 export const updateProfile = async (formData) => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   const response = await authIdentityApis(token).put(endpoints["profile"], formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
@@ -72,13 +85,13 @@ export const updateProfile = async (formData) => {
 };
 
 export const fetchVideoProgress = async () => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   const videoRes = await authLearningApis(token).get(endpoints["user-video-progress"]);
   return videoRes.data;
 };
 
 export const fetchVocabularyProgress = async () => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   const vocabularyRes = await authLearningApis(token).get(
     endpoints["user-vocabulary-progress"]
   );
@@ -86,7 +99,7 @@ export const fetchVocabularyProgress = async () => {
 };
 
 export const updateVideoProgress = async (progress, videoId) => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   await authLearningApis(token).put(endpoints["video-progress"](videoId), {
     watchedDuration: Math.round(progress.currentTime),
     videoDuration: Math.round(progress.duration),
@@ -95,19 +108,20 @@ export const updateVideoProgress = async (progress, videoId) => {
 };
 
 export const fetchVideoDetail = async (videoId) => {
-  const res = await LearningApis.get(endpoints["video-detail"](videoId));
+  const token = await getToken();
+  const res = await authLearningApis(token).get(endpoints["video-detail"](videoId));
   return res.data;
 };
 
 export const fetchVocabularyDetail = async (vocabularyId) => {
-  const response = await LearningApis.get(endpoints["vocabulary-detail"](vocabularyId));
+  const token = await getToken();
+  const response = await authLearningApis(token).get(endpoints["vocabulary-detail"](vocabularyId));
   return response.data;
 };
 
 export const doQuiz = async (quizId) => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   await authLearningApis(token).put(endpoints["do-quiz"](quizId));
-  // console.info("success");
 };
 
 export const fetchAllQuiz = async (page) => {
@@ -147,7 +161,7 @@ export const googleLogin = async (idToken, email) => {
 */
 
 export const fetchLeaderBoard = async () => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   const res = await authLearningApis(token).get(endpoints["leader-board"]);
   return res.data;
 }
@@ -159,7 +173,7 @@ export const generateQuiz = async (meanId) => {
 
 export const fetchLearningProfile = async () => {
   try {
-    const token = await AsyncStorage.getItem("token");
+    const token = await getToken();
     const res = await authLearningApis(token).get(endpoints["learning-profile"]);
     return res.data;
   } catch (error) {
@@ -169,19 +183,19 @@ export const fetchLearningProfile = async () => {
 };
 
 export const createLearningProfile = async (data) => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   const res = await authLearningApis(token).post(endpoints["learning-profile"], data);
   return res.data;
 };
 
 export const fetchDailyVocabulary = async () => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   const res = await authLearningApis(token).get(endpoints["daily-vocabulary"]);
   return res.data;
 };
 
 export const submitQuiz = async (meaningId, isCorrect) => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   const res = await authLearningApis(token).post(endpoints["submit-quiz"], {
     meaningId,
     isCorrect,
@@ -190,19 +204,19 @@ export const submitQuiz = async (meaningId, isCorrect) => {
 };
 
 export const toggleVocabularySave = async (vocabularyId) => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   const res = await authLearningApis(token).post(endpoints["toggle-vocabulary-save"](vocabularyId));
   return res.data;
 };
 
 export const fetchSaveVocabulary = async () => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   const res = await authLearningApis(token).get(endpoints["save-vocabulary"]);
   return res.data;
 };
 
 export const fetchRecommendedTopics = async () => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   const res = await authLearningApis(token).get(endpoints["main-topics-recommend"]);
 
   // Cache recommendations
@@ -214,29 +228,46 @@ export const fetchRecommendedTopics = async () => {
 // ===== SESSION SERVICE =====
 
 export const fetchDailySession = async () => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   console.log("🔑 TOKEN:", token ? `${token.substring(0, 30)}...` : "NULL");
   const res = await authLearningApis(token).post(endpoints["session"], null);
   return res.data;
 };
 
 export const submitQuizSession = async (sessionId, quizId, isCorrect) => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   const url = `${endpoints["submit-quiz-session"](sessionId, quizId)}?isCorrect=${isCorrect}`;
   const res = await authLearningApis(token).post(url, null);
   return res.data;
 };
 
-export const submitWritingSession = async (sessionId, content) => {
-  const token = await AsyncStorage.getItem("token");
-  const res = await authLearningApis(token).post(endpoints["submit-writing-session"](sessionId), {
-    content,
+export const submitWritingSession = async (sessionId, promptId, content) => {
+  const token = await getToken();
+  const res = await authLearningApis(token).post(endpoints["submit-writing-session"](sessionId, promptId), {
+    text: content,
   });
   return res.data;
 };
 
 export const checkSessionLevelUp = async (sessionId) => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
   const res = await authLearningApis(token).get(endpoints["check-level-up"](sessionId));
+  return res.data;
+};
+
+// ===== STATS SERVICE =====
+
+export const fetchSummary = async () => {
+  const token = await getToken();
+  const res = await authLearningApis(token).get(endpoints["summary"]);
+  
+  setCache(CACHE_KEYS.SUMMARY, res.data);
+  
+  return res.data;
+};
+
+export const fetchStreakCalendar = async (month, year) => {
+  const token = await getToken();
+  const res = await authLearningApis(token).get(`${endpoints["streak-calendar"]}?month=${month}&year=${year}`);
   return res.data;
 };

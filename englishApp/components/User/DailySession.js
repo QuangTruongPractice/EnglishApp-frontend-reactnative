@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Audio } from "expo-av";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 import Toast from "react-native-toast-message";
 
 import styles from "../../styles/SessionStyles";
@@ -51,21 +52,24 @@ const DailySession = () => {
     };
   }, []);
 
+  useEffect(() => {
+    setIsAnswered(false);
+  }, [currentIndex, currentPhase]);
+
   const loadSession = async () => {
     try {
       setLoading(true);
       const res = await fetchDailySession();
       if (res.code === 1000) {
         setSession(res.result);
+        setTotalXP(res.result.totalXP || 0);
         if (res.result.completed) {
           setCurrentPhase(PHASES.RESULT);
-          setTotalXP(res.result.totalXP || 0);
         }
       } else {
         Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể tải phiên học tập.' });
       }
     } catch (e) {
-      // console.error(e);
       Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Lỗi kết nối máy chủ.' });
     } finally {
       setLoading(false);
@@ -100,7 +104,7 @@ const DailySession = () => {
       setSound(newSound);
       await newSound.playAsync();
     } catch (e) {
-      // console.error(e);
+      // Lỗi phát âm thanh, bỏ qua
     }
   };
 
@@ -114,7 +118,7 @@ const DailySession = () => {
         }
       }
     } catch (e) {
-      // console.error("Error checking level up:", e);
+      // Lỗi kiểm tra level up, bỏ qua và vẫn hiển thị kết quả
     } finally {
       setCurrentPhase(PHASES.RESULT);
     }
@@ -137,7 +141,12 @@ const DailySession = () => {
         setIsAnswered(false);
       }
     } else if (currentPhase === PHASES.WRITING) {
-      completeSession();
+      if (currentIndex < (session.writingPrompts?.length || 0) - 1) {
+        setCurrentIndex(currentIndex + 1);
+        setIsAnswered(false);
+      } else {
+        completeSession();
+      }
     }
   };
 
@@ -151,6 +160,28 @@ const DailySession = () => {
       // All quizzes are done, go to writing
       setCurrentPhase(PHASES.WRITING);
       setCurrentIndex(0);
+    }
+  };
+
+  const handleTabChange = (type) => {
+    if (!session || !session.quizzes) return;
+    const quizzes = session.quizzes;
+    
+    // First try to find an unanswered quiz of that specific type
+    let targetIndex = quizzes.findIndex(q => q.quiz.type === type && q.isCorrect === null);
+    
+    // If all are answered, just go to the first quiz of that type
+    if (targetIndex === -1) {
+       targetIndex = quizzes.findIndex(q => q.quiz.type === type);
+    }
+    
+    if (targetIndex !== -1) {
+       if (currentPhase !== PHASES.QUIZZES) {
+          setCurrentPhase(PHASES.QUIZZES);
+       }
+       setCurrentIndex(targetIndex);
+    } else {
+       Toast.show({ type: 'info', text1: 'Thông báo', text2: 'Không có bài tập loại này.' });
     }
   };
 
@@ -195,41 +226,47 @@ const DailySession = () => {
     setIsAnswered(true);
     const quiz = session.quizzes[currentIndex];
     
+    let awardedXp = isCorrect ? (quiz.xpAwarded || 3) : 0;
+    
     try {
       const res = await submitQuizSession(session.id, quiz.id, isCorrect);
-      if (res.code === 1000 && typeof res.result === 'number') {
-        const xp = res.result;
-        if (xp > 0) {
-          setTotalXP(prev => prev + xp);
-          triggerXPAnimation(xp);
+      if (res.code === 1000) {
+        if (res.result && typeof res.result === 'object' && typeof res.result.xpAwarded === 'number') {
+           awardedXp = res.result.xpAwarded;
+        } else if (typeof res.result === 'number') {
+           // We ignore direct number if it might be totalXP, but fallback to xpAwarded is safer
+           // awardedXp = res.result; 
         }
-      } else if (isCorrect) {
-        // Fallback if no result
-        const fallbackXp = quiz.xpAwarded || 3;
-        setTotalXP(prev => prev + fallbackXp);
-        triggerXPAnimation(fallbackXp);
       }
     } catch (e) {
-      // console.error("Error submitting quiz:", e);
+      // Lỗi gửi kết quả quiz, bỏ qua
+    }
+
+    if (awardedXp > 0) {
+      setTotalXP(prev => prev + awardedXp);
+      triggerXPAnimation(awardedXp);
     }
   };
 
   const onWritingAnswer = async (content) => {
     setIsAnswered(true);
+    const prompt = session.writingPrompts[currentIndex];
+    
     try {
-      const res = await submitWritingSession(session.id, content);
-      if (res.code === 1000 && typeof res.result === 'number') {
-        const xp = res.result;
-        if (xp > 0) {
-          setTotalXP(prev => prev + xp);
-          triggerXPAnimation(xp);
-        }
+      const res = await submitWritingSession(session.id, prompt.id, content);
+      if (res.code === 1000) {
+        const aiResult = res.result; // Full AiAnalysisResponse
+        const xp = aiResult.score || 2; 
+        
+        setTotalXP(prev => prev + xp);
+        triggerXPAnimation(xp);
+        
+        return aiResult; // Return to component for display
       }
     } catch (e) {
-      // console.error("Error submitting writing:", e);
+      Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể gửi bài viết.' });
     }
-    // After writing submission, complete the session
-    await completeSession();
+    return null;
   };
 
   const renderProgressBar = () => {
@@ -259,13 +296,10 @@ const DailySession = () => {
   const renderContent = () => {
     switch (currentPhase) {
       case PHASES.MEANINGS:
-        const hasStartedQuizzes = session.quizzes.some(q => q.isCorrect !== null);
         return (
           <SessionPhaseMeanings 
             meaning={session.meanings[currentIndex]} 
             onPlayAudio={() => playAudio(session.meanings[currentIndex]?.audioUrl)} 
-            hasStartedQuizzes={hasStartedQuizzes}
-            onJumpToQuizzes={handleJumpToQuizzes}
           />
         );
       case PHASES.QUIZZES:
@@ -274,16 +308,19 @@ const DailySession = () => {
             quiz={session.quizzes[currentIndex]?.quiz} 
             onAnswer={onQuizAnswer} 
             initialAnswerStatus={session.quizzes[currentIndex]?.isCorrect}
+            onTabChange={handleTabChange}
           />
         );
       case PHASES.WRITING:
         return (
           <SessionPhaseWriting 
+            writingPrompt={session.writingPrompts[currentIndex]}
             onAnswer={onWritingAnswer} 
+            onFinish={completeSession}
           />
         );
       case PHASES.RESULT:
-        return <SessionResult totalXP={totalXP} levelUpData={levelUpData} onFinish={() => navigation.navigate("Home")} />;
+        return <SessionResult totalXP={totalXP} levelUpData={levelUpData} onFinish={() => navigation.navigate("Home")} onClose={() => navigation.goBack()} />;
       default:
         return null;
     }
@@ -291,28 +328,35 @@ const DailySession = () => {
 
   // Loading and null checks are handled above
 
+  const hasStartedQuizzes = session ? session.quizzes.some(q => q.isCorrect !== null) : false;
+
+  if (currentPhase === PHASES.RESULT) {
+    return renderContent();
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Icon name="close" size={24} color="#fff" />
-        </TouchableOpacity>
-        {currentPhase !== PHASES.RESULT && renderProgressBar()}
-        {currentPhase !== PHASES.RESULT && (
-           <Text style={styles.progressText}>
-             {currentPhase === PHASES.MEANINGS ? currentIndex + 1 : (currentPhase === PHASES.QUIZZES ? currentIndex + 1 : 1)} / 
-             {currentPhase === PHASES.MEANINGS ? session.meanings.length : (currentPhase === PHASES.QUIZZES ? session.quizzes.length : 1)}
-           </Text>
-        )}
-      </View>
+      <LinearGradient colors={["#4a0d0d", "#6b1a1a", "#7e2222"]} style={styles.headerBackground}>
+        <View style={styles.headerDecorativeCircle} />
 
-      {currentPhase !== PHASES.RESULT && (
-        <View style={styles.phaseBadge}>
-            <Text style={styles.phaseBadgeText}>
-                {currentPhase === PHASES.MEANINGS ? "Học từ vựng" : (currentPhase === PHASES.QUIZZES ? "Thực hành bài tập" : "Luyện kỹ năng viết")}
-            </Text>
+        <View style={styles.headerTop}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Icon name="arrow-left" size={24} color="#fff" />
+          </TouchableOpacity>
+          {renderProgressBar()}
+          <Text style={styles.progressText}>
+            {currentPhase === PHASES.MEANINGS ? currentIndex + 1 : (currentPhase === PHASES.QUIZZES ? currentIndex + 1 : 1)} / 
+            {currentPhase === PHASES.MEANINGS ? session.meanings.length : (currentPhase === PHASES.QUIZZES ? session.quizzes.length : 1)}
+          </Text>
         </View>
-      )}
+
+        <View style={styles.phaseBadge}>
+          <Icon name="book-open-variant" size={16} color="#fff" style={{marginRight: 6}} />
+          <Text style={styles.phaseBadgeText}>
+              {currentPhase === PHASES.MEANINGS ? "Học từ vựng" : (currentPhase === PHASES.QUIZZES ? "Thực hành bài tập" : "Luyện kỹ năng viết")}
+          </Text>
+        </View>
+      </LinearGradient>
 
       {renderContent()}
 
@@ -342,26 +386,36 @@ const DailySession = () => {
       )}
 
       {currentPhase !== PHASES.RESULT && (
-        <View style={styles.footer}>
-          <TouchableOpacity 
-            style={styles.buttonSecondary} 
-            onPress={handleBack}
-            disabled={currentPhase === PHASES.MEANINGS && currentIndex === 0}
-          >
-            <Text style={styles.buttonTextSecondary}>Quay lại</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[
-              styles.buttonPrimary, 
-              (currentPhase === PHASES.QUIZZES && !isAnswered && session.quizzes[currentIndex]?.isCorrect === null) && { opacity: 0.5 }
-            ]} 
-            onPress={handleNext}
-            disabled={currentPhase === PHASES.QUIZZES && !isAnswered && session.quizzes[currentIndex]?.isCorrect === null}
-          >
-            <Text style={styles.buttonTextPrimary}>Tiếp theo</Text>
-            <Icon name="arrow-right" size={20} color="#fff" />
-          </TouchableOpacity>
+        <View style={styles.footerContainer}>
+          {currentPhase === PHASES.MEANINGS && hasStartedQuizzes && (
+            <TouchableOpacity style={styles.quitButton} onPress={handleJumpToQuizzes}>
+              <Icon name="bullseye-arrow" size={20} color="#e53935" />
+              <Text style={styles.quitButtonText}>Quay lại bài tập</Text>
+            </TouchableOpacity>
+          )}
+
+          <View style={styles.footer}>
+            <TouchableOpacity 
+              style={[styles.buttonSecondary, currentPhase === PHASES.MEANINGS && currentIndex === 0 && { opacity: 0.5 }]} 
+              onPress={handleBack}
+              disabled={currentPhase === PHASES.MEANINGS && currentIndex === 0}
+            >
+              <Icon name="arrow-left" size={20} color="#666" style={{marginRight: 8}} />
+              <Text style={styles.buttonTextSecondary}>Trước</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[
+                styles.buttonPrimary, 
+                (currentPhase === PHASES.QUIZZES && !isAnswered && session.quizzes[currentIndex]?.isCorrect === null) && { opacity: 0.5 }
+              ]} 
+              onPress={handleNext}
+              disabled={currentPhase === PHASES.QUIZZES && !isAnswered && session.quizzes[currentIndex]?.isCorrect === null}
+            >
+              <Text style={styles.buttonTextPrimary}>Tiếp theo</Text>
+              <Icon name="arrow-right" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
     </SafeAreaView>

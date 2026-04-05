@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: "100%",
-    backgroundColor: "#6366f1",
+    backgroundColor: "#b83535",
     borderRadius: 3,
   },
   stepIndicator: {
@@ -118,11 +118,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#6366f1',
+    backgroundColor: '#b83535',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
-    shadowColor: '#6366f1',
+    shadowColor: '#b83535',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   startBtn: {
-    backgroundColor: '#6366f1',
+    backgroundColor: '#b83535',
   },
   startBtnText: {
     color: '#fff',
@@ -393,13 +393,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   nextBtn: {
-    backgroundColor: "#6366f1",
+    backgroundColor: "#b83535",
     paddingVertical: 18,
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
     elevation: 4,
-    shadowColor: "#6366f1",
+    shadowColor: "#b83535",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   practiceCloseBtn: {
-    backgroundColor: '#6366f1',
+    backgroundColor: '#b83535',
     paddingVertical: 16,
     paddingHorizontal: 40,
     borderRadius: 16,
@@ -710,7 +710,7 @@ const styles = StyleSheet.create({
   pronStepBadgeText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#6366f1',
+    color: '#b83535',
   },
   // Word Row
   pronWordRow: {

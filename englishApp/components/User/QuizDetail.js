@@ -22,7 +22,6 @@ const QuizDetail = ({ route, navigation }) => {
       const res = await fetchQuizDetail(quizId);
       setQuizDetail(res.result);
     } catch (ex) {
-      // console.error(ex);
       setError("Không thể tải chi tiết bài quiz. Vui lòng thử lại.");
     } finally {
       setLoading(false);
@@ -36,7 +35,7 @@ const QuizDetail = ({ route, navigation }) => {
       setSound(sound);
       await sound.playAsync();
     } catch (e) {
-      // console.error(e);
+      // Lỗi phát âm thanh câu hỏi, bỏ qua
     }
   };
 
@@ -48,7 +47,7 @@ const QuizDetail = ({ route, navigation }) => {
       setSound(sound);
       await sound.playAsync();
     } catch (e) {
-      // console.error(e);
+      // Lỗi phát âm thanh đúng, bỏ qua
     }
   };
 
@@ -60,7 +59,7 @@ const QuizDetail = ({ route, navigation }) => {
       setSound(sound);
       await sound.playAsync();
     } catch (e) {
-      // console.error(e);
+      // Lỗi phát âm thanh sai, bỏ qua
     }
   };
 

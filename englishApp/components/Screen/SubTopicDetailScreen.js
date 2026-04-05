@@ -4,7 +4,8 @@ import {
   TouchableOpacity,
   RefreshControl,
   FlatList,
-  TextInput,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { useState, useMemo, useCallback } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,7 +13,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../../styles/SubTopicDetailStyles";
 import Loading from "../layout/Loading";
 import { formatDate } from "../../utils/formatters";
-import { CARD_COLORS } from "../../constants/theme";
 
 const SubTopicDetailScreen = ({
   loading,
@@ -26,171 +26,183 @@ const SubTopicDetailScreen = ({
   onNavigateVocabulary,
   onGoBack,
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [filterLevel, setFilterLevel] = useState("All"); // "All" or "A1", "A2", etc.
 
-  const filteredVocabularies = useMemo(() => 
-    vocabularies.filter(v => 
-      v.word?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      v.definition?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      v.vnWord?.toLowerCase().includes(searchQuery.toLowerCase())
-    ), [vocabularies, searchQuery]
-  );
+  // Extract levels for filter chips
+  const availableLevels = useMemo(() => {
+    const levels = new Set(vocabularies.map(v => v.level).filter(Boolean));
+    return ["All", ...Array.from(levels).sort()];
+  }, [vocabularies]);
+
+  const filteredVocabularies = useMemo(() => {
+    if (filterLevel === "All") return vocabularies;
+    return vocabularies.filter(v => v.level === filterLevel);
+  }, [vocabularies, filterLevel]);
+
+  // Extract progress from API safely
+  const progressData = useMemo(() => {
+    const raw = subTopicInfo?.user_progress;
+    if (!raw) return { learned: 0, total: 1, pct: 0, status: "not_started" };
+    return {
+      learned: raw.meanings_learned ?? raw.meaningsLearned ?? 0,
+      total: raw.meanings_total ?? raw.meaningsTotal ?? 1,
+      pct: raw.pct ?? 0,
+      status: raw.status ?? "not_started",
+    };
+  }, [subTopicInfo]);
 
   const renderVocabularyItem = useCallback(({ item, index }) => {
-    const cardColor = CARD_COLORS[index % CARD_COLORS.length];
-
     return (
       <TouchableOpacity
         key={`vocabulary-${item.id}`}
         style={styles.vocabularyCard}
         onPress={() => onNavigateVocabulary(item.id)}
-        activeOpacity={0.9}
+        activeOpacity={0.8}
         accessibilityRole="button"
-        accessibilityLabel={`Vocabulary: ${item.word}`}
       >
         <View style={styles.cardContent}>
-          <View style={styles.vocabularyHeader}>
-            <View style={styles.wordMainInfo}>
-              <Text
-                style={styles.vocabularyWord}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.8}
-              >
-                {item.word}
-              </Text>
-              {item.phonetic && (
-                <Text style={styles.vocabularyPhonetic} numberOfLines={1}>
-                  {item.phonetic}
-                </Text>
-              )}
-              <View style={styles.badgeRow}>
-                {item.level && (
-                  <View style={[styles.levelBadge, { backgroundColor: cardColor }]}>
-                    <Text style={styles.levelText}>{item.level}</Text>
-                  </View>
-                )}
-                <View style={styles.indexContainer}>
-                  <Text style={styles.indexNumber}>#{index + 1}</Text>
-                </View>
-              </View>
-            </View>
-            
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={() => onToggleSave(item.id)}
-            >
-              <Ionicons
-                name={item.isSave ? "bookmark" : "bookmark-outline"}
-                size={22}
-                color={item.isSave ? cardColor : "#94a3b8"}
-              />
-            </TouchableOpacity>
-          </View>
-
-          {item.definition && (
-            <Text style={styles.vocabularyDefinition} numberOfLines={2}>
-              {item.definition}
+          {/* Word & Phonetic */}
+          <View style={styles.wordMainInfo}>
+            <Text style={styles.vocabularyWord} numberOfLines={1}>
+              {item.word}
             </Text>
-          )}
-
-          {item.example && (
-            <View style={styles.exampleContainer}>
-              <Text style={styles.exampleText} numberOfLines={2}>
-                &quot;{item.example}&quot;
+            {item.phonetic && (
+              <Text style={styles.vocabularyPhonetic} numberOfLines={1}>
+                {item.phonetic}
               </Text>
-            </View>
-          )}
-
-          <View style={[styles.learnButton, { backgroundColor: cardColor }]}>
-            <Text style={styles.learnButtonText}>Learn More</Text>
-            <Ionicons name="arrow-forward" size={16} color="#fff" />
+            )}
+          </View>
+          
+          {/* Level Badge aligned center-right */}
+          <View style={styles.cardRight}>
+            {item.level && (
+              <View style={styles.levelBadge}>
+                <Text style={styles.levelText}>{item.level}</Text>
+              </View>
+            )}
+            {/* Omitted the status mark per user request */}
           </View>
         </View>
       </TouchableOpacity>
     );
-  }, [onNavigateVocabulary, onToggleSave]);
+  }, [onNavigateVocabulary]);
 
-  const listHeader = useMemo(() => (
-    <View>
-      <View style={styles.heroSection}>
-        <View style={styles.heroContent}>
-          <Text
-            style={styles.heroTitle}
-            numberOfLines={2}
-            adjustsFontSizeToFit
-            minimumFontScale={0.7}
-          >
+  const listHeader = useMemo(() => {
+    const remaining = Math.max(0, progressData.total - progressData.learned);
+    const isPerfect = progressData.pct >= 100;
+
+    return (
+      <View style={styles.headerBlock}>
+        {/* HERO SECTION */}
+        <View style={styles.heroSection}>
+          <View style={styles.heroTopActions}>
+            <TouchableOpacity style={styles.backButton} onPress={onGoBack} activeOpacity={0.7}>
+              <Ionicons name="arrow-back" size={20} color="#fff" />
+              <Text style={styles.backButtonText} numberOfLines={1}>
+                Social Basics › Chủ đề nhỏ
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.heroTopicBadge}>
+            <Ionicons name="book" size={14} color="#fff" style={{ marginRight: 4 }} />
+            <Text style={styles.heroTopicBadgeText}>CHỦ ĐỀ NHỎ • #{subTopicInfo?.id || 1}</Text>
+          </View>
+          <Text style={styles.heroTitle} numberOfLines={2}>
             {subTopicInfo?.name || "Subtopic"}
           </Text>
+          <Text style={styles.heroSubtitle}>
+            {subTopicInfo?.vocabularyCount || vocabularies.length} từ vựng • Tạo ngày {formatDate(subTopicInfo?.createdAt)}
+          </Text>
+        </View>
 
-          <View style={styles.heroStats}>
-            <View style={styles.statBadge}>
-              <Ionicons name="documents-outline" size={18} color="#475569" />
-              <Text style={styles.heroStatText}>
-                {subTopicInfo?.vocabularyCount || vocabularies.length} Words
-              </Text>
+        {/* Dynamic Completed Banner */}
+        {isPerfect && (
+          <View style={styles.completedBanner}>
+            <View style={styles.bannerIconBox}>
+              <Text style={styles.bannerEmoji}>🎉</Text>
             </View>
-
-            <View style={styles.statBadge}>
-              <Ionicons name="calendar-outline" size={18} color="#475569" />
-              <Text style={styles.heroStatText}>
-                {formatDate(subTopicInfo?.createdAt)}
-              </Text>
+            <View style={styles.bannerTextCol}>
+              <Text style={styles.bannerTitle}>Hoàn thành 100%</Text>
+              <Text style={styles.bannerSubtitle}>Bạn đã học xong tất cả từ trong chủ đề này!</Text>
             </View>
           </View>
-        </View>
-      </View>
+        )}
 
-      <View style={styles.searchBarContainer}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search-outline" size={20} color="#64748b" />
-          <TextInput
-            placeholder="Search words..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={styles.searchText}
-            placeholderTextColor="#94a3b8"
-          />
-          {searchQuery !== "" && (
-            <TouchableOpacity onPress={() => setSearchQuery("")}>
-              <Ionicons name="close-circle" size={20} color="#94a3b8" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
+        {/* PROGRESS CARD */}
+        <View style={styles.progressCard}>
+          <View style={styles.progressRowTop}>
+            <Text style={styles.progressLabel}>Tiến độ học</Text>
+            <View style={styles.fractionBox}>
+              <Text style={styles.fractionHighlight}>{progressData.learned}</Text>
+              <Text style={styles.fractionTotal}> / {progressData.total} nghĩa</Text>
+            </View>
+          </View>
+          
+          <View style={styles.progressBarBg}>
+            <View style={[styles.progressBarFill, { width: `${progressData.pct}%` }]} />
+          </View>
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Vocabulary List</Text>
-        <View style={styles.sectionBadge}>
-          <Text style={styles.sectionCount}>{filteredVocabularies.length} Items</Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statCol}>
+              <Text style={styles.statVal}>{progressData.learned}</Text>
+              <Text style={styles.statLabel}>ĐÃ HỌC</Text>
+            </View>
+            <View style={styles.statDiv} />
+            <View style={styles.statCol}>
+              <Text style={styles.statVal}>{remaining}</Text>
+              <Text style={styles.statLabel}>CÒN LẠI</Text>
+            </View>
+            <View style={styles.statDiv} />
+            <View style={styles.statCol}>
+              <Text style={styles.statVal}>{progressData.pct.toFixed(0)}%</Text>
+              <Text style={styles.statLabel}>HOÀN THÀNH</Text>
+            </View>
+          </View>
+          {/* Note: Interactive CTA buttons intentionally removed per user request */}
+        </View>
+
+        {/* VOCABULARY LIST HEADER WITH FILTERS */}
+        <View style={styles.listHeaderSection}>
+          <Text style={styles.listTitle}>Danh sách từ vựng</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+            {availableLevels.map(level => {
+              const isActive = filterLevel === level;
+              const displayName = level === "All" ? "Tất cả" : level;
+              return (
+                <TouchableOpacity
+                  key={level}
+                  style={[styles.filterChip, isActive && styles.filterChipActive]}
+                  onPress={() => setFilterLevel(level)}
+                >
+                  <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
+                    {displayName}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
         </View>
       </View>
-    </View>
-  ), [subTopicInfo, vocabularies, searchQuery, filteredVocabularies.length]);
+    );
+  }, [subTopicInfo, vocabularies, progressData, onGoBack, availableLevels, filterLevel]);
 
   const listEmpty = useMemo(() => (
     <View style={styles.emptyContainer}>
-      <View style={styles.emptyContent}>
-        <Ionicons name="search-outline" size={64} color="#e2e8f0" />
-        <Text style={styles.emptyTitle}>
-          {searchQuery ? "No matches found" : "Empty list"}
-        </Text>
-        <Text style={styles.emptyText}>
-          {searchQuery 
-            ? `Couldn't find any results for "${searchQuery}"`
-            : "This subtopic doesn&apos;t have any vocabulary yet."}
-        </Text>
-      </View>
+      <Ionicons name="documents-outline" size={64} color="#cbd5e1" />
+      <Text style={styles.emptyTitle}>Chưa có dữ liệu</Text>
+      <Text style={styles.emptyText}>
+        {filterLevel !== "All" ? `Không tìm thấy từ vựng nào thuộc cấp độ ${filterLevel}.` : "Subtopic này chưa có danh sách từ vựng."}
+      </Text>
     </View>
-  ), [searchQuery]);
+  ), [filterLevel]);
 
-  if (loading) {
+  if (loading && !refreshing) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
           <Loading />
-          <Text style={styles.loadingText}>Just a moment...</Text>
+          <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
         </View>
       </SafeAreaView>
     );
@@ -200,54 +212,38 @@ const SubTopicDetailScreen = ({
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.errorContainer}>
-          <View style={styles.errorContent}>
-            <Ionicons name="warning-outline" size={80} color="#ef4444" />
-            <Text style={styles.errorTitle}>Oops! Load failed</Text>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
-              <Text style={styles.retryButtonText}>Retry Now</Text>
-            </TouchableOpacity>
-          </View>
+          <Ionicons name="warning-outline" size={64} color="#f43f5e" />
+          <Text style={styles.errorTitle}>Lấy dữ liệu thất bại</Text>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={onRetry}>
+            <Text style={styles.retryBtnText}>Thử lại</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={onGoBack}>
-          <Ionicons name="chevron-back" size={24} color="#1a1a1a" />
-        </TouchableOpacity>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitleMain} numberOfLines={1}>
-            {subTopicInfo?.name}
-          </Text>
-        </View>
-        <View style={styles.headerSpacer} />
-      </View>
-
+    <View style={styles.screenContainer}>
       <FlatList
         data={filteredVocabularies}
         keyExtractor={(item) => `vocabulary-${item.id}`}
         renderItem={renderVocabularyItem}
         ListHeaderComponent={listHeader}
-        ListFooterComponent={<View style={{ height: 40 }} />}
+        ListFooterComponent={<View style={{ height: 60 }} />}
         ListEmptyComponent={listEmpty}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContentContainer}
-        paddingHorizontal={20}
-        keyboardDismissMode="on-drag"
-        keyboardShouldPersistTaps="handled"
+        bounces={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#6366f1"
+            colors={["#b83535"]}
           />
         }
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import VideoScreen from "../Screen/VideoScreen";
-import { fetchAllVideos } from "../../configs/LoadData";
+import { fetchAllVideos, loadProfile, fetchSummary } from "../../configs/LoadData";
+import Toast from "react-native-toast-message";
 
 const Video = () => {
   const [videos, setVideos] = useState([]);
@@ -9,6 +10,8 @@ const Video = () => {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const [summary, setSummary] = useState(null);
 
   const loadVideos = async () => {
     if (page <= 0) return;
@@ -30,7 +33,6 @@ const Video = () => {
         setPage(0);
       }
     } catch (ex) {
-      // console.error(ex);
       setError("Failed to load videos. Please try again.");
     } finally {
       setRefreshing(false);
@@ -38,14 +40,33 @@ const Video = () => {
     }
   };
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
     setPage(1);
     setError(null);
+    try {
+      const profileData = await loadProfile();
+      setUserProfile(profileData);
+      const summaryData = await fetchSummary();
+      setSummary(summaryData.result || summaryData);
+    } catch (err) {
+      // Lỗi tải dữ liệu người dùng, bỏ qua
+    }
     loadVideos();
   };
 
   useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const profileData = await loadProfile();
+        setUserProfile(profileData);
+        const summaryData = await fetchSummary();
+        setSummary(summaryData.result || summaryData);
+      } catch (err) {
+      // Lỗi tải dữ liệu người dùng, bỏ qua
+    }
+    };
+    loadUserData();
     loadVideos();
   }, []);
 
@@ -69,6 +90,8 @@ const Video = () => {
 
   return (
     <VideoScreen
+      userProfile={userProfile}
+      summary={summary}
       videos={videos}
       loading={loading}
       error={error}

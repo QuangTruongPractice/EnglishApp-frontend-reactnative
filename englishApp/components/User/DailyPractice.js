@@ -31,7 +31,6 @@ const DailyPractice = () => {
                 setIsFinished(true);
             }
         } catch (e) {
-            // console.error(e);
             Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể tải danh sách học tập.' });
         } finally {
             setLoading(false);
@@ -50,7 +49,6 @@ const DailyPractice = () => {
                 setQuizData(res.result);
             }
         } catch (err) {
-            // console.error("Error generating quiz:", err);
             Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể tạo bài tập.' });
             setShowQuizModal(false);
         }
@@ -78,7 +76,6 @@ const DailyPractice = () => {
         // Gửi kết quả về server
         if (matchingMeaningIdForCurrentQuiz.current) {
             submitQuiz(matchingMeaningIdForCurrentQuiz.current, selectedAnsObj?.isCorrect).catch(() => {
-                // console.error("Lỗi khi gửi kết quả trắc nghiệm:", err);
             });
         }
     };
@@ -97,7 +94,6 @@ const DailyPractice = () => {
                 Toast.show({ type: 'success', text1: 'Thành công', text2: 'Đã lưu vào kho từ vựng!' });
             }
         } catch (e) {
-            // console.error(e);
             Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể lưu ý nghĩa này.' });
         }
     };
@@ -120,7 +116,7 @@ const DailyPractice = () => {
             setSound(newSound);
             await newSound.playAsync();
         } catch (e) {
-            // console.error(e);
+          // Lỗi phát âm thanh từ vựng, bỏ qua
         }
     };
 
@@ -132,7 +128,7 @@ const DailyPractice = () => {
             const { sound } = await Audio.Sound.createAsync({ uri });
             await sound.playAsync();
         } catch (e) {
-            // console.error("Error playing quiz sound effect:", e);
+          // Lỗi phát âm thanh hiệu ứng, bỏ qua
         }
     };
 
@@ -142,7 +138,7 @@ const DailyPractice = () => {
             const { sound: audioQ } = await Audio.Sound.createAsync({ uri: quizData.text });
             await audioQ.playAsync();
         } catch (e) {
-            // console.error(e);
+          // Lỗi phát âm thanh câu hỏi, bỏ qua
         }
     };
 

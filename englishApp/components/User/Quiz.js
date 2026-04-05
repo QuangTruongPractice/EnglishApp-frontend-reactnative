@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { fetchAllQuiz } from "../../configs/LoadData";
 import QuizScreen from "../Screen/QuizScreen";
 
@@ -29,7 +29,6 @@ const Quiz = () => {
         setPage(0); // hết trang
       }
     } catch (ex) {
-      // console.error(ex);
       setError("Failed to load quiz. Please try again.");
     } finally {
       setRefreshing(false);

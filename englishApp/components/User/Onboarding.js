@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+﻿import React, { useState, useContext } from "react";
 import OnboardingScreen from "../Screen/OnboardingScreen";
 import { createLearningProfile } from "../../configs/LoadData";
 import { MyDispatchContext } from "../../configs/Context";
@@ -50,7 +50,6 @@ const Onboarding = ({ route }) => {
                 });
             }
         } catch (err) {
-            // console.error("Onboarding error:", err);
             Toast.show({
                 type: "error",
                 text1: "Lỗi kết nối",

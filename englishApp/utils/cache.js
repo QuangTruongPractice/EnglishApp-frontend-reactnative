@@ -7,6 +7,8 @@ export const CACHE_KEYS = {
   MAIN_TOPICS: "cache_main_topics",
   RECOMMENDED_TOPICS: "cache_recommended_topics",
   USER_PROFILE: "cache_user_profile",
+  VIDEO: "cache_video",
+  SUMMARY: "cache_summary",
 };
 
 /**
@@ -21,9 +23,8 @@ export const setCache = async (key, data) => {
       timestamp: Date.now(),
     };
     await AsyncStorage.setItem(key, JSON.stringify(cacheData));
-    // console.info(`[Cache] Data saved for key: ${key}`);
   } catch (error) {
-    // console.error(`Error setting cache for ${key}:`, error);
+    // Lỗi lưu cache, bỏ qua
   }
 };
 
@@ -37,12 +38,10 @@ export const getCache = async (key) => {
     const jsonValue = await AsyncStorage.getItem(key);
     if (jsonValue != null) {
       const cacheData = JSON.parse(jsonValue);
-      // console.info(`[Cache] Data retrieved for key: ${key}`);
       return cacheData.data;
     }
-    // console.info(`[Cache] No data found for key: ${key}`);
   } catch (error) {
-    // console.error(`Error getting cache for ${key}:`, error);
+    // Lỗi đọc cache, bỏ qua
   }
   return null;
 };
@@ -53,8 +52,7 @@ export const getCache = async (key) => {
 export const removeCache = async (key) => {
   try {
     await AsyncStorage.removeItem(key);
-    // console.info(`[Cache] Data removed for key: ${key}`);
   } catch (error) {
-    // console.error(`Error removing cache for ${key}:`, error);
+    // Lỗi xóa cache, bỏ qua
   }
 };

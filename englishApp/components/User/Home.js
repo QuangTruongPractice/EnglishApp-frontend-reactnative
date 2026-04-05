@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import HomeScreen from "../Screen/HomeScreen";
-import { fetchAllMainTopics, fetchRecommendedTopics } from "../../configs/LoadData";
+import { fetchAllMainTopics, fetchRecommendedTopics, loadProfile, fetchSummary, fetchStreakCalendar } from "../../configs/LoadData";
 import { getCache, removeCache, CACHE_KEYS } from "../../utils/cache";
+import Toast from "react-native-toast-message";
 
 const Home = () => {
   const [mainTopics, setMainTopics] = useState([]);
@@ -12,6 +13,15 @@ const Home = () => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
+  const [userProfile, setUserProfile] = useState(null);
+  const [summary, setSummary] = useState({
+    totalXP: 0,
+    streak: 0,
+    learningCount: 0,
+    masteredCount: 0,
+    savedVocabularyCount: 0,
+  });
+  const [streakCalendar, setStreakCalendar] = useState(null);
   const nav = useNavigation();
 
   // Load cached data immediately on mount
@@ -34,20 +44,38 @@ const Home = () => {
           
           setMainTopics(filteredMain);
           setLoading(false); // Hide loading since we have cached data
-          // console.info("[Home] UI updated using cached data.");
         }
       } catch (err) {
-        // console.error("Error loading from cache:", err);
+        // Lỗi đọc cache, bỏ qua và tải từ server
+      }
+    };
+
+    const loadUserData = async () => {
+      try {
+        const profileData = await loadProfile();
+        setUserProfile(profileData);
+        
+        const summaryData = await fetchSummary();
+        setSummary(summaryData.result || summaryData);
+
+        const now = new Date();
+        const streakData = await fetchStreakCalendar(now.getMonth() + 1, now.getFullYear());
+        setStreakCalendar(streakData.result || streakData);
+      } catch (err) {
+        Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể tải dữ liệu người dùng.' });
       }
     };
 
     loadFromCache();
+    loadUserData();
     loadMainTopics(); // Also trigger background refresh
   }, []);
 
   const loadMainTopics = async (isRefreshing = false) => {
-    if (page <= 0) return;
-    const isFirstPage = page === 1;
+    const currentPage = isRefreshing ? 1 : page;
+    
+    if (currentPage <= 0) return;
+    const isFirstPage = currentPage === 1;
     
     // Only show full loading if we don't have data and it's not a refresh
     if (isFirstPage && mainTopics.length === 0 && !isRefreshing) {
@@ -65,11 +93,11 @@ const Home = () => {
           setRecommendedTopics(recData);
           currentRecommendations = recData;
         } catch (err) {
-          // console.error("Failed to load recommended topics:", err);
+          // Lỗi tải gợi ý, bỏ qua và tiếp tục tải danh sách chính
         }
       }
 
-      const res = await fetchAllMainTopics(page, q);
+      const res = await fetchAllMainTopics(currentPage, q);
       let newData = res.result?.content || [];
 
       // Filter out topics already in recommended list
@@ -87,7 +115,6 @@ const Home = () => {
       if (res.result?.last === true) setPage(0);
       setError(null);
     } catch (ex) {
-      // console.error(ex);
       // Only set error if we don't have any data to show
       if (mainTopics.length === 0) {
         setError("Failed to load topics. Please try again.");
@@ -108,7 +135,18 @@ const Home = () => {
       await removeCache(CACHE_KEYS.MAIN_TOPICS);
       await removeCache(CACHE_KEYS.RECOMMENDED_TOPICS);
     } catch (e) {
-      // console.error("Error clearing cache on refresh:", e);
+      // Lỗi xóa cache khi refresh, bỏ qua
+    }
+
+    // Refresh user data too
+    try {
+      const profileData = await loadProfile();
+      setUserProfile(profileData);
+      
+      const summaryData = await fetchSummary();
+      setSummary(summaryData.result || summaryData);
+    } catch (err) {
+      // Lỗi refresh dữ liệu người dùng, bỏ qua
     }
 
     loadMainTopics(true);
@@ -139,6 +177,8 @@ const Home = () => {
     <HomeScreen
       mainTopics={mainTopics}
       recommendedTopics={recommendedTopics}
+      userProfile={userProfile}
+      summary={summary}
       q={q}
       setQ={setQ}
       search={search}

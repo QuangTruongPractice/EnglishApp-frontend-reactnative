@@ -138,6 +138,13 @@ const VocabularyDetailScreen = ({
     );
   };
 
+  const getMeaningStatusInfo = (rawStatus) => {
+    const status = String(rawStatus || "").toLowerCase();
+    if (status === 'completed' || status === 'mastered') return { text: "✓ Hoàn thành", color: "#22c55e", bgColor: "#dcfce7" };
+    if (status === 'learning' || status === 'reviewing') return { text: "Đang học", color: "#b83535", bgColor: "#ffe4e6" };
+    return { text: "Mới", color: "#6b7280", bgColor: "#f3f4f6" };
+  };
+
   const renderPracticeModal = () => {
     const resultData = practiceResult?.data;
     const step1 = resultData?.step1_audio_similarity;
@@ -506,15 +513,12 @@ const VocabularyDetailScreen = ({
           )}
 
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity onPress={onToggleSave} style={[styles.iconButton, { marginRight: 8 }]}>
+            <TouchableOpacity onPress={onToggleSave} style={styles.iconButton}>
               <Ionicons
                 name={vocabulary.isSave ? "bookmark" : "bookmark-outline"}
                 size={22}
-                color={vocabulary.isSave ? "#6366f1" : "#1a1a1a"}
+                color={vocabulary.isSave ? "#b83535" : "#1a1a1a"}
               />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="ellipsis-horizontal" size={20} color="#1a1a1a" />
             </TouchableOpacity>
           </View>
         </View>
@@ -576,6 +580,17 @@ const VocabularyDetailScreen = ({
                       </View>
                       <View style={styles.typeBadge}>
                         <Text style={styles.typeText}>{meaning.type}</Text>
+                      </View>
+                      {/* Thêm Badge user_progress ở đây */}
+                      <View style={{ 
+                        marginLeft: 8, paddingHorizontal: 8, paddingVertical: 4, 
+                        borderRadius: 6, backgroundColor: getMeaningStatusInfo(meaning.user_progress?.status).bgColor 
+                      }}>
+                        <Text style={{ 
+                          fontSize: 10, fontWeight: "700", color: getMeaningStatusInfo(meaning.user_progress?.status).color 
+                        }}>
+                          {getMeaningStatusInfo(meaning.user_progress?.status).text}
+                        </Text>
                       </View>
                     </View>
                     <Text style={styles.vnWordText} numberOfLines={3} adjustsFontSizeToFit minimumFontScale={0.7}>{meaning.vnWord}</Text>

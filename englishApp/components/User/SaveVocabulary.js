@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import SaveVocabularyScreen from "../Screen/SaveVocabularyScreen";
 import { fetchSaveVocabulary, toggleVocabularySave } from "../../configs/LoadData";
+import Toast from "react-native-toast-message";
 
 const SaveVocabulary = () => {
     const [savedVocabs, setSavedVocabs] = useState([]);
@@ -17,7 +18,6 @@ const SaveVocabulary = () => {
             // The API returns a paginated object, so data is in result.content
             setSavedVocabs(res.result?.content || []);
         } catch (err) {
-            // console.error(err);
             setError("Không thể tải danh sách từ vựng đã lưu");
         } finally {
             setLoading(false);
@@ -36,7 +36,7 @@ const SaveVocabulary = () => {
             // In this screen, we usually want to remove the item if it's unsaved
             setSavedVocabs((prev) => prev.filter((v) => v.id !== vocabularyId));
         } catch (ex) {
-            // console.error("Error toggling save:", ex);
+            Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể bỏ lưu từ vựng.' });
         }
     };
 

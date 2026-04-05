@@ -2,8 +2,7 @@ import axios from "axios";
 
 const IDENTITY_BASE_URL = 'http://192.168.1.204:8080/identity/api';
 const LEARNING_BASE_URL = 'http://192.168.1.204:8090/learning/api';
-const CHATBOT_BASE_URL = 'http://192.168.1.204:8003/api/v1';
-const SCORING_BASE_URL = 'https://satyr-dashing-officially.ngrok-free.app/v2'
+const AI_BASE_URL = 'https://satyr-dashing-officially.ngrok-free.app';
 
 export const endpoints = {
     // ===== IDENTITY SERVICE =====
@@ -28,8 +27,8 @@ export const endpoints = {
     'toggle-vocabulary-save': (id) => `/secure/vocabulary/${id}/toggle`,
     'user-vocabulary-progress': '/secure/learning-progress/vocabulary',
     // -- Video --
-    'video': '/videos',
-    'video-detail': (id) => `/videos/${id}`,
+    'video': '/secure/videos',
+    'video-detail': (id) => `/secure/videos/${id}`,
     'video-progress': (id) => `/secure/video/${id}/update-progress`,
     'user-video-progress': '/secure/learning-progress/video',
     // -- Quiz --
@@ -41,17 +40,19 @@ export const endpoints = {
     // -- Session --
     'session': '/secure/sessions/daily',
     'submit-quiz-session': (sessionId, quizId) => `/secure/sessions/${sessionId}/quiz/${quizId}/submit`,
-    'submit-writing-session': (sessionId) => `/secure/sessions/${sessionId}/writing/submit`,
-    'check-level-up': (sessionId) => `/secure/sessions/${sessionId}/levelup-check`,
+    'submit-writing-session': (sessionId, promptId) => `/secure/sessions/${sessionId}/writing/${promptId}/submit`,
+    'check-level-up': (sessionId) => `/sessions/${sessionId}/levelup-check`,
     // -- Others --
-    'leader-board': '/secure/leader-board',
+    'leader-board': '/leaderboard/weekly',
     'learning-profile': '/secure/profile',
+    'streak-calendar': '/secure/stats/streak-calendar',
+    'summary': '/secure/stats/summary',
 
     // ===== CHATBOT SERVICE =====
-    'chat-voice': '/chat-voice',
+    'chat-voice': '/chat',
 
     // ===== SCORING SERVICE =====
-    'get-score': '/score',
+    'get-score': '/v2/score',
 };
 
 // Create a base Apis instance for global configs
@@ -131,27 +132,16 @@ export const LearningApis = axios.create({
 });
 addInterceptors(LearningApis);
 
-// ===== CHATBOT API =====
-export const ChatbotApis = axios.create({
-    baseURL: CHATBOT_BASE_URL,
+// ===== AI API =====
+export const AIApis = axios.create({
+    baseURL: AI_BASE_URL,
     timeout: 30000, // Voice processing might take longer
-    headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-    }
-});
-addInterceptors(ChatbotApis);
-
-// ===== SCORING API =====
-export const ScoringApis = axios.create({
-    baseURL: SCORING_BASE_URL,
-    timeout: 30000,
     headers: {
         'Content-Type': 'multipart/form-data',
         'Accept': 'application/json',
     }
 });
-addInterceptors(ScoringApis);
+addInterceptors(AIApis);
 
 export const authIdentityApis = (token) => {
     const instance = axios.create({

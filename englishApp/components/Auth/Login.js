@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+﻿import { useState, useContext } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { login, googleLogin, loadProfile, fetchLearningProfile } from "../../configs/LoadData";
@@ -54,18 +54,16 @@ const Login = ({ onLogin }) => {
           // Kiểm tra Learning Profile để xác định onboarding
           try {
             const learningProfile = await fetchLearningProfile();
-            console.log("📚 Learning Profile:", learningProfile);
             
             if (learningProfile && learningProfile.result?.onboardingCompleted) {
               // Đã hoàn thành Onboarding -> Vào trang chủ
               dispatch({ type: "login", payload: userRes });
             } else {
-              // Chưa có hoặc chưa hoàn thành Onboarding -> Chuyển qua Onboarding
+              // chưa hoàn thành Onboarding -> Chuyển qua Onboarding
               nav.navigate("Onboarding", { userData: userRes });
             }
           } catch (lpError) {
             // Nếu lỗi (404 = chưa có profile) -> Chuyển qua Onboarding
-            console.log("📚 Learning Profile not found, redirecting to Onboarding");
             nav.navigate("Onboarding", { userData: userRes });
           }
 
@@ -98,10 +96,8 @@ const Login = ({ onLogin }) => {
         const token = authResponse.result.token;
 
         await AsyncStorage.setItem("token", token);
-        // console.info("Token:", token);
 
         const userRes = await loadProfile(token);
-        // console.info("User profile:", userRes);
 
         dispatch({ type: "login", payload: userRes });
       }

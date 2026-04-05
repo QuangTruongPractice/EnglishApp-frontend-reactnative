@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import TopicDetailScreen from "../Screen/TopicDetailScreen";
 import { fetchMainTopicsDetail } from "../../configs/LoadData";
 import { useNavigation } from "@react-navigation/native";
@@ -28,7 +28,6 @@ const TopicDetail = ({ route }) => {
       setSubTopics(data.subTopics || []);
       setError(null);
     } catch (ex) {
-      // console.error(ex);
       setError("Failed to load topic details. Please try again.");
     } finally {
       setLoading(false);

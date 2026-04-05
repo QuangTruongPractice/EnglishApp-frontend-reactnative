@@ -109,6 +109,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
+  levelChip: {
+    backgroundColor: '#E0E0E0',
+    height: 24,
+  },
   errorCard: {
     margin: 16,
     backgroundColor: '#FFEBEE',

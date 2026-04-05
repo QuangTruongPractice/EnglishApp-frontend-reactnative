@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import SubTopicDetailScreen from "../Screen/SubTopicDetailScreen";
 import { fetchSubTopicsDetail, toggleVocabularySave } from "../../configs/LoadData";
+import Toast from "react-native-toast-message";
 
 const SubTopicDetail = ({ route }) => {
   const { subTopicId } = route.params;
@@ -23,10 +24,10 @@ const SubTopicDetail = ({ route }) => {
         name: data.name,
         vocabularyCount: data.vocabularyCount,
         createdAt: data.createdAt,
+        user_progress: data.user_progress || data.userProgress,
       });
       setVocabularies(data.vocabularies || []);
     } catch (ex) {
-      // console.error(ex);
       setError("Failed to load sub topic details. Please try again.");
     } finally {
       setLoading(false);
@@ -50,8 +51,7 @@ const SubTopicDetail = ({ route }) => {
         )
       );
     } catch (ex) {
-      // console.error("Error toggling vocabulary save:", ex);
-      // Optional: Show an error message to the user
+      Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể lưu/bỏ lưu từ vựng.' });
     }
   };
 

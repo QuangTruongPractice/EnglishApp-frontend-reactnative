@@ -103,7 +103,6 @@ export default function App() {
 
   useEffect(() => {
     const handleLogout = async () => {
-      // console.warn("[App] Session expired or unauthorized. Redirecting to login...");
       await AsyncStorage.removeItem("token");
       await removeCache(CACHE_KEYS.USER_PROFILE);
       dispatch({ type: "logout" });
@@ -123,7 +122,6 @@ export default function App() {
           // 1. Try to load from cache first for speed
           const cachedUser = await getCache(CACHE_KEYS.USER_PROFILE);
           if (cachedUser) {
-            // console.info("[App] Initializing user from cache.");
             dispatch({ type: "login", payload: cachedUser });
           }
 
@@ -141,11 +139,11 @@ export default function App() {
               dispatch({ type: "logout" });
             }
           } catch (e) {
-            // console.debug("Background profile refresh skipped or handled by interceptor");
+            // Lỗi refresh profile, giữ trạng thái cache
           }
         }
       } catch (error) {
-        // console.error("Initialization error:", error);
+        // Lỗi khởi tạo ứng dụng, bỏ qua
       }
     };
 

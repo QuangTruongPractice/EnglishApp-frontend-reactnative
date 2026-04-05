@@ -1,344 +1,481 @@
-// styles.js
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
+
+const CELL_SIZE = 36; // Fixed size for consistent circles
 
 export const styles = StyleSheet.create({
-  // Container styles
-  safeAreaContainer: {
+  // ===== Container =====
+  safeArea: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#4a0d0d",
+  },
+  container: {
+    flex: 1,
+    backgroundColor: "#fcf9f9",
   },
   scrollContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   scrollContentContainer: {
-    padding: 16,
+    paddingBottom: 24,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fcf9f9",
+  },
+  loadingText: {
+    marginTop: 16,
+    color: "#b83535",
+    fontSize: 16,
   },
   errorContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 16,
-  },
-
-  // Text styles
-  loadingText: {
-    marginTop: 16,
   },
   errorText: {
-    color: 'red',
-    textAlign: 'center',
+    color: "#b83535",
+    textAlign: "center",
     marginBottom: 16,
+    fontSize: 16,
   },
 
-  // Header styles
-  headerSurface: {
-    padding: 16,
-    marginBottom: 16,
-    borderRadius: 12,
+  // ===== Section Headers =====
+  sectionWrapper: {
+    paddingHorizontal: 16,
+    marginTop: 20,
   },
-  headerTitle: {
-    fontWeight: 'bold',
-    marginBottom: 8,
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
   },
-  headerSubtitle: {
-    color: '#666',
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-
-  // Tab navigation
-  tabNavigation: {
-    marginBottom: 16,
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-  },
-  filterChip: {
-    marginRight: 8,
-    borderRadius: 20,
-    backgroundColor: '#F0F2F5',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  filterChipActive: {
-    backgroundColor: '#6366F1',
-  },
-  filterChipText: {
-    fontSize: 14,
-    color: '#4B5563',
-    fontWeight: '500',
-  },
-  filterChipTextActive: {
-    color: '#FFFFFF',
-  },
-  filterChipCount: {
-    marginLeft: 6,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    fontSize: 12,
-    color: '#6B7280',
-    overflow: 'hidden',
-  },
-  filterChipCountActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    color: '#FFFFFF',
-  },
-
-  // Summary cards
-  summaryContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-  summaryCardLeft: {
-    flex: 1,
-    marginRight: 8,
-  },
-  summaryCardRight: {
-    flex: 1,
-    marginLeft: 8,
-  },
-  summaryCardContent: {
-    alignItems: 'center',
-    paddingVertical: 16,
-  },
-  summaryNumberBlue: {
-    color: '#2196F3',
-    fontWeight: 'bold',
-  },
-  summaryNumberGreen: {
-    color: '#4CAF50',
-    fontWeight: 'bold',
-  },
-
-  // Section titles
   sectionTitle: {
-    marginBottom: 12,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#1f2937",
+    marginLeft: 6,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: "#b83535",
+    fontWeight: "600",
+  },
+  sectionLink: {
+    fontSize: 14,
+    color: "#b83535",
+    fontWeight: "600",
   },
 
-  // Empty state
-  emptyStateContainer: {
-    alignItems: 'center',
-    paddingVertical: 32,
+  // ===== Streak Calendar =====
+  calendarCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  emptyStateText: {
-    color: '#666',
+  calendarHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  calendarMonthYearText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#374151",
+    textTransform: "uppercase",
+  },
+  calendarNavRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  calendarNavButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#f3f4f6",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  calendarNavText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#374151",
+  },
+  calendarNavMonthText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#374151",
+    marginHorizontal: 12,
   },
 
-  // Card styles
-  card: {
-    marginBottom: 12,
+  // Calendar Grid
+  calendarWeekDaysRow: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    marginBottom: 10,
   },
-  cardContent: {
-    paddingVertical: 16,
+  calendarWeekDayText: {
+    width: CELL_SIZE,
+    textAlign: "center",
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#9ca3af",
   },
-
-  // Video card styles
-  videoHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  videoInfo: {
-    flex: 1,
-    marginRight: 8,
-  },
-  videoTitle: {
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  videoMeta: {
-    color: '#666',
+  calendarRow: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
     marginBottom: 8,
   },
-  completedChip: {
-    backgroundColor: '#E8F5E8',
+  calendarDayCell: {
+    width: CELL_SIZE,
+    height: CELL_SIZE,
+    borderRadius: 18, // Fixed integer to avoid Android fractional radius square bug
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
   },
-  completedChipText: {
-    color: '#4CAF50',
+  calendarDayEmpty: {
+    backgroundColor: "transparent",
+  },
+  calendarDayNormal: {
+    backgroundColor: "transparent",
+  },
+  calendarDayStudied: {
+    backgroundColor: "#dcfce7",
+  },
+  calendarDayMissed: {
+    backgroundColor: "#fecaca",
+  },
+  calendarDayToday: {
+    backgroundColor: "#166534",
+  },
+  calendarDayText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#6b7280",
+  },
+  calendarDayTextNormal: {
+    color: "#374151",
+  },
+  calendarDayTextToday: {
+    color: "#ffffff",
+    fontWeight: "bold",
+  },
+  calendarDayTextStudied: {
+    color: "#166534",
+    fontWeight: "600",
+  },
+  calendarDayTextMissed: {
+    color: "#b83535",
+    fontWeight: "500",
   },
 
-  // Progress styles
-  progressContainer: {
-    marginBottom: 12,
+  // Legend
+  calendarLegend: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    marginTop: 12,
+    gap: 16,
   },
-  progressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
-  progressBar: {
+  legendDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  legendDotStudied: {
+    backgroundColor: "#4ade80",
+  },
+  legendDotMissed: {
+    backgroundColor: "#f87171",
+  },
+  legendDotToday: {
+    backgroundColor: "#166534",
+  },
+  legendText: {
+    fontSize: 12,
+    color: "#6b7280",
+  },
+
+  // ===== Vocabulary Progress Section =====
+  vocabSection: {
+    paddingHorizontal: 16,
+    marginTop: 24,
+  },
+  vocabCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  vocabSummaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3f4f6",
+  },
+  vocabCircleContainer: {
+    width: 80,
+    height: 80,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 20,
+  },
+  vocabCircleNumber: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#b83535",
+  },
+  vocabCircleLabel: {
+    fontSize: 10,
+    color: "#9ca3af",
+    fontWeight: "600",
+    marginTop: -2,
+  },
+  vocabStatsColumn: {
+    flex: 1,
+    gap: 10,
+  },
+  vocabStatRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  vocabStatLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  vocabStatDot: {
+    width: 8,
     height: 8,
     borderRadius: 4,
   },
+  vocabStatDotLearning: {
+    backgroundColor: "#f97316",
+  },
+  vocabStatDotMastered: {
+    backgroundColor: "#22c55e",
+  },
+  vocabStatLabel: {
+    fontSize: 14,
+    color: "#4b5563",
+  },
+  vocabStatValue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#1f2937",
+  },
 
-  // Video footer
-  videoFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  // Vocab Tabs
+  vocabTabsRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb",
+    marginBottom: 4,
   },
-  dateText: {
-    color: '#666',
-  },
-  videoButton: {
-    backgroundColor: '#FF5722',
-  },
-
-  // Vocabulary card styles
-  vocabularySection: {
-    marginBottom: 16,
-  },
-  vocabularyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  vocabularyWordInfo: {
+  vocabTab: {
     flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
   },
-  vocabularyWord: {
-    fontWeight: 'bold',
-    marginBottom: 2,
+  vocabTabActive: {
+    borderBottomColor: "#b83535",
   },
-  vocabularyPhonetic: {
-    color: '#666',
-    marginBottom: 8,
+  vocabTabText: {
+    fontSize: 13,
+    color: "#9ca3af",
+    fontWeight: "600",
   },
-  vocabularyActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusChip: {
-    marginLeft: 4,
-  },
-  statusChipCompleted: {
-    backgroundColor: '#E8F5E8',
-  },
-  statusChipInProgress: {
-    backgroundColor: '#FFF3E0',
-  },
-  statusChipText: {
-    fontSize: 10,
+  vocabTabTextActive: {
+    color: "#b83535",
   },
 
-  // Text content styles
-  definitionText: {
-    marginBottom: 8,
-  },
-  exampleText: {
-    fontStyle: 'italic',
-    color: '#666',
-    marginBottom: 8,
+  // Vocab List ScrollView
+  vocabListScroll: {
+    maxHeight: 360,
   },
 
-  // Divider
-  divider: {
-    marginBottom: 16,
-  },
-
-  // Vietnamese section
-  vietnameseTitle: {
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-
-  // Tags
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 12,
-  },
-  wordTypeChip: {
-    marginRight: 8,
-    marginBottom: 4,
-    backgroundColor: '#E3F2FD',
-  },
-  topicChip: {
-    marginRight: 8,
-    marginBottom: 4,
-    backgroundColor: '#F3E5F5',
-  },
-  chipText: {
-    fontSize: 10,
-  },
-
-  // New Vocabulary Card styles
+  // ===== Vocabulary List Items =====
   vocaCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    flexDirection: "row",
+    alignItems: "stretch",
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3f4f6",
   },
-  vocaIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#E8F5E9',
-    justifyContent: 'center',
-    alignItems: 'center',
+  vocaLeftBorder: {
+    width: 3,
+    backgroundColor: "#f97316",
+    borderRadius: 2,
     marginRight: 12,
   },
   vocaInfoContainer: {
     flex: 1,
   },
-  vocaMainLine: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  vocaTopRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
     marginBottom: 2,
   },
   vocaWord: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#111827",
+    marginBottom: 1,
   },
   vocaPhonetic: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    marginLeft: 8,
+    fontSize: 13,
+    color: "#9ca3af",
   },
   vocaLevelBadge: {
-    marginLeft: 12,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
+    backgroundColor: "#fef2f2",
+    borderRadius: 6,
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 3,
+    marginLeft: 8,
   },
   vocaLevelText: {
     fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '600',
+    color: "#b83535",
+    fontWeight: "700",
   },
-  vocaSecondLine: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  vocaNextReview: {
+    fontSize: 12,
+    color: "#9ca3af",
+    marginTop: 4,
+    textAlign: "right",
   },
-  vocaType: {
+
+  // ===== Video Progress Section =====
+  videoSection: {
+    paddingHorizontal: 16,
+    marginTop: 24,
+  },
+  videoProgressCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    marginBottom: 16,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  thumbnailContainer: {
+    width: "100%",
+    aspectRatio: 16 / 9,
+    position: "relative",
+    backgroundColor: "#e1e4e8",
+  },
+  thumbnail: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  playIconOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.15)",
+  },
+  playButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "rgba(150, 30, 30, 0.85)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  durationBadge: {
+    position: "absolute",
+    bottom: 8,
+    right: 8,
+    backgroundColor: "rgba(0,0,0,0.8)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  durationText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  statusBadge: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  statusBadgeText: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  videoCardContent: {
+    padding: 14,
+  },
+  videoTitle: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#1f2937",
+    marginBottom: 6,
+    lineHeight: 21,
+  },
+  videoMeta: {
+    fontSize: 12,
+    color: "#9ca3af",
+  },
+  videoProgressBarContainer: {
+    height: 4,
+    backgroundColor: "#f0eaeb",
+    borderRadius: 2,
+    overflow: "hidden",
+    marginTop: 10,
+  },
+  videoProgressBarFill: {
+    height: "100%",
+    backgroundColor: "#b83535",
+    borderRadius: 2,
+  },
+
+  // ===== Empty State =====
+  emptyStateContainer: {
+    alignItems: "center",
+    paddingVertical: 32,
+  },
+  emptyStateText: {
+    color: "#9ca3af",
     fontSize: 14,
-    fontStyle: 'italic',
-    color: '#9CA3AF',
-  },
-  vocaTranslation: {
-    fontSize: 14,
-    color: '#4B5563',
-    marginLeft: 4,
   },
 });

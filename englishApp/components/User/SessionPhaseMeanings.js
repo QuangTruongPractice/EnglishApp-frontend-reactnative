@@ -4,7 +4,7 @@ import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import styles from "../../styles/SessionStyles";
 
-const SessionPhaseMeanings = ({ meaning, onPlayAudio, hasStartedQuizzes, onJumpToQuizzes }) => {
+const SessionPhaseMeanings = ({ meaning, onPlayAudio }) => {
   if (!meaning) return null;
 
   const renderHighlightedExample = (text, highlight) => {
@@ -23,42 +23,39 @@ const SessionPhaseMeanings = ({ meaning, onPlayAudio, hasStartedQuizzes, onJumpT
 
   return (
     <View style={styles.card}>
-      {hasStartedQuizzes && (
-        <TouchableOpacity 
-          style={{
-            backgroundColor: "#F45B69",
-            paddingVertical: 10,
-            paddingHorizontal: 16,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between"
-          }}
-          onPress={onJumpToQuizzes}
-        >
-          <Text style={{color: "#fff", fontWeight: "700", fontSize: 14}}>Đang làm dở bài tập. Tiếp tục ngay!</Text>
-          <Icon name="arrow-right-circle" size={20} color="#fff" />
-        </TouchableOpacity>
+      {meaning.images?.[0]?.imageUrl ? (
+        <View style={styles.cardImageContainer}>
+          <Image
+            source={{ uri: meaning.images[0].imageUrl }}
+            style={styles.cardImage}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={["transparent", "rgba(0,0,0,0.4)"]}
+            style={styles.imageOverlay}
+          />
+          
+          <TouchableOpacity style={styles.audioButtonOverlay} onPress={onPlayAudio}>
+            <Icon name="volume-high" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.noImageTopBar}>
+           <View style={styles.typeBadgeGray}>
+             <Text style={styles.typeTextGray}>{meaning.level} - {meaning.type}</Text>
+           </View>
+           <TouchableOpacity style={styles.audioButtonSolid} onPress={onPlayAudio}>
+              <Icon name="volume-high" size={24} color="#fff" />
+           </TouchableOpacity>
+        </View>
       )}
-      <View style={styles.cardImageContainer}>
-        <Image
-          source={{ uri: meaning.images?.[0]?.imageUrl || "https://res.cloudinary.com/dabb0yavq/image/upload/v1743581561/vocabulary_placeholder_j6qjq9.png" }}
-          style={styles.cardImage}
-          resizeMode="cover"
-        />
-        <LinearGradient
-          colors={["transparent", "rgba(0,0,0,0.4)"]}
-          style={styles.imageOverlay}
-        />
-        
-        <TouchableOpacity style={styles.audioButtonOverlay} onPress={onPlayAudio}>
-          <Icon name="volume-high" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
 
       <ScrollView style={styles.cardContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.typeBadge}>
-          <Text style={styles.typeText}>{meaning.level} - {meaning.type}</Text>
-        </View>
+        {meaning.images?.[0]?.imageUrl ? (
+          <View style={styles.typeBadge}>
+            <Text style={styles.typeText}>{meaning.level} - {meaning.type}</Text>
+          </View>
+        ) : null}
 
         <Text style={styles.wordTitle}>{meaning.word}</Text>
         <Text style={styles.phonetic}>{meaning.phonetic}</Text>

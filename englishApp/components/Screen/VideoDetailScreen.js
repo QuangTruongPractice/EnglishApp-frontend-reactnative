@@ -59,6 +59,25 @@ const VideoDetailScreen = ({
     );
   }
 
+  const getStatusInfo = (progress, isCompleted) => {
+    if (isCompleted) {
+      return { text: "Hoàn thành", bgColor: "#e8f5e9", textColor: "#2e7d32" };
+    }
+    if (progress > 0) {
+      return { text: "Đang học", bgColor: "#e3f2fd", textColor: "#1565c0" };
+    }
+    return { text: "Mới", bgColor: "#e8f5e9", textColor: "#2e7d32" };
+  };
+
+  const formatDate = (isoString) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  };
+
+  const statusInfo = video ? getStatusInfo(video.progressPercentage, video.isCompleted) : null;
+  const progress = video?.progressPercentage || 0;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerContainer}>
@@ -107,10 +126,24 @@ const VideoDetailScreen = ({
                   {video.language.toUpperCase()}
                 </Text>
               </View>
-              <Chip mode="flat" style={styles.statusChip}>
-                {video.status}
-              </Chip>
             </View>
+
+            <View style={styles.badgesRow}>
+              <View style={styles.badgeSegments}>
+                <Text style={styles.badgeSegmentsText}>{video.segmentsCount || subtitles?.length || 0} segments</Text>
+              </View>
+              <View style={[styles.badgeStatus, { backgroundColor: statusInfo?.bgColor }]}>
+                <Text style={[styles.badgeStatusText, { color: statusInfo?.textColor }]}>
+                  {statusInfo?.text}
+                </Text>
+              </View>
+              <Text style={styles.dateText}>{formatDate(video.createdAt)}</Text>
+            </View>
+
+            <View style={styles.progressBarContainer}>
+              <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
+            </View>
+            <Text style={styles.progressText}>{progress}%</Text>
           </Card.Content>
         </Card>
 
@@ -198,7 +231,7 @@ const SubtitleItem = ({
           <IconButton
             icon={translatedText ? "check-circle" : "translate"}
             size={24}
-            iconColor={translatedText ? "#4caf50" : "#26a69a"}
+            iconColor={translatedText ? "#e53935" : "#7e2222"}
           />
         </TouchableOpacity>
       </View>

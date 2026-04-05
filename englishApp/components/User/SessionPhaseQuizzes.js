@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Animated } from "react-native
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import styles from "../../styles/SessionStyles";
 
-const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus }) => {
+const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus, onTabChange }) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [isAnswered, setIsAnswered] = useState(false);
   
@@ -85,9 +85,33 @@ const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus }) => {
     }
   };
 
+  const renderQuestionWithHighlight = (text) => {
+    if (!text) return null;
+    const parts = text.split(/("[^"]+"|'[^']+')/g);
+    return (
+      <Text style={styles.quizQuestion}>
+        {parts.map((part, i) => {
+          if ((part.startsWith('"') && part.endsWith('"')) || (part.startsWith("'") && part.endsWith("'"))) {
+            const word = part.slice(1, -1);
+            return (
+              <Text key={i}>
+                {part[0]}<Text style={styles.quizQuestionHighlight}>{word}</Text>{part[part.length-1]}
+              </Text>
+            );
+          }
+          return <Text key={i}>{part}</Text>;
+        })}
+      </Text>
+    );
+  };
+
   const renderMC = () => (
     <View style={styles.quizContainer}>
-      <Text style={styles.quizQuestion}>{quiz.question}</Text>
+      <View style={styles.quizBadge}>
+        <Icon name="bullseye-arrow" size={16} color="#f57f17" />
+        <Text style={styles.quizBadgeText}>TRẮC NGHIỆM</Text>
+      </View>
+      {renderQuestionWithHighlight(quiz.question)}
       {quiz.answers.map((answer, index) => {
         const letters = ["A", "B", "C", "D"];
         const isSelected = selectedOption === answer.id;
@@ -130,7 +154,11 @@ const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus }) => {
 
     return (
       <View style={styles.quizContainer}>
-        <Text style={styles.quizQuestion}>Chọn từ đúng để hoàn thành định nghĩa:</Text>
+        <View style={styles.quizBadge}>
+          <Icon name="pencil" size={16} color="#f57f17" />
+          <Text style={styles.quizBadgeText}>ĐIỀN VÀO CHỖ TRỐNG</Text>
+        </View>
+        <Text style={styles.quizQuestion}>Chọn từ đúng để hoàn thành câu:</Text>
         <View style={styles.fillContainer}>
           <Text style={styles.fillText}>
             "{quiz.text.split("...")[0]} 
@@ -162,9 +190,14 @@ const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus }) => {
 
   const renderMatch = () => (
     <View style={styles.quizContainer}>
-      <Text style={styles.quizQuestion}>{quiz.question}</Text>
+      <View style={styles.quizBadge}>
+        <Icon name="link-variant" size={16} color="#f57f17" />
+        <Text style={styles.quizBadgeText}>GHÉP ĐÔI TỪ - NGHĨA</Text>
+      </View>
+      <Text style={styles.quizQuestion}>Ghép mỗi từ với nghĩa đúng:</Text>
       <View style={styles.matchRow}>
         <View style={styles.matchColumn}>
+          <Text style={styles.matchHeader}>TỪ VỰNG</Text>
           {quiz.left_items.map((item) => {
             const isMatched = matches.some(m => m.leftId === item.id);
             const isSelected = leftSelected === item.id;
@@ -179,12 +212,13 @@ const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus }) => {
                 onPress={() => handleMatchLeft(item.id)}
                 disabled={isMatched || isAnswered}
               >
-                <Text style={styles.matchText}>{item.text}</Text>
+                <Text style={styles.matchText}>{item.word}</Text>
               </TouchableOpacity>
             );
           })}
         </View>
         <View style={styles.matchColumn}>
+          <Text style={styles.matchHeader}>Ý NGHĨA</Text>
           {quiz.right_items.map((item) => {
             const isMatched = matches.some(m => m.rightId === item.id);
             const isSelected = rightSelected === item.id;
@@ -209,12 +243,38 @@ const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus }) => {
   );
 
   return (
-    <View style={styles.card}>
-      <ScrollView contentContainerStyle={{ paddingVertical: 20 }}>
+    <View style={{ flex: 1 }}>
+      <View style={styles.quizTabBar}>
+        <TouchableOpacity 
+          style={[styles.quizTab, quiz.type === "MC" && styles.quizTabActive]}
+          onPress={() => onTabChange && onTabChange("MC")}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.quizTabText, quiz.type === "MC" && styles.quizTabTextActive]}>TRẮC NGHIỆM</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.quizTab, quiz.type === "FILL" && styles.quizTabActive]}
+          onPress={() => onTabChange && onTabChange("FILL")}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.quizTabText, quiz.type === "FILL" && styles.quizTabTextActive]}>ĐIỀN TỪ</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.quizTab, quiz.type === "MATCH" && styles.quizTabActive]}
+          onPress={() => onTabChange && onTabChange("MATCH")}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.quizTabText, quiz.type === "MATCH" && styles.quizTabTextActive]}>GHÉP ĐÔI</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.card}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
         {quiz.type === "MC" && renderMC()}
         {quiz.type === "FILL" && renderFill()}
         {quiz.type === "MATCH" && renderMatch()}
-      </ScrollView>
+        </ScrollView>
+      </View>
     </View>
   );
 };

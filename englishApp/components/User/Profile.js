@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import ProfileScreen from "../Screen/ProfileScreen";
 import { updateProfile } from "../../configs/LoadData";
+import Toast from "react-native-toast-message";
 
 const Profile = () => {
   const user = useContext(MyUserContext);
@@ -23,7 +24,7 @@ const Profile = () => {
       await AsyncStorage.removeItem("token");
       dispatch({ type: "logout" });
     } catch (error) {
-      // console.error("Lỗi khi đăng xuất:", error);
+      Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể đăng xuất.' });
     }
   };
 
@@ -73,7 +74,7 @@ const Profile = () => {
       const response = await updateProfile(formData);
       dispatch({ type: "login", payload: response });
     } catch (err) {
-      // console.error("Lỗi cập nhật dữ liệu:", err);
+      Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể cập nhật thông tin cá nhân.' });
     } finally {
       setLoading(false);
     }

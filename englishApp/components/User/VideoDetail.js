@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import VideoDetailScreen from "../Screen/VideoDetailScreen";
 import { updateVideoProgress, fetchVideoDetail } from "../../configs/LoadData";
 import { useNavigation } from "@react-navigation/native";
+import Toast from "react-native-toast-message";
 
 const VideoDetail = ({ route }) => {
   const { videoId: initialVideoId } = route.params;
@@ -36,9 +37,8 @@ const VideoDetail = ({ route }) => {
 
     try {
       await updateVideoProgress(progress, videoId);
-      // console.info(Math.round(progress.currentTime));
     } catch (error) {
-      // console.error("Failed to save progress:", error);
+      // Lỗi lưu tiến độ video, bỏ qua
     }
   }, [videoId]);
 
@@ -97,7 +97,6 @@ const VideoDetail = ({ route }) => {
   }, [videoId, loading]);
 
   const handleSubtitleClick = useCallback((subtitle) => {
-    // console.log("Subtitle clicked:", subtitle);
     setSelectedSubtitle(subtitle);
 
     if (playerRef.current && subtitle.startTime !== undefined) {
@@ -105,7 +104,6 @@ const VideoDetail = ({ route }) => {
           ? parseFloat(subtitle.startTime)
           : subtitle.startTime;
   
-        // console.log("Seeking to time:", seekTime);
         playerRef.current.seekTo(seekTime, true);
     }
   }, []);
@@ -133,7 +131,7 @@ const VideoDetail = ({ route }) => {
           }));
         }
       } catch (error) {
-        // console.error("Translation error:", error);
+        Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể dịch phụ đề.' });
       } finally {
         setTranslatingIds((prev) => {
           const newSet = new Set(prev);

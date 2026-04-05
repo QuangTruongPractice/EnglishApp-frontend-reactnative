@@ -1,312 +1,337 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions, Platform } from "react-native";
 
-export default StyleSheet.create({
+const { height } = Dimensions.get("window");
+
+const styles = StyleSheet.create({
+  // Global & States
   safeArea: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
   },
+  screenContainer: {
+    flex: 1,
+    backgroundColor: "#fcf9f9",
+  },
+  scrollContentContainer: {
+    paddingBottom: 40,
+    backgroundColor: "#fcf9f9",
+  },
+  
+  // Loading & Error
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
-    backgroundColor: "#fff",
   },
   loadingText: {
-    color: "#1a1a1a",
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 20,
-    textAlign: "center",
+    marginTop: 16,
+    color: "#64748b",
+    fontSize: 14,
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#fff",
-  },
-  errorContent: {
-    alignItems: "center",
-    backgroundColor: "#fef2f2",
-    borderRadius: 24,
-    padding: 32,
-    width: "90%",
-    borderWidth: 1,
-    borderColor: '#fee2e2',
   },
   errorTitle: {
-    color: "#991b1b",
-    fontSize: 22,
-    fontWeight: "800",
-    marginTop: 20,
-    marginBottom: 8,
-    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1e293b",
+    marginTop: 16,
   },
   errorText: {
-    color: "#b91c1c",
     fontSize: 14,
+    color: "#64748b",
     textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 32,
+    marginTop: 8,
+    marginBottom: 24,
   },
-  retryButton: {
-    borderRadius: 16,
-    backgroundColor: "#ef4444",
-    paddingHorizontal: 32,
-    paddingVertical: 14,
+  retryBtn: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: "#b83535",
+    borderRadius: 8,
   },
-  retryButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
+  retryBtnText: {
+    color: "#ffffff",
+    fontWeight: "600",
+    fontSize: 14,
   },
 
-  // Header
-  headerContainer: {
+  // HERO SECTION
+  headerBlock: {
+    width: "100%",
+  },
+  heroSection: {
+    width: "100%",
+    backgroundColor: "#6e1c1c", // Dark red hero
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  heroTopActions: {
+    marginBottom: 24,
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "rgba(0,0,0,0.2)",
+  },
+  backButtonText: {
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 12,
+    fontWeight: "500",
+    marginLeft: 6,
+  },
+  heroTopicBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  heroTopicBadgeText: {
+    color: "#ffffff",
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
+  heroTitle: {
+    color: "#ffffff",
+    fontSize: 32,
+    fontWeight: "800",
+    marginBottom: 8,
+  },
+  heroSubtitle: {
+    color: "#cbd5e1",
+    fontSize: 13,
+    fontWeight: "500",
+    opacity: 0.9,
+  },
+
+  // Completed Banner
+  completedBanner: {
+    flexDirection: "row",
+    backgroundColor: "#166534", // Dark green
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 16,
+    alignItems: "center",
+  },
+  bannerIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  bannerEmoji: {
+    fontSize: 24,
+  },
+  bannerTextCol: {
+    flex: 1,
+  },
+  bannerTitle: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 2,
+  },
+  bannerSubtitle: {
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 12,
+    lineHeight: 18,
+  },
+
+  // Progress Card
+  progressCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
+    marginHorizontal: 16,
+    marginTop: 16, // Under the hero or banner
+    padding: 24,
+  },
+  progressRowTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    marginBottom: 12,
+  },
+  progressLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#475569",
+  },
+  fractionBox: {
+    flexDirection: "row",
+    alignItems: "baseline",
+  },
+  fractionHighlight: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#22c55e", // Green
+  },
+  fractionTotal: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1e293b",
+  },
+  progressBarBg: {
+    height: 8,
+    backgroundColor: "#dcfce7", // Light green bg
+    borderRadius: 4,
+    marginBottom: 20,
+    overflow: "hidden",
+  },
+  progressBarFill: {
+    height: "100%",
+    backgroundColor: "#22c55e", // Green fill
+    borderRadius: 4,
+  },
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  statCol: {
+    flex: 1,
+    alignItems: "center",
+  },
+  statVal: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#1e293b",
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#94a3b8",
+  },
+  statDiv: {
+    width: 1,
+    height: 30,
+    backgroundColor: "#e2e8f0",
+  },
+
+  // Vocabulary List Header
+  listHeaderSection: {
+    marginTop: 32,
+    marginBottom: 16,
+  },
+  listTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#1e293b",
+    marginHorizontal: 20,
+    marginBottom: 12,
+  },
+  filterScroll: {
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  filterChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#f1f5f9",
+    marginRight: 8,
+  },
+  filterChipActive: {
+    backgroundColor: "#ffe4e6",
+  },
+  filterChipText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#64748b",
+  },
+  filterChipTextActive: {
+    color: "#f43f5e",
+  },
+
+  // Vocabulary items
+  vocabularyCard: {
+    backgroundColor: "#ffffff",
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 20,
+    overflow: "hidden", // Important so we can use a border radius clean card
+  },
+  cardContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#fff",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    padding: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#22c55e", // Always Green for now since API doesn't have local word status
   },
-  backButton: {
-    padding: 10,
-    borderRadius: 14,
-    backgroundColor: "#f1f5f9",
-  },
-  headerTitleContainer: {
+  wordMainInfo: {
     flex: 1,
-    marginHorizontal: 16,
+    paddingLeft: 8,
   },
-  headerTitleMain: {
-    color: "#1a1a1a",
+  vocabularyWord: {
     fontSize: 18,
     fontWeight: "800",
-    textAlign: "center",
+    color: "#1e293b",
+    marginBottom: 4,
+    letterSpacing: -0.2,
   },
-  headerSpacer: {
-    width: 44,
+  vocabularyPhonetic: {
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontSize: 13,
+    color: "#64748b",
   },
-
-  // Container
-  container: {
-    flex: 1,
+  cardRight: {
+    alignItems: "flex-end",
+    marginLeft: 16,
   },
-  scrollContentContainer: {
-    flexGrow: 1,
-  },
-
-  heroSection: {
-    paddingHorizontal: 24,
-    paddingVertical: 32,
-    backgroundColor: "#fff",
-  },
-  heroTitle: {
-    color: "#1a1a1a",
-    fontSize: 32,
-    fontWeight: "800",
-    marginBottom: 20,
-    letterSpacing: -0.5,
-  },
-  heroStats: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  statBadge: {
-    flexDirection: "row",
-    alignItems: "center",
+  levelBadge: {
     backgroundColor: "#f1f5f9",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    gap: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
-  heroStatText: {
+  levelText: {
+    fontSize: 11,
+    fontWeight: "800",
     color: "#475569",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-
-  // Search Bar
-  searchBarContainer: {
-    paddingHorizontal: 24,
-    marginBottom: 24,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f8fafc',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  searchText: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 15,
-    color: '#64748b',
-    fontWeight: '500',
+    textTransform: "uppercase",
   },
 
   // Empty State
   emptyContainer: {
-    flex: 1,
+    alignItems: "center",
     justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 80,
-  },
-  emptyContent: {
-    alignItems: "center",
-    padding: 40,
+    paddingVertical: 60,
+    paddingHorizontal: 20,
   },
   emptyTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#1a1a1a",
-    marginTop: 20,
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#94a3b8",
+    marginTop: 16,
     marginBottom: 8,
   },
   emptyText: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#64748b",
     textAlign: "center",
-    lineHeight: 24,
-  },
-
-  // Vocabulary
-  vocabularySection: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
-    paddingHorizontal: 4,
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#1a1a1a",
-  },
-  sectionBadge: {
-    backgroundColor: "#f1f5f9",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-  },
-  sectionCount: {
-    color: "#64748b",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-
-  // Cards
-  vocabularyCard: {
-    backgroundColor: "#fff",
-    borderRadius: 24,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-    overflow: 'hidden',
-  },
-  cardContent: {
-    flex: 1,
-    padding: 24,
-  },
-  vocabularyHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 16,
-  },
-  wordMainInfo: {
-    flex: 1,
-  },
-  vocabularyWord: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#1a1a1a",
-    marginBottom: 4,
-    letterSpacing: -0.3,
-  },
-  vocabularyPhonetic: {
-    fontSize: 14,
-    color: "#64748b",
-    fontStyle: "italic",
-    fontWeight: '500',
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 8,
-  },
-  levelBadge: {
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  levelText: {
-    fontSize: 11,
-    color: "#fff",
-    fontWeight: "800",
-    textTransform: 'uppercase',
-  },
-  saveButton: {
-    backgroundColor: '#f8fafc',
-    padding: 10,
-    borderRadius: 14,
-  },
-
-  vocabularyDefinition: {
-    fontSize: 16,
-    color: "#334155",
-    lineHeight: 24,
-    fontWeight: '500',
-    marginBottom: 16,
-  },
-
-  // Examples
-  exampleContainer: {
-    backgroundColor: "#f8fafc",
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-  },
-  exampleText: {
-    fontSize: 14,
-    color: "#475569",
-    fontStyle: "italic",
-    lineHeight: 22,
-    fontWeight: '500',
-  },
-
-  // Learn
-  learnButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: 'center',
-    borderRadius: 16,
-    paddingVertical: 14,
-    gap: 8,
-    width: '100%',
-  },
-  learnButtonText: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "700",
   },
 });
+
+export default styles;

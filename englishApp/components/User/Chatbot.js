@@ -1,13 +1,12 @@
-import React, { useState, useContext, useRef, useEffect } from 'react';
+﻿import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Audio } from 'expo-av';
 import Toast from 'react-native-toast-message';
 import { MyUserContext } from '../../configs/Context';
-import { ChatbotApis, endpoints } from '../../configs/Apis';
+import { AIApis, endpoints } from '../../configs/Apis';
 import ChatbotScreen from '../Screen/ChatbotScreen';
 
 const Chatbot = () => {
     const user = useContext(MyUserContext);
-    const [conversationId, setConversationId] = useState(null);
     const [loading, setLoading] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
@@ -45,7 +44,6 @@ const Chatbot = () => {
 
             await sound.playAsync();
         } catch (error) {
-            // console.error("Error playing audio:", error);
             setIsSpeaking(false);
         }
     };
@@ -58,9 +56,6 @@ const Chatbot = () => {
         try {
             const formData = new FormData();
             formData.append('user_id', user?.id || '');
-            if (conversationId) {
-                formData.append('conversation_id', conversationId);
-            }
 
             if (audioUri) {
                 formData.append('audio', {
@@ -70,19 +65,18 @@ const Chatbot = () => {
                 });
             }
 
-            const response = await ChatbotApis.post(endpoints['chat-voice'], formData, {
+            const response = await AIApis.post(endpoints['chat-voice'], formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 }
             });
 
             if (response.data) {
-                const { conversation_id, audio_url } = response.data;
-                if (conversation_id) setConversationId(conversation_id);
+                const { audio_link } = response.data;
 
                 // Play audio response
-                if (audio_url) {
-                    playAudio(audio_url);
+                if (audio_link) {
+                    playAudio(audio_link);
                 }
             }
         } catch (error) {
@@ -96,13 +90,33 @@ const Chatbot = () => {
         }
     };
 
-    const startNewChat = () => {
-        setConversationId(null);
-        Toast.show({
-            type: 'info',
-            text1: 'New Chat',
-            text2: 'Conversation history cleared.'
-        });
+    const startNewChat = async () => {
+        setLoading(true);
+        try {
+            const formData = new FormData();
+            formData.append('user_id', user?.id || '');
+            formData.append('reset', 'true');
+
+            await AIApis.post(endpoints['chat-voice'], formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+
+            Toast.show({
+                type: 'info',
+                text1: 'New Chat',
+                text2: 'Conversation history cleared.'
+            });
+        } catch (error) {
+            Toast.show({
+                type: 'error',
+                text1: 'Opps',
+                text2: 'Không thể reset cuộc trò chuyện.'
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const startRecording = async () => {

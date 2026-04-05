@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { ActivityIndicator, View, Text } from "react-native";
 import { fetchLeaderBoard } from "../../configs/LoadData";
 import LeaderBoardScreen from "../Screen/LeaderBoardScreen";
 import styles from "../../styles/LeaderBoardStyles";
 import { useNavigation } from "@react-navigation/native";
+import { getCache, CACHE_KEYS } from "../../utils/cache";
 
 const LeaderBoard = () => {
   const [leaderBoard, setLeaderBoard] = useState([]);
@@ -17,11 +18,20 @@ const LeaderBoard = () => {
     try {
       setLoading(true);
       const response = await fetchLeaderBoard();
-      const data = response.result;
-      setLeaderBoard(data.leaderBoard);
-      setCurrentUser(data.currentUser);
+      const profile = await getCache(CACHE_KEYS.USER_PROFILE);
+      
+      if (response && response.code === 1000) {
+        const data = response.result; // This is the array
+        setLeaderBoard(data);
+        
+        if (profile && profile.userId) {
+          const userInList = data.find(u => u.userId === profile.userId);
+          if (userInList) {
+            setCurrentUser(userInList);
+          }
+        }
+      }
     } catch (e) {
-      // console.error(e);
       setError("Không tải được bảng xếp hạng. Vui lòng thử lại.");
     } finally {
       setLoading(false);
@@ -78,6 +88,7 @@ const LeaderBoard = () => {
     <LeaderBoardScreen
       leaderBoard={leaderBoard}
       currentUser={currentUser}
+      loading={loading}
       refreshing={refreshing}
       onRefresh={onRefresh}
       formatDate={formatDate}
