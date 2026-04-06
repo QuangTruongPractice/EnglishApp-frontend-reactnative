@@ -31,6 +31,7 @@ import DailyPractice from "./components/User/DailyPractice";
 import DailySession from "./components/User/DailySession";
 import Chatbot from "./components/User/Chatbot";
 import SaveVocabulary from "./components/User/SaveVocabulary";
+import UpdatePasswordScreen from "./components/User/ChangePassword";
 
 
 const Stack = createNativeStackNavigator();
@@ -208,6 +209,11 @@ export default function App() {
                 <Stack.Screen
                   name="SaveVocabulary"
                   component={SaveVocabulary}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="UpdatePassword"
+                  component={UpdatePasswordScreen}
                   options={{ headerShown: false }}
                 />
               </>

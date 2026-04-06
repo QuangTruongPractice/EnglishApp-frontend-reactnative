@@ -1,130 +1,114 @@
 import React from "react";
-import { ScrollView, KeyboardAvoidingView, Platform } from "react-native";
-import {
-  TextInput,
-  Button,
-  Card,
-  HelperText,
-  Provider as PaperProvider,
-  Text,
-} from "react-native-paper";
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StatusBar } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from "@react-navigation/native";
 import styles from "../../styles/ChangePasswordStyles";
 
 const ChangePasswordScreen = ({
-  email,
+  currentPassword,
+  setCurrentPassword,
   newPassword,
-  confirmPassword,
   setNewPassword,
+  confirmPassword,
   setConfirmPassword,
-  showPassword,
-  setShowPassword,
-  showConfirmPassword,
-  setShowConfirmPassword,
-  changePassword,
   loading,
-  nav,
+  showCurrent,
+  setShowCurrent,
+  showNew,
+  setShowNew,
+  showConfirm,
+  setShowConfirm,
+  handleUpdatePassword,
 }) => {
-  const hasPasswordMismatch =
-    confirmPassword && newPassword !== confirmPassword;
+  const navigation = useNavigation();
 
   return (
-    <PaperProvider>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <Card style={styles.card}>
-            <Card.Content style={styles.cardContent}>
-              <Text variant="titleLarge" style={styles.title}>Đổi mật khẩu</Text>
-              <Text variant="bodyMedium" style={styles.subtitle}>
-                Nhập mật khẩu mới cho tài khoản: {email}
-              </Text>
+    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Thay đổi mật khẩu</Text>
+        <View style={{ width: 24 }} />
+      </View>
 
-              <TextInput
-                label="Mật khẩu mới"
-                value={newPassword}
-                onChangeText={setNewPassword}
-                mode="outlined"
-                secureTextEntry={!showPassword}
-                disabled={loading}
-                style={styles.input}
-                right={
-                  <TextInput.Icon
-                    icon={showPassword ? "eye-off" : "eye"}
-                    onPress={() => setShowPassword(!showPassword)}
-                  />
-                }
-              />
-              <HelperText
-                type="info"
-                visible={newPassword.length > 0 && newPassword.length < 6}
-              >
-                Mật khẩu phải có ít nhất 6 ký tự
-              </HelperText>
+      <View style={styles.content}>
+        <Text style={styles.description}>
+          Mật khẩu của bạn phải có ít nhất 6 ký tự. Vui lòng không sử dụng mật khẩu cũ.
+        </Text>
 
-              <TextInput
-                label="Xác nhận mật khẩu"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                mode="outlined"
-                secureTextEntry={!showConfirmPassword}
-                disabled={loading}
-                style={styles.input}
-                error={hasPasswordMismatch}
-                right={
-                  <TextInput.Icon
-                    icon={showConfirmPassword ? "eye-off" : "eye"}
-                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  />
-                }
-                onSubmitEditing={changePassword}
-                returnKeyType="send"
-              />
-              <HelperText type="error" visible={hasPasswordMismatch}>
-                Mật khẩu xác nhận không khớp
-              </HelperText>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Mật khẩu hiện tại</Text>
+          <View style={styles.inputContainer}>
+            <Ionicons name="lock-closed-outline" size={20} color="#888" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Nhập mật khẩu hiện tại"
+              secureTextEntry={!showCurrent}
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+            />
+            <TouchableOpacity onPress={() => setShowCurrent(!showCurrent)}>
+              <Ionicons name={showCurrent ? "eye-outline" : "eye-off-outline"} size={20} color="#888" />
+            </TouchableOpacity>
+          </View>
+        </View>
 
-              <Button
-                mode="contained"
-                onPress={changePassword}
-                loading={loading}
-                disabled={
-                  loading ||
-                  hasPasswordMismatch ||
-                  !newPassword ||
-                  !confirmPassword
-                }
-                style={styles.button}
-                contentStyle={styles.buttonContent}
-                buttonColor="#d32f2f"
-              >
-                {loading ? "Đang cập nhật..." : "Đổi mật khẩu"}
-              </Button>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Mật khẩu mới</Text>
+          <View style={styles.inputContainer}>
+            <Ionicons name="shield-checkmark-outline" size={20} color="#888" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Nhập mật khẩu mới"
+              secureTextEntry={!showNew}
+              value={newPassword}
+              onChangeText={setNewPassword}
+            />
+            <TouchableOpacity onPress={() => setShowNew(!showNew)}>
+              <Ionicons name={showNew ? "eye-outline" : "eye-off-outline"} size={20} color="#888" />
+            </TouchableOpacity>
+          </View>
+        </View>
 
-              <Button
-                mode="outlined"
-                onPress={() => nav.goBack()}
-                disabled={loading}
-                style={styles.button}
-                contentStyle={styles.buttonContent}
-              >
-                Quay lại
-              </Button>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Xác nhận mật khẩu mới</Text>
+          <View style={styles.inputContainer}>
+            <Ionicons name="shield-checkmark-outline" size={20} color="#888" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Nhập lại mật khẩu mới"
+              secureTextEntry={!showConfirm}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+            <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)}>
+              <Ionicons name={showConfirm ? "eye-outline" : "eye-off-outline"} size={20} color="#888" />
+            </TouchableOpacity>
+          </View>
+        </View>
 
-              <Button
-                mode="text"
-                onPress={() => nav.navigate("Login")}
-                style={styles.linkButton}
-                disabled={loading}
-              >
-                Về trang đăng nhập
-              </Button>
-            </Card.Content>
-          </Card>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </PaperProvider>
+        <TouchableOpacity
+          onPress={handleUpdatePassword}
+          disabled={loading}
+          style={{ marginTop: 20 }}
+        >
+          <LinearGradient
+            colors={["#E53935", "#C62828"]}
+            style={styles.saveBtn}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.saveBtnText}>Cập nhật mật khẩu</Text>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 

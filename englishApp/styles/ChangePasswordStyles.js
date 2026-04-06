@@ -3,60 +3,77 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9a9a9ff",
+    backgroundColor: "#FDF9F9",
   },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: "center",
-    padding: 16,
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+    backgroundColor: "#fff",
   },
-  card: {
-    marginHorizontal: 16,
-    elevation: 4,
+  backBtn: {
+    padding: 5,
   },
-  cardContent: {
-    padding: 24,
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#333",
   },
-  title: {
-    textAlign: "center",
-    marginBottom: 8,
-    fontSize: 28,
-    fontWeight: "bold",
+  content: {
+    padding: 20,
   },
-  subtitle: {
-    textAlign: "center",
-    marginBottom: 32,
+  description: {
+    fontSize: 14,
     color: "#666",
+    marginBottom: 25,
+    lineHeight: 22,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#444",
+    marginBottom: 8,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    borderRadius: 14,
+    paddingHorizontal: 15,
+    height: 55,
+  },
+  inputIcon: {
+    marginRight: 10,
   },
   input: {
-    marginBottom: 4,
+    flex: 1,
+    fontSize: 15,
+    color: "#333",
   },
-  successCard: {
-    backgroundColor: "#e8f5e8",
-    marginBottom: 16,
+  saveBtn: {
+    height: 55,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#E53935",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  successText: {
-    color: "#2e7d32",
-    textAlign: "center",
-  },
-  button: {
-    marginBottom: 12,
-    marginTop: 8,
-  },
-  buttonContent: {
-    paddingVertical: 8,
-  },
-  linkButton: {
-    marginTop: 16,
-  },
-  snackbar: {
-    marginBottom: 16,
-  },
-  errorSnackbar: {
-    backgroundColor: "#f44336",
-  },
-  successSnackbar: {
-    backgroundColor: "#4caf50",
+  saveBtnText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "800",
   },
 });
 

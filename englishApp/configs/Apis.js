@@ -13,6 +13,7 @@ export const endpoints = {
     'reset-password': '/reset-password',
     'verify-otp': '/verified-otp',
     'change-password': '/change-password',
+    'update-password': '/secure/change-password',
 
     // ===== LEARNING SERVICE =====
     // -- Main Topics --
@@ -44,7 +45,7 @@ export const endpoints = {
     'check-level-up': (sessionId) => `/sessions/${sessionId}/levelup-check`,
     // -- Others --
     'leader-board': '/leaderboard/weekly',
-    'learning-profile': '/secure/profile',
+    'learning-profile': '/secure/learning-profile',
     'streak-calendar': '/secure/stats/streak-calendar',
     'summary': '/secure/stats/summary',
 
@@ -91,10 +92,10 @@ const addInterceptors = (instance) => {
             return response;
         },
         (error) => {
-            console.log(`❌ ERROR: ${error.config?.url || 'Unknown URL'}`);
+            // console.log(`❌ ERROR: ${error.config?.url || 'Unknown URL'}`);
             if (error.response) {
-                console.log(`🔴 STATUS: ${error.response.status}`);
-                console.log('🔴 DATA:', error.response.data);
+                // console.log(`🔴 STATUS: ${error.response.status}`);
+                // console.log('🔴 DATA:', error.response.data);
 
                 // Handle 401 Unauthorized
                 if (error.response.status === 401 || error.response.status === 403) {

@@ -1,8 +1,8 @@
-﻿import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { endpoints, IdentityApis, LearningApis, authIdentityApis, authLearningApis } from "./Apis";
 import { setCache, CACHE_KEYS } from "../utils/cache";
 
-const getToken = async () => {
+export const getToken = async () => {
   return await AsyncStorage.getItem("token");
 };
 
@@ -153,13 +153,6 @@ export const changePasswordRequest = async (email, newPassword) => {
   return res.data;
 }
 
-/*
-export const googleLogin = async (idToken, email) => {
-  const res = await IdentityApis.post(endpoints["google-login"], { idToken, email });
-  return res.data;
-}
-*/
-
 export const fetchLeaderBoard = async () => {
   const token = await getToken();
   const res = await authLearningApis(token).get(endpoints["leader-board"]);
@@ -185,6 +178,12 @@ export const fetchLearningProfile = async () => {
 export const createLearningProfile = async (data) => {
   const token = await getToken();
   const res = await authLearningApis(token).post(endpoints["learning-profile"], data);
+  return res.data;
+};
+
+export const updateLearningProfile = async (data) => {
+  const token = await getToken();
+  const res = await authLearningApis(token).put(endpoints["learning-profile"], data);
   return res.data;
 };
 
@@ -260,14 +259,23 @@ export const checkSessionLevelUp = async (sessionId) => {
 export const fetchSummary = async () => {
   const token = await getToken();
   const res = await authLearningApis(token).get(endpoints["summary"]);
-  
+
   setCache(CACHE_KEYS.SUMMARY, res.data);
-  
+
   return res.data;
 };
 
 export const fetchStreakCalendar = async (month, year) => {
   const token = await getToken();
   const res = await authLearningApis(token).get(`${endpoints["streak-calendar"]}?month=${month}&year=${year}`);
+  return res.data;
+};
+
+export const updatePassword = async (oldPassword, newPassword) => {
+  const token = await getToken();
+  const res = await authIdentityApis(token).post(endpoints["update-password"], {
+    oldPassword,
+    newPassword,
+  });
   return res.data;
 };

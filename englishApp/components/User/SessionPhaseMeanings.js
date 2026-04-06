@@ -7,6 +7,17 @@ import styles from "../../styles/SessionStyles";
 const SessionPhaseMeanings = ({ meaning, onPlayAudio }) => {
   if (!meaning) return null;
 
+  // Helper to get image URI from various possible structures
+  const getImageUri = () => {
+    if (!meaning.images || meaning.images.length === 0) return null;
+    const firstImage = meaning.images[0];
+    if (typeof firstImage === 'string') return firstImage;
+    if (typeof firstImage === 'object' && firstImage.imageUrl) return firstImage.imageUrl;
+    return null;
+  };
+
+  const imageUri = getImageUri();
+
   const renderHighlightedExample = (text, highlight) => {
     if (!highlight) return <Text style={styles.exampleEn}>{text}</Text>;
     const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
@@ -23,15 +34,15 @@ const SessionPhaseMeanings = ({ meaning, onPlayAudio }) => {
 
   return (
     <View style={styles.card}>
-      {meaning.images?.[0]?.imageUrl ? (
+      {imageUri ? (
         <View style={styles.cardImageContainer}>
           <Image
-            source={{ uri: meaning.images[0].imageUrl }}
+            source={{ uri: imageUri }}
             style={styles.cardImage}
             resizeMode="cover"
           />
           <LinearGradient
-            colors={["transparent", "rgba(0,0,0,0.4)"]}
+            colors={["transparent", "rgba(0,0,0,0.6)"]}
             style={styles.imageOverlay}
           />
           
@@ -41,6 +52,12 @@ const SessionPhaseMeanings = ({ meaning, onPlayAudio }) => {
         </View>
       ) : (
         <View style={styles.noImageTopBar}>
+           <LinearGradient
+            colors={["#9B2C2C", "#F45B69"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.noImageGradient}
+          />
            <View style={styles.typeBadgeGray}>
              <Text style={styles.typeTextGray}>{meaning.level} - {meaning.type}</Text>
            </View>
@@ -51,23 +68,29 @@ const SessionPhaseMeanings = ({ meaning, onPlayAudio }) => {
       )}
 
       <ScrollView style={styles.cardContent} showsVerticalScrollIndicator={false}>
-        {meaning.images?.[0]?.imageUrl ? (
+        {imageUri ? (
           <View style={styles.typeBadge}>
             <Text style={styles.typeText}>{meaning.level} - {meaning.type}</Text>
           </View>
         ) : null}
 
-        <Text style={styles.wordTitle}>{meaning.word}</Text>
-        <Text style={styles.phonetic}>{meaning.phonetic}</Text>
+        <View style={{ marginBottom: 20 }}>
+          <Text style={styles.wordTitle}>{meaning.word}</Text>
+          <Text style={styles.phonetic}>{meaning.phonetic}</Text>
+        </View>
 
         <View style={styles.definitionContainer}>
           <Text style={styles.definitionEn}>{meaning.definition}</Text>
-          <Text style={styles.definitionVn}>VN: {meaning.vnDefinition}</Text>
+          {meaning.vnDefinition && (
+            <Text style={styles.definitionVn}>VN: {meaning.vnDefinition}</Text>
+          )}
         </View>
 
         <View style={styles.exampleContainer}>
           {renderHighlightedExample(meaning.example, meaning.word)}
-          <Text style={styles.exampleVn}>vn: {meaning.vnExample}</Text>
+          {meaning.vnExample && (
+            <Text style={styles.exampleVn}>vn: {meaning.vnExample}</Text>
+          )}
         </View>
 
         {meaning.synonyms && meaning.synonyms.length > 0 && (

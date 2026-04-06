@@ -1,241 +1,402 @@
+import React from "react";
 import {
   Text,
   View,
   Image,
   TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
   ScrollView,
+  StatusBar,
+  Dimensions,
+  TextInput,
 } from "react-native";
-import { Button, Card, Icon } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import styles from "../../styles/ProfileStyles";
-import Loading from "../layout/Loading";
+import { useNavigation } from "@react-navigation/native";
+
+const InfoItemRow = ({ item, handleEdit }) => {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editVal, setEditVal] = React.useState(item.apiValue || "");
+
+  const onSave = () => {
+    setIsEditing(false);
+    handleEdit(item.type, editVal);
+  };
+
+  return (
+    <View style={styles.infoItem}>
+      <View style={styles.infoIconContainer}>
+        <Ionicons name={item.icon} size={20} color="#F45B69" />
+      </View>
+      <View style={styles.infoContent}>
+        <Text style={styles.infoLabel}>{item.label}</Text>
+        {isEditing ? (
+          <View style={{ borderBottomWidth: 1.5, borderBottomColor: "#F45B69", marginRight: 10 }}>
+            <TextInput 
+              style={{ fontSize: 15, fontWeight: "700", color: "#333", paddingVertical: 2 }}
+              value={editVal}
+              onChangeText={setEditVal}
+              autoFocus
+              placeholder={item.type === 'dob' ? "YYYY-MM-DD" : ""}
+            />
+          </View>
+        ) : (
+          <Text style={styles.infoValue}>{item.value}</Text>
+        )}
+      </View>
+      {item.editable !== false && (
+        isEditing ? (
+          <TouchableOpacity onPress={onSave}>
+            <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={() => { setEditVal(item.apiValue || ""); setIsEditing(true); }}>
+            <Ionicons name="pencil" size={18} color="#BBB" style={{ padding: 4 }} />
+          </TouchableOpacity>
+        )
+      )}
+    </View>
+  );
+};
 
 const ProfileScreen = ({
   user,
+  learningProfile,
+  summaryData,
   loading,
-  editingFirstName,
-  editingLastName,
-  newFirstName,
-  newLastName,
-  dob,
-  showDatePicker,
-  setEditingFirstName,
-  setEditingLastName,
-  setNewFirstName,
-  setNewLastName,
-  setShowDatePicker,
   logout,
   pickImage,
-  handleDateChange,
   handleEdit,
+  handleLearningUpdate,
+  cooldownInfo,
 }) => {
-  const formatDate = (dateString) => {
-    if (!dateString) return "Chưa cập nhật";
-    return new Date(dateString).toLocaleDateString("vi-VN");
-  };
+  const navigation = useNavigation();
 
-  const getRoleDisplay = (role) => {
-    switch (role) {
-      case "ADMIN":
-        return "Quản trị viên";
-      case "USER":
-        return "Người dùng";
-      default:
-        return "Chưa xác định";
-    }
-  };
-
-  if (!user) {
+  if (loading || !user) {
     return (
-      <SafeAreaView style={[styles.container, styles.center]}>
-        <Loading />
-      </SafeAreaView>
+      <View style={styles.loadingContainer}>
+        <StatusBar barStyle="dark-content" />
+        <Text style={{ marginTop: 20, fontWeight: "700", color: "#999" }}>Đang tải thông tin...</Text>
+      </View>
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container}>
-      {loading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#d32f2f" />
-          <Text style={styles.loadingText}>Đang cập nhật thông tin...</Text>
-        </View>
-      )}
+  const getInitials = () => {
+    if (user.firstName && user.lastName) {
+      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    }
+    return user.username ? user.username.substring(0, 2).toUpperCase() : "UT";
+  };
 
-      <ScrollView
-        style={styles.scrollView}
+  const getLevelInfo = (level) => {
+    const levels = {
+      'A1': { next: 'A2', xp: 500, label: 'Beginner' },
+      'A2': { next: 'B1', xp: 1000, label: 'Pre-Intermediate' },
+      'B1': { next: 'B2', xp: 2000, label: 'Intermediate' },
+      'B2': { next: 'C1', xp: 4000, label: 'Upper-Intermediate' },
+      'C1': { next: 'C2', xp: 10000, label: 'Advanced' },
+      'C2': { next: 'MAX', xp: 99999, label: 'Master' },
+    };
+    return levels[level] || levels['A1'];
+  };
+
+  const currentLevelInfo = getLevelInfo(learningProfile?.level || "A1");
+  const currentXp = learningProfile?.totalXp || 0;
+  const targetXp = currentLevelInfo.xp;
+  const progressPercent = Math.min((currentXp / targetXp) * 100, 100);
+  const xpNeeded = Math.max(targetXp - currentXp, 0);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "Chưa cập nhật";
+    const date = new Date(dateString);
+    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+  };
+
+  const calculateAge = (dob) => {
+    if (!dob) return "";
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return `${age} tuổi`;
+  };
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      <ScrollView 
+        style={styles.scrollView} 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <Card style={styles.card}>
-          <View style={styles.avatarSection}>
-            <TouchableOpacity onPress={pickImage}>
-              <Image
-                source={{
-                  uri:
-                    (user.avatar && user.avatar.trim() !== "")
-                      ? user.avatar
-                      : "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-                }}
-                style={styles.avatar}
-              />
-              <View style={styles.cameraButton}>
-                <Icon source="camera" size={16} color="white" />
+        <LinearGradient
+          colors={["#7B241C", "#9B2C2C", "#C0392B"]}
+          style={styles.headerBackground}
+        >
+          <View style={styles.headerPattern} />
+          
+          <TouchableOpacity style={styles.settingsButton}>
+            <Ionicons name="settings-outline" size={22} color="#fff" />
+          </TouchableOpacity>
+
+          <Text style={styles.welcomeText}>Hồ sơ cá nhân</Text>
+
+          <View style={styles.headerTop}>
+            <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
+              <View style={styles.avatar}>
+                {user.avatar ? (
+                  <Image source={{ uri: user.avatar }} style={{ width: 80, height: 80, borderRadius: 40 }} />
+                ) : (
+                  <Text style={styles.avatarText}>{getInitials()}</Text>
+                )}
               </View>
+              <View style={styles.statusDot} />
             </TouchableOpacity>
 
-            <Text style={styles.displayName}>
-              {user.firstName && user.lastName
-                ? `${user.firstName} ${user.lastName}`
-                : user.username || "Người dùng"}
-            </Text>
+            <View style={styles.headerInfo}>
+              <Text style={styles.userName}>{`${user.firstName} ${user.lastName}`}</Text>
+              <Text style={styles.userEmail}>{user.email}</Text>
+            </View>
+          </View>
 
-            <Text style={styles.email}>{user.email || "Chưa có email"}</Text>
-            <Text style={styles.role}>{getRoleDisplay(user.role)}</Text>
+          <View style={styles.headerBadges}>
+            <View style={styles.badge}>
+              <Ionicons name="school" size={16} color="#fff" />
+              <Text style={styles.badgeText}>{learningProfile?.level} · {currentLevelInfo.label}</Text>
+            </View>
+            <View style={styles.badge}>
+              <Ionicons name="checkmark-circle" size={16} color="#fff" />
+              <Text style={styles.badgeText}>Đang hoạt động</Text>
+            </View>
+            <View style={styles.badge}>
+              <Ionicons name="calendar" size={16} color="#fff" />
+              <Text style={styles.badgeText}>Từ {formatDate(user.createdAt)}</Text>
+            </View>
+          </View>
+        </LinearGradient>
 
-            <View
-              style={[
-                styles.statusBadge,
-                user.isActive ? styles.activeBadge : styles.inactiveBadge,
-              ]}
-            >
-              <Icon
-                source={user.isActive ? "check-circle" : "close-circle"}
-                size={14}
-                color={user.isActive ? "#4CAF50" : "#f44336"}
+        <View style={styles.statsCard}>
+          <View style={styles.statItem}>
+            <Text style={styles.statIcon}>🔥</Text>
+            <Text style={styles.statValue}>{learningProfile?.currentStreak || summaryData?.streak || 0}</Text>
+            <Text style={styles.statLabel}>Streak</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statIcon}>⚡</Text>
+            <Text style={styles.statValue}>{learningProfile?.totalXp || 0}</Text>
+            <Text style={styles.statLabel}>XP</Text>
+          </View>
+          <View style={[styles.statItem, { borderRightWidth: 0 }]}>
+            <Text style={styles.statIcon}>📚</Text>
+            <Text style={[styles.statValue, { color: '#2F80ED' }]}>{learningProfile?.level || "A1"}</Text>
+            <Text style={styles.statLabel}>Level</Text>
+          </View>
+        </View>
+
+        {/* XP Progress Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Tiến độ XP</Text>
+          </View>
+          <View style={styles.progressCard}>
+            <View style={styles.progressTop}>
+              <View style={styles.levelBadgeContainer}>
+                <View style={styles.levelBadge}>
+                  <Text style={styles.levelBadgeText}>Cấp độ hiện tại</Text>
+                </View>
+                <Text style={styles.levelTitle}>{learningProfile?.level} <Text style={{ color: '#999', fontSize: 14 }}>{currentLevelInfo.label}</Text></Text>
+              </View>
+              <View style={styles.nextLevelInfo}>
+                <Text style={styles.nextLevelName}>Lên {currentLevelInfo.next} cần</Text>
+                <Text style={styles.neededXp}>+{xpNeeded} XP</Text>
+              </View>
+            </View>
+
+            <View style={styles.progressBarContainer}>
+              <LinearGradient
+                colors={["#F45B69", "#9B2C2C"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.progressBarFill, { width: `${progressPercent}%` }]}
               />
-              <Text
-                style={[
-                  styles.statusText,
-                  { color: user.isActive ? "#4CAF50" : "#f44336" },
-                ]}
-              >
-                {user.isActive ? "Đang hoạt động" : "Tài khoản bị khóa"}
-              </Text>
+            </View>
+            <View style={styles.progressLabels}>
+              <Text style={styles.progressLabelText}>{currentXp} XP</Text>
+              <Text style={styles.targetLabelText}>{targetXp} XP → {currentLevelInfo.next}</Text>
             </View>
           </View>
+        </View>
 
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Họ</Text>
-            <View style={styles.fieldRow}>
-              {editingFirstName ? (
-                <TextInput
-                  value={newFirstName}
-                  onChangeText={setNewFirstName}
-                  placeholder="Nhập họ"
-                  style={styles.input}
-                />
-              ) : (
-                <Text style={[styles.info, styles.flex1]}>
-                  {user.firstName || "Chưa cập nhật"}
-                </Text>
-              )}
-              <TouchableOpacity
-                onPress={() => {
-                  if (editingFirstName) {
-                    handleEdit("firstName", newFirstName);
-                    setEditingFirstName(false);
-                  } else {
-                    setEditingFirstName(true);
-                    setNewFirstName(user.firstName || "");
-                  }
-                }}
-                style={styles.editButton}
-              >
-                <Icon
-                  source={editingFirstName ? "check" : "pencil"}
-                  size={22}
-                  color="#d32f2f"
-                />
-              </TouchableOpacity>
-            </View>
+        {/* Streak Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Chuỗi ngày học</Text>
           </View>
-
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Tên</Text>
-            <View style={styles.fieldRow}>
-              {editingLastName ? (
-                <TextInput
-                  value={newLastName}
-                  onChangeText={setNewLastName}
-                  placeholder="Nhập tên"
-                  style={styles.input}
-                />
-              ) : (
-                <Text style={[styles.info, styles.flex1]}>
-                  {user.lastName || "Chưa cập nhật"}
-                </Text>
-              )}
-              <TouchableOpacity
-                onPress={() => {
-                  if (editingLastName) {
-                    handleEdit("lastName", newLastName);
-                    setEditingLastName(false);
-                  } else {
-                    setEditingLastName(true);
-                    setNewLastName(user.lastName || "");
-                  }
-                }}
-                style={styles.editButton}
-              >
-                <Icon
-                  source={editingLastName ? "check" : "pencil"}
-                  size={22}
-                  color="#d32f2f"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Ngày sinh</Text>
-            <View style={styles.fieldRow}>
-              <Text style={[styles.info, styles.flex1]}>
-                {formatDate(user.dob)}
-              </Text>
-              <TouchableOpacity
-                onPress={() => setShowDatePicker(true)}
-                style={styles.editButton}
-              >
-                <Icon source="calendar" size={22} color="#d32f2f" />
-              </TouchableOpacity>
-            </View>
-
-            {showDatePicker && (
-              <DateTimePicker
-                value={dob}
-                mode="date"
-                display="default"
-                onChange={handleDateChange}
-                maximumDate={new Date()}
-                minimumDate={new Date(1900, 0, 1)}
-              />
-            )}
-          </View>
-
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Ngày tạo tài khoản</Text>
-            <Text style={[styles.info, styles.readOnly]}>
-              {formatDate(user.createdDate || user.createdAt)}
-            </Text>
-          </View>
-
-          <Button
-            mode="contained"
-            buttonColor="#d32f2f"
-            textColor="white"
-            style={styles.logoutButton}
-            onPress={logout}
-            icon="logout"
+          <LinearGradient
+            colors={["#1B5E20", "#2E7D32"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.streakCard}
           >
-            Đăng xuất
-          </Button>
-        </Card>
+            <View style={styles.streakCardContent}>
+              <Text style={styles.streakTitle}>Streak hiện tại</Text>
+              <View style={styles.streakMainInfo}>
+                <Text style={styles.streakDays}>{learningProfile?.currentStreak || summaryData?.streak || 0}</Text>
+                <Text style={styles.streakUnit}>ngày liên tiếp</Text>
+              </View>
+              <Text style={styles.streakUpdate}>Cập nhật lần cuối: {formatDate(new Date())}</Text>
+            </View>
+            <View style={styles.streakRecordContainer}>
+              <MaterialCommunityIcons name="fire" size={40} color="#FFD700" />
+              <Text style={styles.recordTitle}>Kỷ lục</Text>
+              <Text style={styles.recordValue}>{learningProfile?.longestStreak || summaryData?.streak || 0} ngày</Text>
+            </View>
+          </LinearGradient>
+        </View>
+
+        {/* Daily Goal Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Mục tiêu hàng ngày</Text>
+          </View>
+          {cooldownInfo?.countdownStr ? (
+            <Text style={styles.cooldownText}>{cooldownInfo.countdownStr}</Text>
+          ) : null}
+          <View style={[styles.goalCard, !cooldownInfo?.canUpdate && styles.goalDisabled]}>
+            <View style={styles.goalHeader}>
+              <Text style={styles.goalTitle}>Phút học mỗi ngày</Text>
+            </View>
+            <View style={styles.minutesGrid}>
+              {[5, 15, 30].map((mins) => (
+                <TouchableOpacity 
+                  key={mins} 
+                  style={[styles.minuteOption, learningProfile?.dailyTarget === mins && styles.minuteOptionActive]}
+                  disabled={!cooldownInfo?.canUpdate}
+                  onPress={() => handleLearningUpdate(mins, null)}
+                >
+                  <Text style={[styles.minuteValue, learningProfile?.dailyTarget === mins && styles.minuteValueActive]}>{mins}</Text>
+                  <Text style={[styles.minuteLabel, learningProfile?.dailyTarget === mins && styles.minuteLabelActive]}>PHÚT</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        {/* Learning Goals Categories */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Mục tiêu học tập</Text>
+          </View>
+          <View style={[!cooldownInfo?.canUpdate && styles.goalDisabled]}>
+            {[
+              { id: 'DAILY_COMMUNICATION', name: 'Giao tiếp hàng ngày', sub: 'Daily Communication', icon: 'chatbubbles-outline', color: '#FEEBEB', iconColor: '#E53935' },
+              { id: 'BUSINESS_ENGLISH', name: 'Tiếng Anh công việc', sub: 'Business English', icon: 'briefcase-outline', color: '#E3F2FD', iconColor: '#1E88E5' },
+              { id: 'EXAM_PREPARATION', name: 'Ôn thi (IELTS, TOEIC...)', sub: 'Exam Preparation', icon: 'school-outline', color: '#FFF3E0', iconColor: '#FB8C00' },
+              { id: 'VOCABULARY_EXPANSION', name: 'Mở rộng vốn từ', sub: 'Vocabulary Expansion', icon: 'book-outline', color: '#F3E5F5', iconColor: '#8E24AA' },
+              { id: 'TRAVEL', name: 'Du lịch & Khám phá', sub: 'Travel & Explore', icon: 'airplane-outline', color: '#E8F5E9', iconColor: '#43A047' },
+            ].map((goal) => (
+              <TouchableOpacity 
+                key={goal.id} 
+                style={[styles.goalItem, learningProfile?.goal === goal.id && styles.goalItemActive]}
+                disabled={!cooldownInfo?.canUpdate}
+                onPress={() => handleLearningUpdate(null, goal.id)}
+              >
+                <View style={[styles.goalIconContainer, learningProfile?.goal === goal.id && styles.goalIconContainerActive]}>
+                  <Ionicons name={goal.icon} size={22} color={goal.iconColor} />
+                </View>
+                <View style={styles.goalInfo}>
+                  <Text style={styles.goalName}>{goal.name}</Text>
+                  <Text style={styles.goalSubname}>{goal.sub}</Text>
+                </View>
+                <View style={[styles.goalCheck, learningProfile?.goal === goal.id && styles.goalCheckActive]}>
+                  {learningProfile?.goal === goal.id && <Ionicons name="checkmark" size={14} color="#fff" />}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Personal info section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Thông tin cá nhân</Text>
+          </View>
+          <View style={styles.infoList}>
+            {[
+              { label: 'Họ', value: user.lastName, apiValue: user.lastName, icon: 'person', type: 'lastName' },
+              { label: 'Tên', value: user.firstName, apiValue: user.firstName, icon: 'person', type: 'firstName' },
+              { label: 'Email', value: user.email, icon: 'mail', type: 'email', editable: false },
+              { label: 'Ngày sinh', value: `${formatDate(user.dob)} · ${calculateAge(user.dob)}`, apiValue: user.dob, icon: 'calendar', type: 'dob' },
+              { label: 'Ngày tham gia', value: formatDate(user.createdAt), icon: 'time', editable: false },
+            ].map((item, idx) => (
+              <InfoItemRow key={idx} item={item} handleEdit={handleEdit} />
+            ))}
+          </View>
+        </View>
+
+        {/* Settings section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Cài đặt</Text>
+          </View>
+          <View style={styles.settingsList}>
+            <TouchableOpacity style={styles.settingsItem} onPress={() => navigation.navigate("UpdatePassword")}>
+              <View style={styles.settingIconContainer}>
+                <Ionicons name="lock-closed" size={20} color="#BBB" />
+              </View>
+              <View style={styles.settingTextContainer}>
+                <Text style={styles.settingTitle}>Bảo mật</Text>
+                <Text style={styles.settingSubtitle}>Thay đổi mật khẩu</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#EEE" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.settingsItem}>
+              <View style={styles.settingIconContainer}>
+                <Ionicons name="notifications" size={20} color="#BBB" />
+              </View>
+              <View style={styles.settingTextContainer}>
+                <Text style={styles.settingTitle}>Thông báo</Text>
+                <Text style={styles.settingSubtitle}>Nhắc nhở học hàng ngày</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#EEE" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.settingsItem}>
+              <View style={styles.settingIconContainer}>
+                <Ionicons name="star" size={20} color="#BBB" />
+              </View>
+              <View style={styles.settingTextContainer}>
+                <Text style={styles.settingTitle}>Đánh giá ứng dụng</Text>
+                <Text style={styles.settingSubtitle}>Ủng hộ WordFlow</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#EEE" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.settingsItem, { borderBottomWidth: 0 }]}>
+              <View style={styles.settingIconContainer}>
+                <Ionicons name="information-circle" size={20} color="#BBB" />
+              </View>
+              <View style={styles.settingTextContainer}>
+                <Text style={styles.settingTitle}>Về ứng dụng</Text>
+                <Text style={styles.settingSubtitle}>Phiên bản 1.0.0</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#EEE" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+          <Ionicons name="log-out-outline" size={24} color="#C53030" />
+          <Text style={styles.logoutText}>Đăng xuất</Text>
+        </TouchableOpacity>
+
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
