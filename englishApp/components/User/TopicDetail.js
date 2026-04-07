@@ -1,60 +1,42 @@
-﻿import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import TopicDetailScreen from "../Screen/TopicDetailScreen";
 import { fetchMainTopicsDetail } from "../../configs/LoadData";
 import { useNavigation } from "@react-navigation/native";
 
 const TopicDetail = ({ route }) => {
   const { topicId } = route.params;
-  const [subTopics, setSubTopics] = useState([]);
-  const [topicInfo, setTopicInfo] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
   const nav = useNavigation();
 
-  const loadTopicDetails = async () => {
-    try {
-      if (!refreshing) setLoading(true);
-      const response = await fetchMainTopicsDetail(topicId);
-      const data = response.result;
-
-      setTopicInfo({
-        id: data.id,
-        name: data.name,
-        image: data.image,
-        subTopicsCount: data.subTopicsCount,
-        createdAt: data.createdAt,
-      });
-      setSubTopics(data.subTopics || []);
-      setError(null);
-    } catch (ex) {
-      setError("Failed to load topic details. Please try again.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+  const { data, isLoading: loading, error, refetch: loadTopicDetails, isRefetching: refreshing } = useQuery({
+    queryKey: ['mainTopicDetail', topicId],
+    queryFn: () => fetchMainTopicsDetail(topicId),
+    enabled: !!topicId,
+  });
 
   const handleGoBack = () => {
     nav.goBack();
   };
 
-  useEffect(() => {
-    if (topicId) {
-      loadTopicDetails();
-    }
-  }, [topicId]);
-
   const onRefresh = () => {
-    setRefreshing(true);
-    setError(null);
     loadTopicDetails();
   };
+
+  const topicInfo = data?.result ? {
+    id: data.result.id,
+    name: data.result.name,
+    image: data.result.image,
+    subTopicsCount: data.result.subTopicsCount,
+    createdAt: data.result.createdAt,
+    user_progress: data.result.user_progress || data.result.userProgress,
+  } : null;
+
+  const subTopics = data?.result?.subTopics || [];
+  const errorMessage = error ? "Failed to load topic details. Please try again." : null;
 
   return (
     <TopicDetailScreen
       loading={loading}
-      error={error}
+      error={errorMessage}
       topicInfo={topicInfo}
       subTopics={subTopics}
       refreshing={refreshing}

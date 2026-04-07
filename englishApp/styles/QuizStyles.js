@@ -1,273 +1,227 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
+
+const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#fcf9f9',
   },
-  header: {
-    backgroundColor: '#FFFFFF',
-    elevation: 4,
+  // Header
+  headerBackground: {
+    paddingTop: 40,
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#fff',
+    letterSpacing: 0.5,
   },
-  tabContainer: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  tabButtonContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 12,
-    padding: 4,
-  },
-  tabButton: {
-    flex: 1,
-    marginHorizontal: 2,
-    borderRadius: 8,
-  },
-  audioTabActive: {
-    backgroundColor: '#9333EA',
-  },
-  textTabActive: {
-    backgroundColor: '#059669',
-  },
-  tabInactive: {
-    backgroundColor: 'transparent',
-    borderColor: 'transparent',
-  },
-  tabLabel: {
+  headerSubtitle: {
     fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '600',
   },
-  tabLabelActive: {
-    color: '#FFFFFF',
-  },
-  tabLabelInactive: {
-    color: '#6B7280',
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: '#EF4444',
-  },
-  audioBadge: {
-    backgroundColor: '#EC4899',
-  },
-  textBadge: {
-    backgroundColor: '#10B981',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
+
+  // Stats Card
+  statsCard: {
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    marginTop: -30,
+    borderRadius: 20,
     padding: 16,
-  },
-  statsContainer: {
-    marginBottom: 16,
-  },
-  statCard: {
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
     alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
   },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1F2937',
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+    borderRightWidth: 1,
+    borderRightColor: '#f0f0f0',
+  },
+  statItemLast: {
+    borderRightWidth: 0,
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#9B2C2C',
   },
   statLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 4,
+    fontSize: 12,
+    color: '#999',
+    fontWeight: '600',
+    marginTop: 2,
+    textTransform: 'uppercase',
   },
+
+  // List
+  scrollContent: {
+    paddingTop: 20,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+  },
+
+  // Quiz Card
   quizCard: {
-    marginBottom: 16,
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
-  },
-  cardContent: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
     padding: 20,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 12,
   },
-  questionInfo: {
+  typeBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 5,
   },
-  typeChip: {
-    height: 28,
+  typeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
   },
-  audioChip: {
-    backgroundColor: '#F3E8FF',
-  },
-  textChip: {
-    backgroundColor: '#ECFDF5',
-  },
-  chipText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  audioChipText: {
-    color: '#9333EA',
-  },
-  textChipText: {
-    color: '#059669',
-  },
-  questionNumber: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
+  
+  // Specific Badge Colors
+  badgeMC: { backgroundColor: 'rgba(16, 185, 129, 0.1)' },
+  textMC: { color: '#10b981' },
+  badgeAUDIO: { backgroundColor: 'rgba(139, 92, 246, 0.1)' },
+  textAUDIO: { color: '#8b5cf6' },
+  badgeFILL: { backgroundColor: 'rgba(245, 158, 11, 0.1)' },
+  textFILL: { color: '#f59e0b' },
+  badgeMATCH: { backgroundColor: 'rgba(59, 130, 246, 0.1)' },
+  textMATCH: { color: '#3b82f6' },
+  badgeTEXT: { backgroundColor: 'rgba(107, 114, 128, 0.1)' },
+  textTEXT: { color: '#6b7280' },
+
   questionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 16,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1a1a1a',
     lineHeight: 24,
-  },
-  textContent: {
-    backgroundColor: '#F0FDF4',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    minHeight: 80,
-    justifyContent: 'center',
-  },
-  textQuestion: {
-    fontSize: 18,
-    lineHeight: 26,
-    fontWeight: '600',
-    color: '#1F2937',
-    textAlign: 'center',
-  },
-  audioContent: {
-    backgroundColor: '#FAF5FF',
-    padding: 20,
-    borderRadius: 12,
     marginBottom: 16,
   },
-  audioInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  audioLabel: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginLeft: 8,
-  },
-  answerPreview: {
+  
+  cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: 'auto',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f5f5f5',
   },
-  answerLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  answerDots: {
+  answerInfo: {
     flexDirection: 'row',
-    gap: 6,
+    alignItems: 'center',
+    gap: 4,
   },
-  answerDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  audioDot: {
-    backgroundColor: '#C084FC',
-  },
-  textDot: {
-    backgroundColor: '#34D399',
-  },
-  cardActions: {
-    padding: 16,
-    paddingTop: 0,
+  answerText: {
+    fontSize: 13,
+    color: '#999',
+    fontWeight: '600',
   },
   startButton: {
-    borderRadius: 10,
-    flex: 1,
-  },
-  audioButton: {
-    backgroundColor: '#9333EA',
-  },
-  textButton: {
-    backgroundColor: '#059669',
-  },
-  buttonLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    paddingVertical: 4,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#9B2C2C',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 60,
+    gap: 6,
+  },
+  startButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+
+  // States
+  loadingContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#6B7280',
+    marginTop: 10,
+    color: '#999',
+    fontSize: 14,
   },
   emptyContainer: {
-    flex: 1,
+    alignItems: "center",
     justifyContent: 'center',
-    alignItems: 'center',
     paddingVertical: 60,
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
+    fontWeight: "800",
+    color: "#1a1a1a",
     marginTop: 16,
-    textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: "#999",
     marginTop: 8,
-    textAlign: 'center',
-    paddingHorizontal: 32,
+    textAlign: "center",
+    paddingHorizontal: 40,
   },
   errorContainer: {
-    flex: 1,
+    alignItems: "center",
     justifyContent: 'center',
-    alignItems: 'center',
     paddingVertical: 60,
-    paddingHorizontal: 32,
+    paddingHorizontal: 20,
   },
   errorTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#EF4444',
+    fontWeight: "800",
+    color: "#ef4444",
     marginTop: 16,
-    textAlign: 'center',
   },
   errorMessage: {
     fontSize: 14,
-    color: '#6B7280',
+    color: "#666",
     marginTop: 8,
-    marginBottom: 24,
-    textAlign: 'center',
+    marginBottom: 20,
+    textAlign: "center",
   },
   retryButton: {
-    backgroundColor: '#6366F1',
-    borderRadius: 10,
+    backgroundColor: '#9B2C2C',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontWeight: '800',
   },
 });
 
-export default styles;
+export default styles;

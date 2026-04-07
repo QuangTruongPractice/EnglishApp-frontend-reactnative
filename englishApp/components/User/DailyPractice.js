@@ -3,13 +3,20 @@ import { Audio } from "expo-av";
 import VocabularyDetailScreen from "../Screen/VocabularyDetailScreen";
 import { fetchDailyVocabulary, generateQuiz, saveMeaning, submitQuiz } from "../../configs/LoadData";
 import { useNavigation } from "@react-navigation/native";
+import { useQuery} from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 
 const DailyPractice = () => {
-    const [loading, setLoading] = useState(true);
-    const [vocabList, setVocabList] = useState([]);
     const [vocabIndex, setVocabIndex] = useState(0);
     const [completedMeanings, setCompletedMeanings] = useState([]); // List of meaning IDs
+    
+    // Sử dụng useQuery thay vì manual fetch
+    const { data: dailyData, isLoading: loading, refetch: loadDailyData } = useQuery({
+        queryKey: ['dailyVocabulary'],
+        queryFn: fetchDailyVocabulary
+    });
+    
+    const vocabList = dailyData?.code === 1000 && dailyData?.result ? dailyData.result : [];
 
     // Quiz State
     const [showQuizModal, setShowQuizModal] = useState(false);
@@ -21,21 +28,7 @@ const DailyPractice = () => {
     const [sound, setSound] = useState(null);
     const navigation = useNavigation();
 
-    const loadDailyData = async () => {
-        try {
-            setLoading(true);
-            const res = await fetchDailyVocabulary();
-            if (res.code === 1000 && res.result && res.result.length > 0) {
-                setVocabList(res.result);
-            } else {
-                setIsFinished(true);
-            }
-        } catch (e) {
-            Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể tải danh sách học tập.' });
-        } finally {
-            setLoading(false);
-        }
-    };
+
 
     const handleStartQuiz = async (meanId) => {
         try {
@@ -147,11 +140,16 @@ const DailyPractice = () => {
     };
 
     useEffect(() => {
-        loadDailyData();
+        if (dailyData && (!dailyData.result || dailyData.result.length === 0)) {
+            setIsFinished(true);
+        }
+    }, [dailyData]);
+
+    useEffect(() => {
         return () => {
             if (sound) sound.unloadAsync();
         };
-    }, []);
+    }, [sound]);
 
     return (
         <VocabularyDetailScreen

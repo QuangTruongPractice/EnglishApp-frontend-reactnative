@@ -1,22 +1,15 @@
-import { FlatList, View, RefreshControl } from "react-native";
-import {
-  Card,
-  Title,
-  Button,
-  Chip,
-  ActivityIndicator,
-  Surface,
-  Text,
-  IconButton,
-} from "react-native-paper";
+import React from "react";
+import { FlatList, View, RefreshControl, TouchableOpacity, Text } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import styles from "../../styles/QuizStyles";
 
 const QuizScreen = ({
-  currentQuizzes,
-  activeTab,
-  setActiveTab,
+  quizList,
+  totalCount,
   loading,
   error,
   refreshing,
@@ -29,193 +22,122 @@ const QuizScreen = ({
     nav.navigate("QuizDetail", { quizId });
   };
 
-  const renderQuizCard = (quiz, index) => (
-    <Card key={quiz.id} style={styles.quizCard} mode="elevated">
-      <Card.Content style={styles.cardContent}>
+  const getBadgeConfig = (type) => {
+    switch (type) {
+      case 'MC': return { label: 'Trắc nghiệm', icon: 'bullseye-arrow', style: styles.badgeMC, text: styles.textMC };
+      case 'AUDIO': return { label: 'Âm thanh', icon: 'volume-high', style: styles.badgeAUDIO, text: styles.textAUDIO };
+      case 'FILL': return { label: 'Điền từ', icon: 'pencil', style: styles.badgeFILL, text: styles.textFILL };
+      case 'MATCH': return { label: 'Ghép đôi', icon: 'link-variant', style: styles.badgeMATCH, text: styles.textMATCH };
+      case 'TEXT': return { label: 'Văn bản', icon: 'text-box-outline', style: styles.badgeTEXT, text: styles.textTEXT };
+      default: return { label: 'Câu hỏi', icon: 'help-circle-outline', style: styles.badgeTEXT, text: styles.textTEXT };
+    }
+  };
+
+  const renderQuizCard = (quiz) => {
+    const badge = getBadgeConfig(quiz.type);
+    return (
+      <TouchableOpacity 
+        key={quiz.id} 
+        style={styles.quizCard} 
+        onPress={() => handleQuizPress(quiz.id)}
+        activeOpacity={0.8}
+      >
         <View style={styles.cardHeader}>
-          <View style={styles.questionInfo}>
-            <Chip
-              icon={quiz.type === "AUDIO" ? "headphones" : "text"}
-              style={[
-                styles.typeChip,
-                quiz.type === "AUDIO" ? styles.audioChip : styles.textChip,
-              ]}
-              textStyle={[
-                styles.chipText,
-                quiz.type === "AUDIO"
-                  ? styles.audioChipText
-                  : styles.textChipText,
-              ]}
-              compact
-            >
-              {quiz.type === "AUDIO" ? "Âm thanh" : "Văn bản"}
-            </Chip>
-            <Text style={styles.questionNumber}>Câu {index + 1}</Text>
+          <View style={[styles.typeBadge, badge.style]}>
+            <Icon name={badge.icon} size={14} color={badge.text.color} />
+            <Text style={[styles.typeText, badge.text]}>{badge.label}</Text>
           </View>
+          <Icon name="chevron-right" size={20} color="#ccc" />
         </View>
 
-        <Title style={styles.questionTitle}>{quiz.question}</Title>
+        <Text style={styles.questionTitle} numberOfLines={2}>{quiz.question || "Không có tiêu đề"}</Text>
 
-        {quiz.type === "TEXT" && (
-          <Surface style={styles.textContent} elevation={1}>
-            <Text style={styles.textQuestion}>{quiz.text}</Text>
-          </Surface>
-        )}
-
-        {quiz.type === "AUDIO" && (
-          <Surface style={styles.audioContent} elevation={1}>
-            <View style={styles.audioInfo}>
-              <IconButton icon="volume-high" iconColor="#9333EA" size={24} />
-              <Text style={styles.audioLabel}>Nhấn để nghe câu hỏi</Text>
-            </View>
-          </Surface>
-        )}
-
-        <View style={styles.answerPreview}>
-          <Text style={styles.answerLabel}>
-            {quiz.answers?.length || 4} lựa chọn
-          </Text>
-          <View style={styles.answerDots}>
-            {(quiz.answers || Array(4).fill({})).slice(0, 4).map((_, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.answerDot,
-                  quiz.type === "AUDIO" ? styles.audioDot : styles.textDot,
-                ]}
-              />
-            ))}
+        <View style={styles.cardFooter}>
+          <View style={styles.answerInfo}>
+            <Icon name="layers-outline" size={16} color="#999" />
+            <Text style={styles.answerText}>{quiz.answers?.length || 4} lựa chọn</Text>
+          </View>
+          <View style={styles.startButton}>
+            <Text style={styles.startButtonText}>Bắt đầu</Text>
+            <Icon name="play-circle" size={16} color="#fff" />
           </View>
         </View>
-      </Card.Content>
+      </TouchableOpacity>
+    );
+  };
 
-      <Card.Actions style={styles.cardActions}>
-        <Button
-          mode="contained"
-          onPress={() => handleQuizPress(quiz.id)}
-          style={[
-            styles.startButton,
-            quiz.type === "AUDIO" ? styles.audioButton : styles.textButton,
-          ]}
-          labelStyle={styles.buttonLabel}
-        >
-          Bắt đầu
-        </Button>
-      </Card.Actions>
-    </Card>
+  const renderHeader = () => (
+    <View>
+      <LinearGradient colors={["#4a0d0d", "#6b1a1a", "#7e2222"]} style={styles.headerBackground}>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.headerTitle}>Thử thách Quiz</Text>
+            <Text style={styles.headerSubtitle}>Củng cố kiến thức mỗi ngày</Text>
+          </View>
+          <Icon name="trophy-variant" size={32} color="rgba(255,255,255,0.3)" />
+        </View>
+      </LinearGradient>
+      
+      <View style={styles.statsCard}>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{totalCount}</Text>
+          <Text style={styles.statLabel}>Tổng số</Text>
+        </View>
+        <View style={[styles.statItem, styles.statItemLast]}>
+          <Text style={styles.statValue}>{quizList.length}</Text>
+          <Text style={styles.statLabel}>Đã tải</Text>
+        </View>
+      </View>
+    </View>
   );
+
+  const renderFooter = () => {
+    if (!loading || refreshing) return <View style={{ height: 20 }} />;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="small" color="#9B2C2C" />
+        <Text style={styles.loadingText}>Đang tải thêm...</Text>
+      </View>
+    );
+  };
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <IconButton
-        icon={activeTab === "audio" ? "headphones-off" : "text-box-remove"}
-        size={48}
-        iconColor="#9CA3AF"
-      />
-      <Text style={styles.emptyTitle}>
-        Không có câu hỏi {activeTab === "audio" ? "âm thanh" : "văn bản"}
-      </Text>
-      <Text style={styles.emptySubtitle}>
-        Hãy thử chuyển sang tab khác hoặc làm mới danh sách
-      </Text>
+      <Icon name="text-box-search-outline" size={64} color="#ddd" />
+      <Text style={styles.emptyTitle}>Chưa có thử thách nào</Text>
+      <Text style={styles.emptySubtitle}>Danh sách câu hỏi đang được cập nhật, quay lại sau nhé!</Text>
     </View>
   );
 
   const renderErrorState = () => (
     <View style={styles.errorContainer}>
-      <IconButton icon="alert-circle" size={48} iconColor="#EF4444" />
+      <Icon name="alert-circle-outline" size={64} color="#ef4444" />
       <Text style={styles.errorTitle}>Có lỗi xảy ra</Text>
       <Text style={styles.errorMessage}>{error}</Text>
-      <Button
-        mode="contained"
-        onPress={onRefresh}
-        style={styles.retryButton}
-        loading={loading}
-      >
-        Thử lại
-      </Button>
+      <TouchableOpacity onPress={onRefresh} style={styles.retryButton}>
+        <Text style={styles.retryButtonText}>Thử lại</Text>
+      </TouchableOpacity>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Tabs */}
-      <Surface style={styles.tabContainer} elevation={2}>
-        <View style={styles.tabButtonContainer}>
-          <Button
-            mode={activeTab === "audio" ? "contained" : "outlined"}
-            onPress={() => setActiveTab("audio")}
-            style={[
-              styles.tabButton,
-              activeTab === "audio" ? styles.audioTabActive : styles.tabInactive,
-            ]}
-            labelStyle={[
-              styles.tabLabel,
-              activeTab === "audio"
-                ? styles.tabLabelActive
-                : styles.tabLabelInactive,
-            ]}
-            icon="headphones"
-            compact
-          >
-            Audio
-          </Button>
-
-          <Button
-            mode={activeTab === "text" ? "contained" : "outlined"}
-            onPress={() => setActiveTab("text")}
-            style={[
-              styles.tabButton,
-              activeTab === "text" ? styles.textTabActive : styles.tabInactive,
-            ]}
-            labelStyle={[
-              styles.tabLabel,
-              activeTab === "text"
-                ? styles.tabLabelActive
-                : styles.tabLabelInactive,
-            ]}
-            icon="text"
-            compact
-          >
-            Text
-          </Button>
-        </View>
-      </Surface>
-
-      {/* Content */}
-      {loading && !refreshing ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#6366F1" />
-          <Text style={styles.loadingText}>Đang tải quiz...</Text>
-        </View>
-      ) : error ? (
-        renderErrorState()
-      ) : currentQuizzes.length === 0 ? (
-        renderEmptyState()
-      ) : (
-        <FlatList
-          data={currentQuizzes}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item, index }) => renderQuizCard(item, index)}
-          ListHeaderComponent={
-            <View style={styles.statsContainer}>
-              <Surface style={styles.statCard} elevation={1}>
-                <Text style={styles.statNumber}>{currentQuizzes.length}</Text>
-                <Text style={styles.statLabel}>
-                  Câu hỏi {activeTab === "audio" ? "Audio" : "Text"}
-                </Text>
-              </Surface>
-            </View>
-          }
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          showsVerticalScrollIndicator={false}
-          onEndReachedThreshold={0.2}
-          onEndReached={loadMore}
-          contentContainerStyle={styles.scrollContent}
-        />
-      )}
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <FlatList
+        data={quizList}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => renderQuizCard(item)}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        ListEmptyComponent={!loading && renderEmptyState}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" colors={["#9B2C2C"]} />
+        }
+        showsVerticalScrollIndicator={false}
+        onEndReachedThreshold={0.3}
+        onEndReached={loadMore}
+        contentContainerStyle={styles.scrollContent}
+      />
+      {error && quizList.length === 0 && renderErrorState()}
     </SafeAreaView>
   );
 };

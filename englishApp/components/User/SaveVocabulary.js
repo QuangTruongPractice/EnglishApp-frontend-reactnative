@@ -1,48 +1,45 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigation } from "@react-navigation/native";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import SaveVocabularyScreen from "../Screen/SaveVocabularyScreen";
 import { fetchSaveVocabulary, toggleVocabularySave } from "../../configs/LoadData";
 import Toast from "react-native-toast-message";
 
 const SaveVocabulary = () => {
-    const [savedVocabs, setSavedVocabs] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-    const [error, setError] = useState(null);
     const nav = useNavigation();
+    const queryClient = useQueryClient();
 
-    const loadData = async () => {
-        try {
-            setLoading(true);
-            const res = await fetchSaveVocabulary();
-            // The API returns a paginated object, so data is in result.content
-            setSavedVocabs(res.result?.content || []);
-        } catch (err) {
-            setError("Không thể tải danh sách từ vựng đã lưu");
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
-        }
-    };
+    const { data, isLoading: loading, isRefetching: refreshing, error, refetch: loadData } = useQuery({
+        queryKey: ['savedVocabulary'],
+        queryFn: fetchSaveVocabulary
+    });
 
+    // Extract content array
+    const savedVocabs = data?.result?.content || [];
     const onRefresh = () => {
-        setRefreshing(true);
         loadData();
     };
 
     const handleToggleSave = async (vocabularyId) => {
         try {
             await toggleVocabularySave(vocabularyId);
-            // In this screen, we usually want to remove the item if it's unsaved
-            setSavedVocabs((prev) => prev.filter((v) => v.id !== vocabularyId));
+            // Optimistic Update: Remove from local cache immediately
+            queryClient.setQueryData(['savedVocabulary'], (oldData) => {
+                if (!oldData || !oldData.result) return oldData;
+                return {
+                    ...oldData,
+                    result: {
+                        ...oldData.result,
+                        content: oldData.result.content.filter((v) => v.id !== vocabularyId)
+                    }
+                };
+            });
+            // Also invalidate vocabulary detail if possible, but safe just to update this list
         } catch (ex) {
             Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể bỏ lưu từ vựng.' });
         }
     };
 
-    useEffect(() => {
-        loadData();
-    }, []);
 
     const handleBack = () => {
         nav.goBack();

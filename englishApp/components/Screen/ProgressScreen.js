@@ -1,3 +1,4 @@
+import React from "react";
 import { View, ScrollView, RefreshControl, TouchableOpacity, Image, Text } from "react-native";
 import { Button, ActivityIndicator } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -194,7 +195,11 @@ const DonutChart = ({ total, segments, size = 76, strokeWidth = 7 }) => {
         }}
       />
       {/* Segments */}
-      {segments.map((seg, i) => renderSegment(seg, i))}
+      {segments.map((seg, i) => (
+        <React.Fragment key={`donut-seg-${i}`}>
+          {renderSegment(seg, i)}
+        </React.Fragment>
+      ))}
       {/* Center label */}
       <View
         style={{
@@ -235,6 +240,10 @@ const ProgressScreen = ({
   formatDuration,
   nav,
   retry,
+  loadMoreVideo,
+  loadMoreVoca,
+  isFetchingNextVideoPage,
+  isFetchingNextVocaPage,
 }) => {
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -259,6 +268,11 @@ const ProgressScreen = ({
     const date = new Date(calendarYear, calendarMonth - 1, day);
     const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     return date < todayDate;
+  };
+
+  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+    const paddingToBottom = 100; // Tăng lên 100 để load mượt hơn trước khi chạm đáy
+    return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
   };
 
   // Get day cell style
@@ -328,7 +342,7 @@ const ProgressScreen = ({
             {item.video?.title || item.title}
           </Text>
           <Text style={styles.videoMeta}>
-            {item.completedSegments || 0}/{item.video?.segmentsCount || item.segmentsCount || 0} phân đoạn
+            {item.video?.segmentsCount || item.segmentsCount || 0} phân đoạn
             {"    "}Xem lần cuối {formatDate(item.updatedAt)}
           </Text>
           <View style={styles.videoProgressBarContainer}>
@@ -346,6 +360,14 @@ const ProgressScreen = ({
       ? `Ôn lại sau ${getRelativeTime(item.nextReviewAt)}`
       : "";
 
+    const statusColors = {
+      NOT_STARTED: "#94a3b8",
+      LEARNING: "#f97316",
+      REVIEWING: "#3b82f6",
+      MASTERED: "#22c55e",
+    };
+    const borderColor = statusColors[item.status] || "#f97316";
+
     return (
       <TouchableOpacity
         onPress={() => nav.navigate("VocabularyDetail", { vocabularyId: data.id })}
@@ -353,7 +375,7 @@ const ProgressScreen = ({
         style={styles.vocaCard}
       >
         {/* Left colored border indicator */}
-        <View style={styles.vocaLeftBorder} />
+        <View style={[styles.vocaLeftBorder, { backgroundColor: borderColor }]} />
 
         <View style={styles.vocaInfoContainer}>
           {/* Row 1: word + phonetic */}
@@ -409,12 +431,14 @@ const ProgressScreen = ({
   // ===== Vocab Tabs =====
   const vocabTabs = [
     { label: "Tất cả", value: "ALL", count: vocaCounts.ALL },
+    { label: "Cần ôn tập", value: "NOT_STARTED", count: vocaCounts.NOT_STARTED },
     { label: "Đang học", value: "LEARNING", count: vocaCounts.LEARNING },
     { label: "Hoàn thành", value: "MASTERED", count: vocaCounts.MASTERED },
   ];
 
-  // Donut chart segments (only Learning + Mastered)
+  // Donut chart segments (Not Started + Learning + Mastered)
   const donutSegments = [
+    { value: vocaCounts.NOT_STARTED, color: "#94a3b8" },
     { value: vocaCounts.LEARNING, color: "#f97316" },
     { value: vocaCounts.MASTERED, color: "#22c55e" },
   ];
@@ -429,6 +453,12 @@ const ProgressScreen = ({
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#b83535"]} />
           }
           showsVerticalScrollIndicator={false}
+          onScroll={({ nativeEvent }) => {
+            if (isCloseToBottom(nativeEvent)) {
+              if (loadMoreVideo) loadMoreVideo();
+            }
+          }}
+          scrollEventThrottle={400}
         >
           {/* ===== SHARED HEADER ===== */}
           <SharedHeader
@@ -472,15 +502,15 @@ const ProgressScreen = ({
               {/* Week Day Headers */}
               <View style={styles.calendarWeekDaysRow}>
                 {WEEK_DAYS.map((day, i) => (
-                  <Text key={i} style={styles.calendarWeekDayText}>{day}</Text>
+                  <Text key={`weekday-${i}`} style={styles.calendarWeekDayText}>{day}</Text>
                 ))}
               </View>
 
               {/* Calendar Grid */}
               {calendarGrid.map((week, weekIdx) => (
-                <View key={weekIdx} style={styles.calendarRow}>
+                <View key={`week-${weekIdx}`} style={styles.calendarRow}>
                   {week.map((day, dayIdx) => (
-                    <View key={dayIdx} style={getDayCellStyle(day)}>
+                    <View key={`day-${weekIdx}-${dayIdx}`} style={getDayCellStyle(day)}>
                       {day && <Text style={getDayTextStyle(day)}>{day}</Text>}
                     </View>
                   ))}
@@ -518,56 +548,33 @@ const ProgressScreen = ({
             </View>
 
             <View style={styles.vocabCard}>
-              {/* Summary Row: Donut Chart + Stats */}
-              <View style={styles.vocabSummaryRow}>
-                <View style={styles.vocabCircleContainer}>
-                  <DonutChart
-                    total={vocaCounts.ALL}
-                    segments={donutSegments}
-                    size={76}
-                    strokeWidth={7}
-                  />
-                </View>
-
-                <View style={styles.vocabStatsColumn}>
-                  <View style={styles.vocabStatRow}>
-                    <View style={styles.vocabStatLabelRow}>
-                      <View style={[styles.vocabStatDot, styles.vocabStatDotLearning]} />
-                      <Text style={styles.vocabStatLabel}>Đang học</Text>
-                    </View>
-                    <Text style={styles.vocabStatValue}>{vocaCounts.LEARNING}</Text>
-                  </View>
-                  <View style={styles.vocabStatRow}>
-                    <View style={styles.vocabStatLabelRow}>
-                      <View style={[styles.vocabStatDot, styles.vocabStatDotMastered]} />
-                      <Text style={styles.vocabStatLabel}>Hoàn thành</Text>
-                    </View>
-                    <Text style={styles.vocabStatValue}>{vocaCounts.MASTERED}</Text>
-                  </View>
-                </View>
-              </View>
-
               {/* Tabs */}
-              <View style={styles.vocabTabsRow}>
-                {vocabTabs.map((tab) => (
-                  <TouchableOpacity
-                    key={tab.value}
-                    onPress={() => setActiveVocaStatus(tab.value)}
-                    style={[
-                      styles.vocabTab,
-                      activeVocaStatus === tab.value && styles.vocabTabActive,
-                    ]}
-                  >
-                    <Text
+              <View style={styles.vocabTabsContainer}>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.vocabTabsScroll}
+                >
+                  {vocabTabs.map((tab) => (
+                    <TouchableOpacity
+                      key={tab.value}
+                      onPress={() => setActiveVocaStatus(tab.value)}
                       style={[
-                        styles.vocabTabText,
-                        activeVocaStatus === tab.value && styles.vocabTabTextActive,
+                        styles.vocabTab,
+                        activeVocaStatus === tab.value && styles.vocabTabActive,
                       ]}
                     >
-                      {tab.label} ({tab.count})
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                      <Text
+                        style={[
+                          styles.vocabTabText,
+                          activeVocaStatus === tab.value && styles.vocabTabTextActive,
+                        ]}
+                      >
+                        {tab.label} ({tab.count})
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
 
               {/* Vocabulary List - max 4 visible, scroll inside */}
@@ -582,10 +589,21 @@ const ProgressScreen = ({
                   style={styles.vocabListScroll}
                   nestedScrollEnabled={true}
                   showsVerticalScrollIndicator={true}
+                  onScroll={({ nativeEvent }) => {
+                    if (isCloseToBottom(nativeEvent)) {
+                      if (loadMoreVoca) loadMoreVoca();
+                    }
+                  }}
+                  scrollEventThrottle={400}
                 >
-                  {vocabularyProgress?.map((item) => (
-                    <VocabularyItem key={item.id} item={item} />
+                  {vocabularyProgress?.map((item, index) => (
+                    <VocabularyItem key={`voca-${item.meaningId}-${index}`} item={item} />
                   ))}
+                  {isFetchingNextVocaPage && (
+                    <View style={{ paddingVertical: 10, alignItems: 'center' }}>
+                      <ActivityIndicator size="small" color="#b83535" />
+                    </View>
+                  )}
                 </ScrollView>
               )}
             </View>
@@ -610,9 +628,16 @@ const ProgressScreen = ({
                 </Text>
               </View>
             ) : (
-              videoProgress?.map((item) => (
-                <VideoProgressCard key={item.id} item={item} />
-              ))
+                <View>
+                  {videoProgress?.map((item, index) => (
+                  <VideoProgressCard key={`video-${item.id ?? index}`} item={item} />
+                  ))}
+                {isFetchingNextVideoPage && (
+                  <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color="#b83535" />
+                  </View>
+                )}
+              </View>
             )}
           </View>
         </ScrollView>

@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { endpoints, IdentityApis, LearningApis, authIdentityApis, authLearningApis } from "./Apis";
-import { setCache, CACHE_KEYS } from "../utils/cache";
+import { setCache, getCache, CACHE_KEYS } from "../utils/cache";
 
 export const getToken = async () => {
   return await AsyncStorage.getItem("token");
@@ -26,10 +26,6 @@ export const register = async (formDataToSend) => {
 export const loadProfile = async () => {
   const token = await getToken();
   const user = await authIdentityApis(token).get(endpoints["profile"]);
-
-  // Cache the profile
-  setCache(CACHE_KEYS.USER_PROFILE, user.data);
-
   return user.data;
 };
 
@@ -50,12 +46,6 @@ export const fetchAllMainTopics = async (page, q) => {
   let url = `${endpoints["main-topics"]}?page=${page}`;
   if (q) url += `&name=${q}`;
   const res = await authLearningApis(token).get(url);
-
-  // Cache the first page of results (the most common view)
-  if (page === 1 && !q) {
-    setCache(CACHE_KEYS.MAIN_TOPICS, res.data);
-  }
-
   return res.data;
 };
 
@@ -64,11 +54,6 @@ export const fetchAllVideos = async (page, q) => {
   let url = `${endpoints["video"]}?page=${page}`;
   if (q) url += `&title=${q}`;
   const res = await authLearningApis(token).get(url);
-
-  if (page === 1 && !q) {
-    setCache(CACHE_KEYS.VIDEO, res.data);
-  }
-
   return res.data;
 };
 
@@ -84,17 +69,21 @@ export const updateProfile = async (formData) => {
   return response.data;
 };
 
-export const fetchVideoProgress = async () => {
+export const fetchVideoProgress = async ({ pageParam = 1 }) => {
   const token = await getToken();
-  const videoRes = await authLearningApis(token).get(endpoints["user-video-progress"]);
+  const url = pageParam > 1 
+    ? `${endpoints["user-video-progress"]}?page=${pageParam}`
+    : endpoints["user-video-progress"];
+  const videoRes = await authLearningApis(token).get(url);
   return videoRes.data;
 };
 
-export const fetchVocabularyProgress = async () => {
+export const fetchVocabularyProgress = async ({ pageParam = 1 }) => {
   const token = await getToken();
-  const vocabularyRes = await authLearningApis(token).get(
-    endpoints["user-vocabulary-progress"]
-  );
+  const url = pageParam > 1 
+    ? `${endpoints["user-vocabulary-progress"]}?page=${pageParam}`
+    : endpoints["user-vocabulary-progress"];
+  const vocabularyRes = await authLearningApis(token).get(url);
   return vocabularyRes.data;
 };
 
@@ -217,10 +206,6 @@ export const fetchSaveVocabulary = async () => {
 export const fetchRecommendedTopics = async () => {
   const token = await getToken();
   const res = await authLearningApis(token).get(endpoints["main-topics-recommend"]);
-
-  // Cache recommendations
-  setCache(CACHE_KEYS.RECOMMENDED_TOPICS, res.data);
-
   return res.data;
 };
 
@@ -259,9 +244,6 @@ export const checkSessionLevelUp = async (sessionId) => {
 export const fetchSummary = async () => {
   const token = await getToken();
   const res = await authLearningApis(token).get(endpoints["summary"]);
-
-  setCache(CACHE_KEYS.SUMMARY, res.data);
-
   return res.data;
 };
 

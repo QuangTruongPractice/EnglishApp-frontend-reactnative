@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import ProgressScreen from "../Screen/ProgressScreen";
 import {
@@ -8,14 +8,9 @@ import {
   fetchSummary,
   loadProfile,
 } from "../../configs/LoadData";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 
 const Progress = () => {
-  const [videoProgress, setVideoProgress] = useState(null);
-  const [vocabularyProgress, setVocabularyProgress] = useState(null);
-  const [streakCalendar, setStreakCalendar] = useState(null);
-  const [summary, setSummary] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [activeVocaStatus, setActiveVocaStatus] = useState("ALL");
@@ -26,43 +21,58 @@ const Progress = () => {
   const [calendarMonth, setCalendarMonth] = useState(now.getMonth() + 1);
   const [calendarYear, setCalendarYear] = useState(now.getFullYear());
 
-  const loadProgress = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const [videoRes, vocabularyRes, summaryRes, profileRes] =
-        await Promise.all([
-          fetchVideoProgress(),
-          fetchVocabularyProgress(),
-          fetchSummary(),
-          loadProfile(),
-        ]);
-
-      setVideoProgress(videoRes.result);
-      setVocabularyProgress(vocabularyRes.result);
-      setSummary(summaryRes.result || summaryRes);
-      setUserProfile(profileRes);
-
-      // Fetch streak calendar for current month
-      const streakRes = await fetchStreakCalendar(calendarMonth, calendarYear);
-      setStreakCalendar(streakRes.result || streakRes);
-    } catch (ex) {
-      setError("Không thể tải tiến độ học tập. Vui lòng thử lại.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+  const {
+    data: videoRes,
+    isLoading: videoLoading,
+    refetch: refetchVideo,
+    fetchNextPage: fetchNextVideoPage,
+    hasNextPage: hasNextVideoPage,
+    isFetchingNextPage: isFetchingNextVideoPage,
+  } = useInfiniteQuery({
+    queryKey: ['videoProgress'],
+    queryFn: fetchVideoProgress,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage?.result?.last === false) {
+        return allPages.length + 1;
+      }
+      return undefined;
     }
-  };
+  });
 
-  const loadStreakCalendar = async (month, year) => {
-    try {
-      const streakRes = await fetchStreakCalendar(month, year);
-      setStreakCalendar(streakRes.result || streakRes);
-    } catch (ex) {
-      // Silently fail for calendar navigation
+  const {
+    data: vocaRes,
+    isLoading: vocaLoading,
+    refetch: refetchVoca,
+    fetchNextPage: fetchNextVocaPage,
+    hasNextPage: hasNextVocaPage,
+    isFetchingNextPage: isFetchingNextVocaPage,
+  } = useInfiniteQuery({
+    queryKey: ['vocabularyProgress'],
+    queryFn: fetchVocabularyProgress,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage?.result?.last === false) {
+        return allPages.length + 1;
+      }
+      return undefined;
     }
-  };
+  });
+
+  const { data: summaryRes, isLoading: summaryLoading, refetch: refetchSummary } = useQuery({ queryKey: ['summary'], queryFn: fetchSummary });
+  const { data: profileRes, isLoading: profileLoading, refetch: refetchProfile } = useQuery({ queryKey: ['profile'], queryFn: loadProfile });
+  const { data: streakRes, isLoading: streakLoading, refetch: refetchStreak } = useQuery({
+    queryKey: ['streakCalendar', calendarMonth, calendarYear],
+    queryFn: () => fetchStreakCalendar(calendarMonth, calendarYear)
+  });
+
+  const loading = videoLoading || vocaLoading || summaryLoading || profileLoading || streakLoading;
+
+  const videoProgress = videoRes?.pages.flatMap(page => page.result?.content || []) || [];
+  const vocabularyProgress = vocaRes?.pages.flatMap(page => page.result?.content || []) || [];
+  const summary = summaryRes?.result || summaryRes;
+  const userProfile = profileRes;
+  const streakCalendar = streakRes?.result || streakRes;
 
   const goToPrevMonth = () => {
     let newMonth = calendarMonth - 1;
@@ -73,7 +83,6 @@ const Progress = () => {
     }
     setCalendarMonth(newMonth);
     setCalendarYear(newYear);
-    loadStreakCalendar(newMonth, newYear);
   };
 
   const goToNextMonth = () => {
@@ -85,12 +94,18 @@ const Progress = () => {
     }
     setCalendarMonth(newMonth);
     setCalendarYear(newYear);
-    loadStreakCalendar(newMonth, newYear);
   };
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    loadProgress();
+    await Promise.all([
+      refetchVideo(),
+      refetchVoca(),
+      refetchSummary(),
+      refetchProfile(),
+      refetchStreak()
+    ]);
+    setRefreshing(false);
   };
 
   const formatDate = (dateString) => {
@@ -109,19 +124,27 @@ const Progress = () => {
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
-  useEffect(() => {
-    loadProgress();
-  }, []);
+
 
   // Vocabulary counts
+  const totalVocaElements = vocaRes?.pages[0]?.result?.totalElements || 0;
   const vocaCounts = {
-    ALL: vocabularyProgress?.length || 0,
-    LEARNING:
-      vocabularyProgress?.filter((v) => v.status === "LEARNING").length || 0,
-    REVIEWING:
-      vocabularyProgress?.filter((v) => v.status === "REVIEWING").length || 0,
-    MASTERED:
-      vocabularyProgress?.filter((v) => v.status === "MASTERED").length || 0,
+    ALL: totalVocaElements || vocabularyProgress?.length || 0,
+    NOT_STARTED: vocabularyProgress?.filter((v) => v.status === "NOT_STARTED").length || 0,
+    LEARNING: vocabularyProgress?.filter((v) => v.status === "LEARNING").length || 0,
+    MASTERED: vocabularyProgress?.filter((v) => v.status === "MASTERED").length || 0,
+  };
+
+  const loadMoreVideo = () => {
+    if (hasNextVideoPage && !isFetchingNextVideoPage) {
+      fetchNextVideoPage();
+    }
+  };
+
+  const loadMoreVoca = () => {
+    if (hasNextVocaPage && !isFetchingNextVocaPage) {
+      fetchNextVocaPage();
+    }
   };
 
   const filteredVocabulary =
@@ -151,7 +174,11 @@ const Progress = () => {
       formatDate={formatDate}
       formatDuration={formatDuration}
       nav={nav}
-      retry={loadProgress}
+      retry={onRefresh}
+      loadMoreVideo={loadMoreVideo}
+      loadMoreVoca={loadMoreVoca}
+      isFetchingNextVideoPage={isFetchingNextVideoPage}
+      isFetchingNextVocaPage={isFetchingNextVocaPage}
     />
   );
 };

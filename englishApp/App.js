@@ -7,7 +7,7 @@ import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import MyUserReducer from "./reducers/MyUserReducer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect } from "react";
-import { getCache, removeCache, CACHE_KEYS } from "./utils/cache";
+import { getCache, clearAllCache, CACHE_KEYS } from "./utils/cache";
 import { loadProfile, fetchLearningProfile } from "./configs/LoadData";
 import { registerUnauthorizedHandler } from "./configs/Apis";
 import Login from "./components/Auth/Login";
@@ -32,10 +32,11 @@ import DailySession from "./components/User/DailySession";
 import Chatbot from "./components/User/Chatbot";
 import SaveVocabulary from "./components/User/SaveVocabulary";
 import UpdatePasswordScreen from "./components/User/ChangePassword";
-
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+const queryClient = new QueryClient();
 
 const TabNavigator = () => {
   return (
@@ -105,7 +106,8 @@ export default function App() {
   useEffect(() => {
     const handleLogout = async () => {
       await AsyncStorage.removeItem("token");
-      await removeCache(CACHE_KEYS.USER_PROFILE);
+      await clearAllCache();
+      queryClient.clear();
       dispatch({ type: "logout" });
       Toast.show({
         type: 'info',
@@ -152,104 +154,106 @@ export default function App() {
   }, []);
 
   return (
-    <MyUserContext.Provider value={user}>
-      <MyDispatchContext.Provider value={dispatch}>
-        <NavigationContainer>
-          <Stack.Navigator
-            initialRouteName={user ? "Home" : "Login"}
-            screenOptions={{ headerShown: false }}
-          >
-            {user ? (
-              <>
-                <Stack.Screen
-                  name="Home"
-                  component={TabNavigator}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="TopicDetail"
-                  component={TopicDetail}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="SubTopicDetail"
-                  component={SubTopicDetail}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="VocabularyDetail"
-                  component={VocabularyDetail}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="VideoDetail"
-                  component={VideoDetail}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="QuizDetail"
-                  component={QuizDetail}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="LeaderBoard"
-                  component={LeaderBoard}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="DailyPractice"
-                  component={DailyPractice}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="DailySession"
-                  component={DailySession}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="SaveVocabulary"
-                  component={SaveVocabulary}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="UpdatePassword"
-                  component={UpdatePasswordScreen}
-                  options={{ headerShown: false }}
-                />
-              </>
-            ) : (
-              <>
-                <Stack.Screen
-                  name="Login"
-                  component={Login}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="Register"
-                  component={Register}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="ForgotPassword"
-                  component={ForgotPassword}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="ChangePassword"
-                  component={ChangePassword}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="Onboarding"
-                  component={Onboarding}
-                  options={{ headerShown: false }}
-                />
-              </>
-            )}
-          </Stack.Navigator>
-          <Toast />
-        </NavigationContainer>
-      </MyDispatchContext.Provider>
-    </MyUserContext.Provider>
+    <QueryClientProvider client={queryClient}>
+      <MyUserContext.Provider value={user}>
+        <MyDispatchContext.Provider value={dispatch}>
+          <NavigationContainer>
+            <Stack.Navigator
+              initialRouteName={user ? "Home" : "Login"}
+              screenOptions={{ headerShown: false }}
+            >
+              {user ? (
+                <>
+                  <Stack.Screen
+                    name="Home"
+                    component={TabNavigator}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="TopicDetail"
+                    component={TopicDetail}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="SubTopicDetail"
+                    component={SubTopicDetail}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="VocabularyDetail"
+                    component={VocabularyDetail}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="VideoDetail"
+                    component={VideoDetail}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="QuizDetail"
+                    component={QuizDetail}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="LeaderBoard"
+                    component={LeaderBoard}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="DailyPractice"
+                    component={DailyPractice}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="DailySession"
+                    component={DailySession}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="SaveVocabulary"
+                    component={SaveVocabulary}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="UpdatePassword"
+                    component={UpdatePasswordScreen}
+                    options={{ headerShown: false }}
+                  />
+                </>
+              ) : (
+                <>
+                  <Stack.Screen
+                    name="Login"
+                    component={Login}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="Register"
+                    component={Register}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="ForgotPassword"
+                    component={ForgotPassword}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="ChangePassword"
+                    component={ChangePassword}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="Onboarding"
+                    component={Onboarding}
+                    options={{ headerShown: false }}
+                  />
+                </>
+              )}
+            </Stack.Navigator>
+            <Toast />
+          </NavigationContainer>
+        </MyDispatchContext.Provider>
+      </MyUserContext.Provider>
+    </QueryClientProvider>
   );
 }

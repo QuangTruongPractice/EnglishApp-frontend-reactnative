@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Alert } from "react-native";
 import { Audio } from "expo-av";
 import { fetchQuizDetail, doQuiz } from "../../configs/LoadData";
 import QuizDetailScreen from "../Screen/QuizDetailScreen";
+import Toast from "react-native-toast-message";
 
 const QuizDetail = ({ route, navigation }) => {
   const { quizId } = route.params;
@@ -11,16 +12,33 @@ const QuizDetail = ({ route, navigation }) => {
   const [error, setError] = useState(null);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const [sound, setSound] = useState();
-  const [showSnackbar, setShowSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [sound, setSound] = useState(null);
+  const [isAnswerCorrect, setIsAnswerCorrect] = useState(false);
+
+  // States for specific types
+  const [fillValue, setFillValue] = useState(null);
+  const [leftSelected, setLeftSelected] = useState(null);
+  const [rightSelected, setRightSelected] = useState(null);
+  const [matches, setMatches] = useState([]); // {leftId, rightId}
 
   const loadQuizDetail = async () => {
     try {
       setLoading(true);
       setError(null);
       const res = await fetchQuizDetail(quizId);
-      setQuizDetail(res.result);
+      if (res.code === 1000) {
+        setQuizDetail(res.result);
+        // Reset states for new quiz
+        setSelectedAnswer(null);
+        setShowResult(false);
+        setFillValue(null);
+        setLeftSelected(null);
+        setRightSelected(null);
+        setMatches([]);
+        setIsAnswerCorrect(false);
+      } else {
+        setError("Không thể tải chi tiết câu hỏi.");
+      }
     } catch (ex) {
       setError("Không thể tải chi tiết bài quiz. Vui lòng thử lại.");
     } finally {
@@ -28,87 +46,99 @@ const QuizDetail = ({ route, navigation }) => {
     }
   };
 
-  const loadSound = async () => {
+  const playFeedbackSound = async (isCorrect) => {
     try {
-      let url = quizDetail.text;
-      const { sound } = await Audio.Sound.createAsync({ uri: url });
-      setSound(sound);
-      await sound.playAsync();
+      if (sound) await sound.unloadAsync();
+      const uri = isCorrect
+        ? "https://res.cloudinary.com/dabb0yavq/video/upload/v1712415147/correct-6033_zqqx9w.mp3"
+        : "https://res.cloudinary.com/dabb0yavq/video/upload/v1712415147/wrong-47985_y2v3m6.mp3";
+
+      const { sound: newSound } = await Audio.Sound.createAsync({ uri });
+      setSound(newSound);
+      await newSound.playAsync();
     } catch (e) {
-      // Lỗi phát âm thanh câu hỏi, bỏ qua
+      // Ignore audio errors
     }
   };
 
-  const loadSoundCorrect = async () => {
+  const playQuizAudio = async () => {
+    if (!quizDetail?.text || quizDetail.type !== 'AUDIO') return;
     try {
-      const { sound } = await Audio.Sound.createAsync({
-        uri: "https://www.myinstants.com/media/sounds/duolingo-correct.mp3",
-      });
-      setSound(sound);
-      await sound.playAsync();
+      if (sound) await sound.unloadAsync();
+      const { sound: newSound } = await Audio.Sound.createAsync({ uri: quizDetail.text });
+      setSound(newSound);
+      await newSound.playAsync();
     } catch (e) {
-      // Lỗi phát âm thanh đúng, bỏ qua
+      Toast.show({ type: "error", text1: "Không thể phát âm thanh." });
     }
   };
 
-  const loadSoundWrong = async () => {
-    try {
-      const { sound } = await Audio.Sound.createAsync({
-        uri: "https://www.myinstants.com/media/sounds/duolingo-wrong.mp3",
-      });
-      setSound(sound);
-      await sound.playAsync();
-    } catch (e) {
-      // Lỗi phát âm thanh sai, bỏ qua
-    }
-  };
-
-  const handleAnswerSelect = (answerId) => {
+  const handleMcPress = (answerId) => {
     if (showResult) return;
+    const answer = quizDetail.answers.find(a => a.id === answerId);
     setSelectedAnswer(answerId);
+    const correct = answer?.isCorrect || false;
+    setIsAnswerCorrect(correct);
+    setShowResult(true);
+    playFeedbackSound(correct);
+    doQuiz(quizId);
   };
 
-  const handleSubmitAnswer = async () => {
-    if (!selectedAnswer) {
-      Alert.alert("Thông báo", "Vui lòng chọn một đáp án trước khi tiếp tục.");
-      return;
-    }
-
-    const selectedAnswerObj = quizDetail.answers.find(
-      (a) => a.id === selectedAnswer
-    );
+  const handleFillPress = (word) => {
+    if (showResult) return;
+    setFillValue(word);
+    const correctAns = quizDetail.answers.find(a => a.isCorrect);
+    const correct = word === correctAns?.answer;
+    setIsAnswerCorrect(correct);
     setShowResult(true);
+    playFeedbackSound(correct);
+    doQuiz(quizId);
+  };
 
-    if (selectedAnswerObj?.isCorrect) {
-      setSnackbarMessage("🎉 Chính xác! Bạn đã chọn đúng đáp án.");
-      loadSoundCorrect();
+  const handleMatchLeft = (id) => {
+    if (showResult || matches.some(m => m.leftId === id)) return;
+    setLeftSelected(id);
+    if (rightSelected) checkMatch(id, rightSelected);
+  };
+
+  const handleMatchRight = (id) => {
+    if (showResult || matches.some(m => m.rightId === id)) return;
+    setRightSelected(id);
+    if (leftSelected) checkMatch(leftSelected, id);
+  };
+
+  const checkMatch = (leftId, rightId) => {
+    const isCorrect = leftId === rightId;
+    if (isCorrect) {
+      const newMatches = [...matches, { leftId, rightId }];
+      setMatches(newMatches);
+      setLeftSelected(null);
+      setRightSelected(null);
+
+      if (newMatches.length === quizDetail.left_items.length) {
+        setIsAnswerCorrect(true);
+        setShowResult(true);
+        playFeedbackSound(true);
+        doQuiz(quizId);
+      }
     } else {
-      setSnackbarMessage("❌ Sai rồi! Hãy xem đáp án đúng được đánh dấu.");
-      loadSoundWrong();
+      setLeftSelected(null);
+      setRightSelected(null);
+      // Optional: Shaky effect or toast
     }
-    setShowSnackbar(true);
-    await doQuiz(quizId);
   };
 
   const handleTryAgain = () => {
     setSelectedAnswer(null);
     setShowResult(false);
+    setFillValue(null);
+    setLeftSelected(null);
+    setRightSelected(null);
+    setMatches([]);
+    setIsAnswerCorrect(false);
   };
 
-  const handleGoBack = () => {
-    navigation.goBack();
-  };
-  const getCorrectAnswerId = () => {
-    if (!quizDetail?.answers) return null;
-    const correctAnswer = quizDetail.answers.find(answer => answer.isCorrect);
-    return correctAnswer?.id || null;
-  };
-
-  const checkIsAnswerCorrect = () => {
-    if (!selectedAnswer || !quizDetail?.answers) return false;
-    const selectedAnswerObj = quizDetail.answers.find(a => a.id === selectedAnswer);
-    return selectedAnswerObj?.isCorrect || false;
-  };
+  const handleGoBack = () => navigation.goBack();
 
   useEffect(() => {
     loadQuizDetail();
@@ -122,22 +152,29 @@ const QuizDetail = ({ route, navigation }) => {
 
   return (
     <QuizDetailScreen
-      quizDetail={quizDetail}
+      quiz={quizDetail}
       loading={loading}
       error={error}
-      selectedAnswer={selectedAnswer}
-      showResult={showResult}
-      showSnackbar={showSnackbar}
-      snackbarMessage={snackbarMessage}
-      correctAnswerId={getCorrectAnswerId()}
-      isAnswerCorrect={checkIsAnswerCorrect()}
       onReload={loadQuizDetail}
-      onAnswerSelect={handleAnswerSelect}
-      onSubmitAnswer={handleSubmitAnswer}
-      onTryAgain={handleTryAgain}
       onGoBack={handleGoBack}
-      onDismissSnackbar={() => setShowSnackbar(false)}
-      loadSound={loadSound}
+      onTryAgain={handleTryAgain}
+      // MC / TEXT types
+      selectedAnswer={selectedAnswer}
+      handleMcPress={handleMcPress}
+      // Fill type
+      fillValue={fillValue}
+      handleFillPress={handleFillPress}
+      // Match type
+      leftSelected={leftSelected}
+      rightSelected={rightSelected}
+      matches={matches}
+      handleMatchLeft={handleMatchLeft}
+      handleMatchRight={handleMatchRight}
+      // Result
+      showResult={showResult}
+      isAnswerCorrect={isAnswerCorrect}
+      // Audio
+      playQuizAudio={playQuizAudio}
     />
   );
 };

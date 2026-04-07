@@ -4,15 +4,23 @@ import VocabularyDetailScreen from "../Screen/VocabularyDetailScreen";
 import { fetchVocabularyDetail, generateQuiz, submitQuiz, toggleVocabularySave } from "../../configs/LoadData";
 import { AIApis, endpoints } from "../../configs/Apis";
 import { useNavigation } from "@react-navigation/native";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 
 const VocabularyDetail = ({ route }) => {
   const { vocabularyId } = route.params;
-  const [vocabulary, setVocabulary] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [sound, setSound] = useState();
   const nav = useNavigation();
+  const queryClient = useQueryClient();
+
+  const { data, isLoading: loading, error, refetch: loadVocabulary } = useQuery({
+    queryKey: ['vocabularyDetail', vocabularyId],
+    queryFn: () => fetchVocabularyDetail(vocabularyId),
+    enabled: !!vocabularyId,
+  });
+
+  const vocabulary = data?.result || {};
+  const errorMessage = error ? "Failed to load vocabulary details. Please try again." : null;
 
   // Quiz State
   const [showQuizModal, setShowQuizModal] = useState(false);
@@ -32,18 +40,6 @@ const VocabularyDetail = ({ route }) => {
   const isPreparingRef = useRef(false);
   const stopRequestedRef = useRef(false);
 
-  const loadVocabulary = async () => {
-    try {
-      setLoading(true);
-      const response = await fetchVocabularyDetail(vocabularyId);
-      const data = response.result;
-      setVocabulary(data);
-    } catch (e) {
-      setError("Failed to load vocabulary details. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleGoBack = () => {
     nav.goBack();
@@ -53,10 +49,17 @@ const VocabularyDetail = ({ route }) => {
     try {
       const res = await toggleVocabularySave(vocabularyId);
       if (res.code === 1000) {
-        setVocabulary(prev => ({
-          ...prev,
-          isSave: !prev.isSave
-        }));
+        // Update local cache immediately
+        queryClient.setQueryData(['vocabularyDetail', vocabularyId], (oldData) => {
+          if (!oldData || !oldData.result) return oldData;
+          return {
+            ...oldData,
+            result: {
+              ...oldData.result,
+              isSave: !oldData.result.isSave
+            }
+          };
+        });
         Toast.show({
           type: 'success',
           text1: 'Thành công',
@@ -298,8 +301,14 @@ const VocabularyDetail = ({ route }) => {
 
     // Gửi kết quả về server
     if (quizMeaningId) {
-      submitQuiz(quizMeaningId, selectedAnsObj?.isCorrect).catch(() => {
-      });
+      submitQuiz(quizMeaningId, selectedAnsObj?.isCorrect).then(() => {
+        // Invalidate caches since the progress has changed
+        queryClient.invalidateQueries({ queryKey: ['summary'] });
+        queryClient.invalidateQueries({ queryKey: ['mainTopics'] });
+        queryClient.invalidateQueries({ queryKey: ['mainTopicDetail'] });
+        queryClient.invalidateQueries({ queryKey: ['subTopicDetail'] });
+        queryClient.invalidateQueries({ queryKey: ['vocabularyDetail', vocabularyId] });
+      }).catch(() => {});
     }
   };
 
@@ -323,11 +332,7 @@ const VocabularyDetail = ({ route }) => {
       : undefined;
   }, [sound]);
 
-  useEffect(() => {
-    if (vocabularyId) {
-      loadVocabulary();
-    }
-  }, [vocabularyId]);
+
 
   // Cleanup recording on unmount
   useEffect(() => {
@@ -342,7 +347,7 @@ const VocabularyDetail = ({ route }) => {
     <VocabularyDetailScreen
       vocabulary={vocabulary}
       loading={loading}
-      error={error}
+      error={errorMessage}
       loadVocabulary={loadVocabulary}
       loadSound={loadSound}
       onGoBack={handleGoBack}

@@ -1,79 +1,45 @@
 import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: "#FDF9F9",
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-    backgroundColor: "#fff",
-  },
-  backBtn: {
-    padding: 5,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: "#333",
-  },
-  content: {
-    padding: 20,
-  },
-  description: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 25,
-    lineHeight: 22,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#444",
-    marginBottom: 8,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-    borderRadius: 14,
-    paddingHorizontal: 15,
-    height: 55,
-  },
-  inputIcon: {
-    marginRight: 10,
-  },
-  input: {
+  container: {
+    padding: 24,
     flex: 1,
-    fontSize: 15,
-    color: "#333",
   },
-  saveBtn: {
-    height: 55,
-    borderRadius: 14,
+  title: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#9B2C2C",
+    marginBottom: 10,
+    marginTop: 20,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: "#666",
+    lineHeight: 22,
+    marginBottom: 35,
+    fontWeight: "500",
+  },
+  form: {
+    marginTop: 10,
+  },
+  eyeIcon: {
+    margin: 0,
+  },
+  button: {
+    marginTop: 30,
+    backgroundColor: "#9B2C2C",
+    height: 56,
+    borderRadius: 16,
     justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#E53935",
+    elevation: 4,
+    shadowColor: "#9B2C2C",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 4,
-  },
-  saveBtnText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "800",
   },
 });
 

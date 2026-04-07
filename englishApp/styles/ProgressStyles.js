@@ -292,18 +292,22 @@ export const styles = StyleSheet.create({
   },
 
   // Vocab Tabs
-  vocabTabsRow: {
-    flexDirection: "row",
+  vocabTabsContainer: {
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
     marginBottom: 4,
   },
+  vocabTabsScroll: {
+    flexDirection: "row",
+    paddingHorizontal: 4,
+  },
   vocabTab: {
-    flex: 1,
     paddingVertical: 10,
+    paddingHorizontal: 12,
     alignItems: "center",
     borderBottomWidth: 2,
     borderBottomColor: "transparent",
+    marginRight: 8,
   },
   vocabTabActive: {
     borderBottomColor: "#b83535",
@@ -332,7 +336,6 @@ export const styles = StyleSheet.create({
   },
   vocaLeftBorder: {
     width: 3,
-    backgroundColor: "#f97316",
     borderRadius: 2,
     marginRight: 12,
   },

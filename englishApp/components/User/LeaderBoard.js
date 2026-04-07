@@ -1,56 +1,49 @@
-﻿import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ActivityIndicator, View, Text } from "react-native";
 import { fetchLeaderBoard } from "../../configs/LoadData";
 import LeaderBoardScreen from "../Screen/LeaderBoardScreen";
 import styles from "../../styles/LeaderBoardStyles";
 import { useNavigation } from "@react-navigation/native";
+import { useQuery } from "@tanstack/react-query";
 import { getCache, CACHE_KEYS } from "../../utils/cache";
 
 const LeaderBoard = () => {
-  const [leaderBoard, setLeaderBoard] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
   const nav = useNavigation();
 
-  const loadLeaderBoard = async () => {
-    try {
-      setLoading(true);
-      const response = await fetchLeaderBoard();
-      const profile = await getCache(CACHE_KEYS.USER_PROFILE);
-      
-      if (response && response.code === 1000) {
-        const data = response.result; // This is the array
-        setLeaderBoard(data);
-        
-        if (profile && profile.userId) {
-          const userInList = data.find(u => u.userId === profile.userId);
-          if (userInList) {
-            setCurrentUser(userInList);
-          }
-        }
-      }
-    } catch (e) {
-      setError("Không tải được bảng xếp hạng. Vui lòng thử lại.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+  // Use raw fetchLeaderBoard, we will process inside useQuery if needed
+  const { data, isLoading, isRefetching, error, refetch } = useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: async () => {
+       const response = await fetchLeaderBoard();
+       const profile = await getCache(CACHE_KEYS.USER_PROFILE);
+       
+       let fetchedLeaderBoard = [];
+       if (response && response.code === 1000) {
+         fetchedLeaderBoard = response.result || [];
+         if (profile && profile.userId) {
+           const userInList = fetchedLeaderBoard.find(u => u.userId === profile.userId);
+           if (userInList) {
+             setCurrentUser(userInList);
+           }
+         }
+       }
+       return fetchedLeaderBoard;
     }
-  };
+  });
 
-  useEffect(() => {
-    loadLeaderBoard();
-  }, []);
+  const leaderBoard = data || [];
+  const loading = isLoading;
+  const refreshing = isRefetching;
+
+
 
   const handleGoBack = () => {
     nav.goBack();
   };
 
   const onRefresh = () => {
-    setRefreshing(true);
-    setError(null);
-    loadLeaderBoard();
+    refetch();
   };
 
   const formatDate = (dateString) => {

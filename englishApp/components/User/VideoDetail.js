@@ -2,14 +2,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import VideoDetailScreen from "../Screen/VideoDetailScreen";
 import { updateVideoProgress, fetchVideoDetail } from "../../configs/LoadData";
 import { useNavigation } from "@react-navigation/native";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 
 const VideoDetail = ({ route }) => {
   const { videoId: initialVideoId } = route.params;
-  const [video, setVideo] = useState(null);
-  const [subtitles, setSubtitles] = useState([]);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [selectedSubtitle, setSelectedSubtitle] = useState(null);
   const [translatedTexts, setTranslatedTexts] = useState({});
   const [translatingIds, setTranslatingIds] = useState(new Set());
@@ -17,6 +14,7 @@ const VideoDetail = ({ route }) => {
   const playerRef = useRef(null);
   const lastSaveTimeRef = useRef(0);
   const nav = useNavigation();
+  const queryClient = useQueryClient();
 
   // Robust YouTube ID extraction
   const extractYouTubeId = (input) => {
@@ -29,6 +27,16 @@ const VideoDetail = ({ route }) => {
 
   const videoId = extractYouTubeId(initialVideoId);
 
+  const { data, isLoading: loading, error: queryError, refetch: loadData } = useQuery({
+    queryKey: ['videoDetail', videoId],
+    queryFn: () => fetchVideoDetail(videoId),
+    enabled: !!videoId
+  });
+
+  const video = data?.result?.video || null;
+  const subtitles = data?.result?.subtitles || [];
+  const error = queryError ? "Không thể tải video. Vui lòng thử lại." : null;
+
   const saveProgress = useCallback(async (progress, immediate = false) => {
     const now = Date.now();
     if (!immediate && now - lastSaveTimeRef.current < 5000) return;
@@ -37,10 +45,14 @@ const VideoDetail = ({ route }) => {
 
     try {
       await updateVideoProgress(progress, videoId);
+      // Cập nhật lại cache cho summary và tiến trình học video
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+      queryClient.invalidateQueries({ queryKey: ['videoProgress'] });
+      queryClient.invalidateQueries({ queryKey: ['videos'] });
     } catch (error) {
       // Lỗi lưu tiến độ video, bỏ qua
     }
-  }, [videoId]);
+  }, [videoId, queryClient]);
 
   const handleGoBack = () => {
     nav.goBack();
@@ -76,25 +88,6 @@ const VideoDetail = ({ route }) => {
     }
     return () => clearInterval(interval);
   }, [playing, saveProgress]);
-
-  const loadData = useCallback(async () => {
-    if (loading) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetchVideoDetail(videoId);
-      const { video, subtitles } = res.result;
-
-      setVideo(video);
-      setSubtitles(subtitles || []);
-    } catch (ex) {
-      setError("Không thể tải video. Vui lòng thử lại.");
-    } finally {
-      setLoading(false);
-    }
-  }, [videoId, loading]);
 
   const handleSubtitleClick = useCallback((subtitle) => {
     setSelectedSubtitle(subtitle);
@@ -151,9 +144,6 @@ const VideoDetail = ({ route }) => {
       .padStart(2, "0")}`;
   }, []);
 
-  useEffect(() => {
-    loadData();
-  }, [videoId]);
 
   const screenProps = {
     video,

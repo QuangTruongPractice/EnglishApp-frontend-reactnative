@@ -5,6 +5,7 @@ import { Audio } from "expo-av";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useQueryClient } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 
 import styles from "../../styles/SessionStyles";
@@ -44,6 +45,7 @@ const DailySession = () => {
   const xpAnimOpacity = useRef(new Animated.Value(0)).current;
 
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     loadSession();
@@ -231,6 +233,12 @@ const DailySession = () => {
     try {
       const res = await submitQuizSession(session.id, quiz.id, isCorrect);
       if (res.code === 1000) {
+        // Invalidate cache
+        queryClient.invalidateQueries({ queryKey: ['summary'] });
+        queryClient.invalidateQueries({ queryKey: ['mainTopics'] });
+        queryClient.invalidateQueries({ queryKey: ['mainTopicDetail'] });
+        queryClient.invalidateQueries({ queryKey: ['subTopicDetail'] });
+
         if (res.result && typeof res.result === 'object' && typeof res.result.xpAwarded === 'number') {
            awardedXp = res.result.xpAwarded;
         } else if (typeof res.result === 'number') {
@@ -257,6 +265,9 @@ const DailySession = () => {
       if (res.code === 1000) {
         const aiResult = res.result; // Full AiAnalysisResponse
         const xp = aiResult.score || 2; 
+
+        // Invalidate cache
+        queryClient.invalidateQueries({ queryKey: ['summary'] });
         
         setTotalXP(prev => prev + xp);
         triggerXPAnimation(xp);

@@ -1,104 +1,63 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import VideoScreen from "../Screen/VideoScreen";
 import { fetchAllVideos, loadProfile, fetchSummary } from "../../configs/LoadData";
-import Toast from "react-native-toast-message";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 
 const Video = () => {
-  const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
-  const [userProfile, setUserProfile] = useState(null);
-  const [summary, setSummary] = useState(null);
 
-  const loadVideos = async () => {
-    if (page <= 0) return;
+  const { data: userProfile } = useQuery({ queryKey: ['profile'], queryFn: loadProfile });
+  const { data: summaryData, refetch: refetchSummary } = useQuery({ queryKey: ['summary'], queryFn: fetchSummary });
 
-    const isFirstPage = page === 1;
-    if (isFirstPage) setLoading(true);
-
-    try {
-      const res = await fetchAllVideos(page, q);
-      const newData = res.result.content;
-
-      if (isFirstPage) {
-        setVideos(newData);
-      } else {
-        setVideos((prevVideos) => [...prevVideos, ...newData]);
+  const {
+    data: videoData,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    isRefetching,
+    error: fetchError,
+    refetch: refetchVideos
+  } = useInfiniteQuery({
+    queryKey: ['videos', q],
+    queryFn: ({ pageParam = 1 }) => fetchAllVideos(pageParam, q),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage?.result?.last === false) {
+        return allPages.length + 1;
       }
-
-      if (res.result.last === true) {
-        setPage(0);
-      }
-    } catch (ex) {
-      setError("Failed to load videos. Please try again.");
-    } finally {
-      setRefreshing(false);
-      setLoading(false);
+      return undefined;
     }
-  };
+  });
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    setPage(1);
-    setError(null);
-    try {
-      const profileData = await loadProfile();
-      setUserProfile(profileData);
-      const summaryData = await fetchSummary();
-      setSummary(summaryData.result || summaryData);
-    } catch (err) {
-      // Lỗi tải dữ liệu người dùng, bỏ qua
-    }
-    loadVideos();
+    refetchSummary();
+    refetchVideos();
   };
 
-  useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        const profileData = await loadProfile();
-        setUserProfile(profileData);
-        const summaryData = await fetchSummary();
-        setSummary(summaryData.result || summaryData);
-      } catch (err) {
-      // Lỗi tải dữ liệu người dùng, bỏ qua
-    }
-    };
-    loadUserData();
-    loadVideos();
-  }, []);
-
-  useEffect(() => {
-    let timer = setTimeout(() => {
-      loadVideos();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [q, page]);
-
   const loadMore = () => {
-    if (!loading && page > 0) setPage(page + 1);
+    if (hasNextPage && !isLoading) {
+      fetchNextPage();
+    }
   };
 
   const search = (value) => {
-    setPage(1);
-    setVideos([]);
     setQ(value);
   };
+
+  const videos = videoData?.pages.flatMap(page => page.result?.content || []) || [];
+  const summary = summaryData?.result || summaryData;
 
   return (
     <VideoScreen
       userProfile={userProfile}
       summary={summary}
       videos={videos}
-      loading={loading}
-      error={error}
+      loading={isLoading}
+      error={fetchError ? "Failed to load videos. Please try again." : null}
       q={q}
-      refreshing={refreshing}
+      refreshing={isRefetching}
       onRefresh={onRefresh}
-      onRetry={loadVideos}
+      onRetry={onRefresh}
       onSearch={search}
       onLoadMore={loadMore}
     />
