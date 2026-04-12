@@ -1,8 +1,8 @@
-﻿import React, { useState, useContext, useRef, useEffect } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Audio } from 'expo-av';
 import Toast from 'react-native-toast-message';
 import { MyUserContext } from '../../configs/Context';
-import { AIApis, endpoints } from '../../configs/Apis';
+import { fetchAIChat } from '../../configs/LoadData';
 import ChatbotScreen from '../Screen/ChatbotScreen';
 
 const Chatbot = () => {
@@ -54,25 +54,10 @@ const Chatbot = () => {
         setLoading(true);
 
         try {
-            const formData = new FormData();
-            formData.append('user_id', user?.id || '');
+            const resData = await fetchAIChat(user?.id, audioUri);
 
-            if (audioUri) {
-                formData.append('audio', {
-                    uri: audioUri,
-                    name: 'recording.m4a',
-                    type: 'audio/m4a'
-                });
-            }
-
-            const response = await AIApis.post(endpoints['chat-voice'], formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                }
-            });
-
-            if (response.data) {
-                const { audio_link } = response.data;
+            if (resData) {
+                const { audio_link } = resData;
 
                 // Play audio response
                 if (audio_link) {
@@ -93,15 +78,7 @@ const Chatbot = () => {
     const startNewChat = async () => {
         setLoading(true);
         try {
-            const formData = new FormData();
-            formData.append('user_id', user?.id || '');
-            formData.append('reset', 'true');
-
-            await AIApis.post(endpoints['chat-voice'], formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                }
-            });
+            await fetchAIChat(user?.id, null, true);
 
             Toast.show({
                 type: 'info',

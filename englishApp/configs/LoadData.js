@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { endpoints, IdentityApis, LearningApis, authIdentityApis, authLearningApis } from "./Apis";
+import { endpoints, IdentityApis, LearningApis, AIApis, authIdentityApis, authLearningApis } from "./Apis";
 import { setCache, getCache, CACHE_KEYS } from "../utils/cache";
 
 export const getToken = async () => {
@@ -71,7 +71,7 @@ export const updateProfile = async (formData) => {
 
 export const fetchVideoProgress = async ({ pageParam = 1 }) => {
   const token = await getToken();
-  const url = pageParam > 1 
+  const url = pageParam > 1
     ? `${endpoints["user-video-progress"]}?page=${pageParam}`
     : endpoints["user-video-progress"];
   const videoRes = await authLearningApis(token).get(url);
@@ -80,7 +80,7 @@ export const fetchVideoProgress = async ({ pageParam = 1 }) => {
 
 export const fetchVocabularyProgress = async ({ pageParam = 1 }) => {
   const token = await getToken();
-  const url = pageParam > 1 
+  const url = pageParam > 1
     ? `${endpoints["user-vocabulary-progress"]}?page=${pageParam}`
     : endpoints["user-vocabulary-progress"];
   const vocabularyRes = await authLearningApis(token).get(url);
@@ -182,11 +182,12 @@ export const fetchDailyVocabulary = async () => {
   return res.data;
 };
 
-export const submitQuiz = async (meaningId, isCorrect) => {
+export const submitQuiz = async (meaningId, isCorrect, responseTime = 0) => {
   const token = await getToken();
   const res = await authLearningApis(token).post(endpoints["submit-quiz"], {
     meaningId,
     isCorrect,
+    responseTime,
   });
   return res.data;
 };
@@ -218,9 +219,9 @@ export const fetchDailySession = async () => {
   return res.data;
 };
 
-export const submitQuizSession = async (sessionId, quizId, isCorrect) => {
+export const submitQuizSession = async (sessionId, quizId, isCorrect, responseTime = 0) => {
   const token = await getToken();
-  const url = `${endpoints["submit-quiz-session"](sessionId, quizId)}?isCorrect=${isCorrect}`;
+  const url = `${endpoints["submit-quiz-session"](sessionId, quizId)}?isCorrect=${isCorrect}&responseTime=${responseTime}`;
   const res = await authLearningApis(token).post(url, null);
   return res.data;
 };
@@ -260,4 +261,68 @@ export const updatePassword = async (oldPassword, newPassword) => {
     newPassword,
   });
   return res.data;
+};
+
+export const generatePlacementTest = async () => {
+  const token = await getToken();
+  const res = await authLearningApis(token).get(endpoints["placement-test"]);
+  return res.data;
+};
+
+export const submitPlacementTest = async (results) => {
+  const token = await getToken();
+  const res = await authLearningApis(token).post(endpoints["submit-placement-test"], results);
+  return res.data;
+};
+
+// ===== AI SERVICE =====
+
+export const fetchTTS = async (text) => {
+  const response = await AIApis.post(endpoints['tts'], { text: text }, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return response.data; // Expected { audio_url: "..." }
+};
+
+export const fetchPronunciationScore = async (audioUri, expectedText) => {
+  const formData = new FormData();
+  formData.append('audio', {
+    uri: audioUri,
+    name: 'recording.m4a',
+    type: 'audio/m4a',
+  });
+  formData.append('expected_text', expectedText);
+
+  const response = await AIApis.post(endpoints['get-score'], formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+export const fetchAIChat = async (userId, audioUri = null, reset = false) => {
+  const formData = new FormData();
+  formData.append('user_id', userId || '');
+  
+  if (reset) {
+    formData.append('reset', 'true');
+  }
+
+  if (audioUri) {
+    formData.append('audio', {
+      uri: audioUri,
+      name: 'recording.m4a',
+      type: 'audio/m4a'
+    });
+  }
+
+  const response = await AIApis.post(endpoints['chat-voice'], formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    }
+  });
+  return response.data;
 };

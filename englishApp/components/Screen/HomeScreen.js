@@ -68,7 +68,7 @@ const HomeScreen = ({
             {item.image ? (
               <Image source={{ uri: item.image }} style={styles.cardIcon} />
             ) : (
-              <IconButton icon="book" size={24} iconColor="#b83535" style={{margin: 0}}/>
+              <IconButton icon="book" size={24} iconColor="#b83535" style={{ margin: 0 }} />
             )}
           </View>
           <Text variant="titleMedium" style={styles.cardTitle} numberOfLines={1}>
@@ -77,7 +77,7 @@ const HomeScreen = ({
           <Text variant="bodySmall" style={styles.cardSubtitle}>
             {progress.meanings_total || item.subTopicsCount * 10} nghĩa · {item.subTopicsCount || 0} chủ đề nhỏ
           </Text>
-          
+
           <View style={styles.progressBarContainer}>
             <View style={[styles.progressBarFill, { width: `${pct}%`, backgroundColor: progressColor }]} />
           </View>
@@ -99,7 +99,7 @@ const HomeScreen = ({
         {/* Decor circles */}
         <View style={styles.recommendedDecorativeCircle1} />
         <View style={styles.recommendedDecorativeCircle2} />
-        
+
         <TouchableOpacity
           onPress={() => nav.navigate("TopicDetail", { topicId: item.id })}
           activeOpacity={0.8}
@@ -110,23 +110,23 @@ const HomeScreen = ({
               ★ PHÙ HỢP NHẤT
             </Text>
           </View>
-          
+
           <View style={styles.recommendedIconContainer}>
             {item.image ? (
               <Image source={{ uri: item.image }} style={styles.recommendedIcon} />
             ) : (
-              <Text style={{fontSize: 24}}>📚</Text>
+              <Text style={{ fontSize: 24 }}>📚</Text>
             )}
           </View>
-          
+
           <Text variant="titleLarge" style={styles.recommendedTitle} numberOfLines={1}>
             {item.name}
           </Text>
-          
+
           <Text variant="bodySmall" style={styles.recommendedSubtitle}>
             {item.subTopicsCount || 0} chủ đề nhỏ
           </Text>
-          
+
           <View style={styles.recommendedProgressWrapper}>
             <View style={styles.recommendedProgressBarContainer}>
               <View style={[styles.recommendedProgressBarFill, { width: `${pct}%` }]} />
@@ -142,10 +142,10 @@ const HomeScreen = ({
 
   const HeaderComponent = () => (
     <View style={{ backgroundColor: "#fcf9f9", zIndex: 0 }}>
-      <SharedHeader 
-        greetingText="Chào buổi sáng ☀️" 
-        nameText={userName} 
-        userProfile={userProfile} 
+      <SharedHeader
+        greetingText="Chào buổi sáng ☀️"
+        nameText={userName}
+        userProfile={userProfile}
         summary={summary}
       />
 
@@ -156,16 +156,16 @@ const HomeScreen = ({
           activeOpacity={0.8}
           onPress={() => nav.navigate("LeaderBoard")}
         >
-          <View style={{flexDirection: "row", alignItems: "center", flex: 1, paddingRight: 4}}>
+          <View style={{ flexDirection: "row", alignItems: "center", flex: 1, paddingRight: 4 }}>
             <View style={styles.shortcutIconContainerLeaderboard}>
-              <Text style={{fontSize: 16}}>🏆</Text>
+              <Text style={{ fontSize: 16 }}>🏆</Text>
             </View>
-            <View style={{flex: 1}}>
+            <View style={{ flex: 1 }}>
               <Text style={styles.shortcutTitle} numberOfLines={1}>Bảng xếp hạng</Text>
               <Text style={styles.shortcutSubtitle} numberOfLines={1}>Hạng #{summary?.weeklyRank || "-"} tuần này</Text>
             </View>
           </View>
-          <Text style={{color: "#cbd5e1", fontSize: 18}}>›</Text>
+          <Text style={{ color: "#cbd5e1", fontSize: 18 }}>›</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -173,21 +173,21 @@ const HomeScreen = ({
           activeOpacity={0.8}
           onPress={() => nav.navigate("SaveVocabulary")}
         >
-          <View style={{flexDirection: "row", alignItems: "center", flex: 1, paddingRight: 4}}>
-             <View style={styles.shortcutIconContainerSaved}>
-              <Text style={{fontSize: 16}}>🔖</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", flex: 1, paddingRight: 4 }}>
+            <View style={styles.shortcutIconContainerSaved}>
+              <Text style={{ fontSize: 16 }}>🔖</Text>
             </View>
-            <View style={{flex: 1}}>
+            <View style={{ flex: 1 }}>
               <Text style={styles.shortcutTitle} numberOfLines={1}>Từ đã lưu</Text>
               <Text style={styles.shortcutSubtitle} numberOfLines={1}>{summary?.savedVocabularyCount || 0} từ yêu thích</Text>
             </View>
           </View>
-           <Text style={{color: "#cbd5e1", fontSize: 18}}>›</Text>
+          <Text style={{ color: "#cbd5e1", fontSize: 18 }}>›</Text>
         </TouchableOpacity>
       </View>
 
       {/* Daily Lesson Card */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.dailyLessonWrapper}
         activeOpacity={0.9}
         onPress={() => nav.navigate("DailySession")}
@@ -196,16 +196,16 @@ const HomeScreen = ({
           <Text>🚀</Text>
           <Text style={styles.dailyBadgeText}>MỤC TIÊU HÔM NAY</Text>
         </View>
-        
+
         <View style={styles.dailyTitleRow}>
           <View style={styles.dailyTitleIconContainer}>
             <Text style={styles.dailyTitleIcon}>📋</Text>
           </View>
           <Text style={styles.dailyTitle}>Bắt đầu ngày mới</Text>
         </View>
-        
+
         <Text style={styles.dailySubtitle}>15 từ vựng mới · 15 phút luyện tập</Text>
-        
+
         <Text style={styles.dailyDescription}>
           Duy trì streak của bạn bằng cách hoàn thành bài học hôm nay.
         </Text>
@@ -220,9 +220,6 @@ const HomeScreen = ({
         <View>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Đề xuất cho bạn</Text>
-            <TouchableOpacity onPress={() => {}}>
-              <Text style={styles.sectionLink}>Xem tất cả</Text>
-            </TouchableOpacity>
           </View>
           <FlatList
             horizontal

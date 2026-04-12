@@ -48,12 +48,13 @@ export const endpoints = {
     'learning-profile': '/secure/learning-profile',
     'streak-calendar': '/secure/stats/streak-calendar',
     'summary': '/secure/stats/summary',
+    'placement-test': '/secure/placement/generate',
+    'submit-placement-test': '/secure/placement/submit',
 
-    // ===== CHATBOT SERVICE =====
+    // ===== AI SERVICE =====
     'chat-voice': '/chat',
-
-    // ===== SCORING SERVICE =====
     'get-score': '/v2/score',
+    'tts': '/tts'
 };
 
 // Create a base Apis instance for global configs

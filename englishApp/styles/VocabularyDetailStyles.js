@@ -855,6 +855,75 @@ const styles = StyleSheet.create({
     fontSize: 16,
     letterSpacing: 0.5,
   },
+  // Low Recognition Error
+  pronErrorContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 30,
+    backgroundColor: '#fffaf0',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#feebc8',
+    marginBottom: 20,
+  },
+  pronErrorIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#fff5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  pronErrorText: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#c05621',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  pronErrorMessage: {
+    fontSize: 15,
+    color: '#718096',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  // Tip Box
+  pronTipContainer: {
+    backgroundColor: '#ebf8ff',
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 10,
+    borderLeftWidth: 4,
+    borderLeftColor: '#3182ce',
+  },
+  pronTipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+    gap: 6,
+  },
+  pronTipHeaderText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#2b6cb0',
+    textTransform: 'uppercase',
+  },
+  pronTipText: {
+    fontSize: 14,
+    color: '#2c5282',
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  pronPhonemeCellSelected: {
+    borderWidth: 2,
+    borderColor: '#3182ce',
+    shadowColor: '#3182ce',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 4,
+  },
 });
 
 

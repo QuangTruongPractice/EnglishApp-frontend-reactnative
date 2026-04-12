@@ -208,6 +208,13 @@ const styles = StyleSheet.create({
     fontFamily: "System",
     marginBottom: 20,
   },
+  vnWordTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#F45B69",
+    marginTop: -4,
+    marginBottom: 20,
+  },
   definitionContainer: {
     marginBottom: 20,
   },

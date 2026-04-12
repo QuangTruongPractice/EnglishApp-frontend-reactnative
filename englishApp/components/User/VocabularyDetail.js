@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Audio } from "expo-av";
 import VocabularyDetailScreen from "../Screen/VocabularyDetailScreen";
-import { fetchVocabularyDetail, generateQuiz, submitQuiz, toggleVocabularySave } from "../../configs/LoadData";
-import { AIApis, endpoints } from "../../configs/Apis";
+import { fetchVocabularyDetail, generateQuiz, submitQuiz, toggleVocabularySave, fetchTTS, fetchPronunciationScore } from "../../configs/LoadData";
 import { useNavigation } from "@react-navigation/native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
@@ -39,6 +38,11 @@ const VocabularyDetail = ({ route }) => {
   const recordingRef = useRef(null);
   const isPreparingRef = useRef(false);
   const stopRequestedRef = useRef(false);
+  const quizStartTimeRef = useRef(Date.now());
+
+  // Text Selection / TTS State
+  const [selectedTextParams, setSelectedTextParams] = useState(null);
+  const [isPronouncingSelected, setIsPronouncingSelected] = useState(false);
 
 
   const handleGoBack = () => {
@@ -100,6 +104,7 @@ const VocabularyDetail = ({ route }) => {
       setQuizMeaningId(meanId);
       const res = await generateQuiz(meanId);
       setQuizData(res.result);
+      quizStartTimeRef.current = Date.now();
     } catch (err) {
       Toast.show({
         type: 'error',
@@ -107,6 +112,31 @@ const VocabularyDetail = ({ route }) => {
         text2: 'Không thể khởi tạo bài tập. Vui lòng thử lại.'
       });
       setShowQuizModal(false);
+    }
+  };
+
+  // ===== TTS SELECTION =====
+  const handlePronounceSelectedText = async (text) => {
+    if (!text) return;
+    try {
+      setIsPronouncingSelected(true);
+      const resData = await fetchTTS(text);
+      const audioUrl = resData?.audio_url;
+      if (audioUrl) {
+        const { sound } = await Audio.Sound.createAsync({ uri: audioUrl });
+        await sound.playAsync();
+      } else {
+        Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể lấy audio.' });
+      }
+    } catch (err) {
+      console.log('TTS Error:', err);
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Không thể phát âm. Vui lòng thử lại.'
+      });
+    } finally {
+      setIsPronouncingSelected(false);
     }
   };
 
@@ -193,26 +223,13 @@ const VocabularyDetail = ({ route }) => {
     setPracticeLoading(true);
     setShowPracticeModal(true);
     setPracticeResult(null);
-
     try {
-      const formData = new FormData();
-      formData.append('audio', {
-        uri: audioUri,
-        name: 'recording.m4a',
-        type: 'audio/m4a',
-      });
-      formData.append('expected_text', meaning.example);
-
-      const response = await AIApis.post(endpoints['get-score'], formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const resData = await fetchPronunciationScore(audioUri, meaning.example);
 
       setPracticeResult({
-        score: response.data?.overall_score ?? response.data?.score ?? response.data?.pronunciation_score ?? 0,
+        score: resData?.overall_score ?? resData?.score ?? resData?.pronunciation_score ?? 0,
         example: meaning.example,
-        data: response.data,
+        data: resData,
       });
     } catch (err) {
       Toast.show({
@@ -301,14 +318,17 @@ const VocabularyDetail = ({ route }) => {
 
     // Gửi kết quả về server
     if (quizMeaningId) {
-      submitQuiz(quizMeaningId, selectedAnsObj?.isCorrect).then(() => {
+      const endTime = Date.now();
+      const responseTime = endTime - quizStartTimeRef.current;
+
+      submitQuiz(quizMeaningId, selectedAnsObj?.isCorrect, responseTime).then(() => {
         // Invalidate caches since the progress has changed
         queryClient.invalidateQueries({ queryKey: ['summary'] });
         queryClient.invalidateQueries({ queryKey: ['mainTopics'] });
         queryClient.invalidateQueries({ queryKey: ['mainTopicDetail'] });
         queryClient.invalidateQueries({ queryKey: ['subTopicDetail'] });
         queryClient.invalidateQueries({ queryKey: ['vocabularyDetail', vocabularyId] });
-      }).catch(() => {});
+      }).catch(() => { });
     }
   };
 
@@ -369,6 +389,11 @@ const VocabularyDetail = ({ route }) => {
       practiceResult={practiceResult}
       showPracticeModal={showPracticeModal}
       setShowPracticeModal={setShowPracticeModal}
+      // Text Selection TTS
+      selectedTextParams={selectedTextParams}
+      setSelectedTextParams={setSelectedTextParams}
+      onPronounceSelectedText={handlePronounceSelectedText}
+      isPronouncingSelected={isPronouncingSelected}
     />
   );
 };

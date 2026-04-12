@@ -34,7 +34,7 @@ const Home = () => {
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage?.result?.last === false) {
-         return allPages.length + 1;
+        return allPages.length + 1;
       }
       return undefined;
     }
@@ -59,7 +59,7 @@ const Home = () => {
 
   // Flatten the pages into a single array
   let mainTopics = mainTopicsData?.pages.flatMap(page => page.result?.content || []) || [];
-  
+
   // Lọc bỏ recommended khỏi mainTopics
   const recommendedTopics = (!q ? recommendedData?.result?.content || (Array.isArray(recommendedData?.result) ? recommendedData.result : []) : []);
   if (recommendedTopics.length > 0) {

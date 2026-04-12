@@ -34,77 +34,86 @@ const SessionPhaseMeanings = ({ meaning, onPlayAudio }) => {
 
   return (
     <View style={styles.card}>
-      {imageUri ? (
-        <View style={styles.cardImageContainer}>
-          <Image
-            source={{ uri: imageUri }}
-            style={styles.cardImage}
-            resizeMode="cover"
-          />
-          <LinearGradient
-            colors={["transparent", "rgba(0,0,0,0.6)"]}
-            style={styles.imageOverlay}
-          />
-          
-          <TouchableOpacity style={styles.audioButtonOverlay} onPress={onPlayAudio}>
-            <Icon name="volume-high" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.noImageTopBar}>
-           <LinearGradient
-            colors={["#9B2C2C", "#F45B69"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.noImageGradient}
-          />
-           <View style={styles.typeBadgeGray}>
-             <Text style={styles.typeTextGray}>{meaning.level} - {meaning.type}</Text>
-           </View>
-           <TouchableOpacity style={styles.audioButtonSolid} onPress={onPlayAudio}>
-              <Icon name="volume-high" size={24} color="#fff" />
-           </TouchableOpacity>
-        </View>
-      )}
-
-      <ScrollView style={styles.cardContent} showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}>
         {imageUri ? (
-          <View style={styles.typeBadge}>
-            <Text style={styles.typeText}>{meaning.level} - {meaning.type}</Text>
+          <View style={styles.cardImageContainer}>
+            <Image
+              source={{ uri: imageUri }}
+              style={styles.cardImage}
+              resizeMode="cover"
+            />
+            <LinearGradient
+              colors={["transparent", "rgba(0,0,0,0.6)"]}
+              style={styles.imageOverlay}
+            />
+
+            <TouchableOpacity style={styles.audioButtonOverlay} onPress={onPlayAudio}>
+              <Icon name="volume-high" size={24} color="#fff" />
+            </TouchableOpacity>
           </View>
-        ) : null}
-
-        <View style={{ marginBottom: 20 }}>
-          <Text style={styles.wordTitle}>{meaning.word}</Text>
-          <Text style={styles.phonetic}>{meaning.phonetic}</Text>
-        </View>
-
-        <View style={styles.definitionContainer}>
-          <Text style={styles.definitionEn}>{meaning.definition}</Text>
-          {meaning.vnDefinition && (
-            <Text style={styles.definitionVn}>VN: {meaning.vnDefinition}</Text>
-          )}
-        </View>
-
-        <View style={styles.exampleContainer}>
-          {renderHighlightedExample(meaning.example, meaning.word)}
-          {meaning.vnExample && (
-            <Text style={styles.exampleVn}>vn: {meaning.vnExample}</Text>
-          )}
-        </View>
-
-        {meaning.synonyms && meaning.synonyms.length > 0 && (
-          <View style={styles.synonymSection}>
-            <Text style={styles.synonymTitle}>Từ đồng nghĩa</Text>
-            <View style={styles.synonymContainer}>
-              {meaning.synonyms.map((syn, index) => (
-                <View key={index} style={styles.synonymChip}>
-                  <Text style={styles.synonymText}>{syn}</Text>
-                </View>
-              ))}
+        ) : (
+          <View style={styles.noImageTopBar}>
+            <LinearGradient
+              colors={["#9B2C2C", "#F45B69"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.noImageGradient}
+            />
+            <View style={styles.typeBadgeGray}>
+              <Text style={styles.typeTextGray}>
+                {meaning.level} - {meaning.type}
+              </Text>
             </View>
+            <TouchableOpacity style={styles.audioButtonSolid} onPress={onPlayAudio}>
+              <Icon name="volume-high" size={24} color="#fff" />
+            </TouchableOpacity>
           </View>
         )}
+
+        <View style={styles.cardContent}>
+          {imageUri ? (
+            <View style={styles.typeBadge}>
+              <Text style={styles.typeText}>
+                {meaning.level} - {meaning.type}
+              </Text>
+            </View>
+          ) : null}
+
+          <View style={{ marginBottom: 20 }}>
+            <Text style={styles.wordTitle}>{meaning.word}</Text>
+            <Text style={styles.phonetic}>{meaning.phonetic}</Text>
+            {meaning.vnWord && (
+              <Text style={styles.vnWordTitle}>{meaning.vnWord}</Text>
+            )}
+          </View>
+
+          <View style={styles.definitionContainer}>
+            <Text style={styles.definitionEn}>{meaning.definition}</Text>
+            {meaning.vnDefinition && (
+              <Text style={styles.definitionVn}>VN: {meaning.vnDefinition}</Text>
+            )}
+          </View>
+
+          <View style={styles.exampleContainer}>
+            {renderHighlightedExample(meaning.example, meaning.word)}
+            {meaning.vnExample && (
+              <Text style={styles.exampleVn}>vn: {meaning.vnExample}</Text>
+            )}
+          </View>
+
+          {meaning.synonyms && meaning.synonyms.length > 0 && (
+            <View style={styles.synonymSection}>
+              <Text style={styles.synonymTitle}>Từ đồng nghĩa</Text>
+              <View style={styles.synonymContainer}>
+                {meaning.synonyms.map((syn, index) => (
+                  <View key={index} style={styles.synonymChip}>
+                    <Text style={styles.synonymText}>{syn}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+        </View>
       </ScrollView>
     </View>
   );

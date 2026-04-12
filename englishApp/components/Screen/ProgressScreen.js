@@ -51,180 +51,9 @@ const getRelativeTime = (dateStr) => {
   return `${diffDays} ngày`;
 };
 
-// ===== Donut Chart Component (pure RN, no SVG) =====
-const DonutChart = ({ total, segments, size = 76, strokeWidth = 7 }) => {
-  // segments = [{ value, color }]
-  const radius = (size - strokeWidth) / 2;
-  const center = size / 2;
-
-  // Calculate angles
-  const totalValue = segments.reduce((sum, s) => sum + s.value, 0) || 1;
-  let currentAngle = -90; // Start from top
-
-  const renderSegment = (segment, index) => {
-    const angle = (segment.value / totalValue) * 360;
-    if (segment.value === 0) return null;
-
-    // For each segment, create a colored arc using two overlapping half-circles
-    const startAngle = currentAngle;
-    const endAngle = startAngle + angle;
-    currentAngle = endAngle;
-
-    // We use a simple approach: rotated half-circle masks
-    const segmentElements = [];
-    const segmentAngle = angle;
-
-    if (segmentAngle <= 180) {
-      segmentElements.push(
-        <View
-          key={`seg-${index}`}
-          style={{
-            position: "absolute",
-            width: size,
-            height: size,
-            transform: [{ rotate: `${startAngle}deg` }],
-          }}
-        >
-          <View
-            style={{
-              position: "absolute",
-              width: size,
-              height: size / 2,
-              overflow: "hidden",
-            }}
-          >
-            <View
-              style={{
-                width: size,
-                height: size,
-                borderRadius: size / 2,
-                borderWidth: strokeWidth,
-                borderColor: "transparent",
-                borderTopColor: segment.color,
-                borderRightColor: segmentAngle > 90 ? segment.color : "transparent",
-              }}
-            />
-          </View>
-        </View>
-      );
-    } else {
-      // For segments > 180 degrees, split into two halves
-      segmentElements.push(
-        <View
-          key={`seg-${index}-a`}
-          style={{
-            position: "absolute",
-            width: size,
-            height: size,
-            transform: [{ rotate: `${startAngle}deg` }],
-          }}
-        >
-          <View
-            style={{
-              position: "absolute",
-              width: size,
-              height: size / 2,
-              overflow: "hidden",
-            }}
-          >
-            <View
-              style={{
-                width: size,
-                height: size,
-                borderRadius: size / 2,
-                borderWidth: strokeWidth,
-                borderColor: "transparent",
-                borderTopColor: segment.color,
-                borderRightColor: segment.color,
-              }}
-            />
-          </View>
-        </View>
-      );
-      segmentElements.push(
-        <View
-          key={`seg-${index}-b`}
-          style={{
-            position: "absolute",
-            width: size,
-            height: size,
-            transform: [{ rotate: `${startAngle + 180}deg` }],
-          }}
-        >
-          <View
-            style={{
-              position: "absolute",
-              width: size,
-              height: size / 2,
-              overflow: "hidden",
-            }}
-          >
-            <View
-              style={{
-                width: size,
-                height: size,
-                borderRadius: size / 2,
-                borderWidth: strokeWidth,
-                borderColor: "transparent",
-                borderTopColor: segment.color,
-                borderRightColor: (segmentAngle - 180) > 90 ? segment.color : "transparent",
-              }}
-            />
-          </View>
-        </View>
-      );
-    }
-
-    return segmentElements;
-  };
-
-  // Reset currentAngle for rendering
-  currentAngle = -90;
-
-  return (
-    <View style={{ width: size, height: size, position: "relative" }}>
-      {/* Background ring */}
-      <View
-        style={{
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          borderWidth: strokeWidth,
-          borderColor: "#e5e7eb",
-          position: "absolute",
-        }}
-      />
-      {/* Segments */}
-      {segments.map((seg, i) => (
-        <React.Fragment key={`donut-seg-${i}`}>
-          {renderSegment(seg, i)}
-        </React.Fragment>
-      ))}
-      {/* Center label */}
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text style={styles.vocabCircleNumber}>{total}</Text>
-        <Text style={styles.vocabCircleLabel}>TỪ</Text>
-      </View>
-    </View>
-  );
-};
-
 const ProgressScreen = ({
   videoProgress,
   vocabularyProgress,
-  vocaCounts,
-  activeVocaStatus,
-  setActiveVocaStatus,
   streakCalendar,
   summary,
   userProfile,
@@ -241,9 +70,11 @@ const ProgressScreen = ({
   nav,
   retry,
   loadMoreVideo,
-  loadMoreVoca,
   isFetchingNextVideoPage,
-  isFetchingNextVocaPage,
+  isFetchingVoca,
+  vocaPage,
+  vocaTotalPages,
+  setVocaPage,
 }) => {
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -306,8 +137,8 @@ const ProgressScreen = ({
     const statusInfo = isCompleted
       ? { text: "Hoàn thành", bgColor: "#22c55e" }
       : progress > 0
-      ? { text: "▶ Đang xem", bgColor: "#b83535" }
-      : { text: "Mới", bgColor: "#6b7280" };
+        ? { text: "▶ Đang xem", bgColor: "#b83535" }
+        : { text: "Mới", bgColor: "#6b7280" };
 
     return (
       <TouchableOpacity
@@ -428,20 +259,8 @@ const ProgressScreen = ({
     );
   }
 
-  // ===== Vocab Tabs =====
-  const vocabTabs = [
-    { label: "Tất cả", value: "ALL", count: vocaCounts.ALL },
-    { label: "Cần ôn tập", value: "NOT_STARTED", count: vocaCounts.NOT_STARTED },
-    { label: "Đang học", value: "LEARNING", count: vocaCounts.LEARNING },
-    { label: "Hoàn thành", value: "MASTERED", count: vocaCounts.MASTERED },
-  ];
-
-  // Donut chart segments (Not Started + Learning + Mastered)
-  const donutSegments = [
-    { value: vocaCounts.NOT_STARTED, color: "#94a3b8" },
-    { value: vocaCounts.LEARNING, color: "#f97316" },
-    { value: vocaCounts.MASTERED, color: "#22c55e" },
-  ];
+  // Section title and summary
+  const totalVoca = vocabularyProgress?.length || 0;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -540,44 +359,12 @@ const ProgressScreen = ({
             <View style={styles.sectionHeader}>
               <View style={styles.sectionTitleRow}>
                 <Text style={{ fontSize: 20 }}>📚</Text>
-                <Text style={styles.sectionTitle}>Từ vựng đang học</Text>
+                <Text style={styles.sectionTitle}>Từ vựng đã học</Text>
               </View>
-              <TouchableOpacity>
-                <Text style={styles.sectionLink}>Xem tất cả</Text>
-              </TouchableOpacity>
             </View>
 
             <View style={styles.vocabCard}>
-              {/* Tabs */}
-              <View style={styles.vocabTabsContainer}>
-                <ScrollView 
-                  horizontal 
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.vocabTabsScroll}
-                >
-                  {vocabTabs.map((tab) => (
-                    <TouchableOpacity
-                      key={tab.value}
-                      onPress={() => setActiveVocaStatus(tab.value)}
-                      style={[
-                        styles.vocabTab,
-                        activeVocaStatus === tab.value && styles.vocabTabActive,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.vocabTabText,
-                          activeVocaStatus === tab.value && styles.vocabTabTextActive,
-                        ]}
-                      >
-                        {tab.label} ({tab.count})
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-
-              {/* Vocabulary List - max 4 visible, scroll inside */}
+              {/* Vocabulary List with Pagination */}
               {vocabularyProgress?.length === 0 ? (
                 <View style={styles.emptyStateContainer}>
                   <Text style={styles.emptyStateText}>
@@ -585,26 +372,43 @@ const ProgressScreen = ({
                   </Text>
                 </View>
               ) : (
-                <ScrollView
-                  style={styles.vocabListScroll}
-                  nestedScrollEnabled={true}
-                  showsVerticalScrollIndicator={true}
-                  onScroll={({ nativeEvent }) => {
-                    if (isCloseToBottom(nativeEvent)) {
-                      if (loadMoreVoca) loadMoreVoca();
-                    }
-                  }}
-                  scrollEventThrottle={400}
-                >
-                  {vocabularyProgress?.map((item, index) => (
-                    <VocabularyItem key={`voca-${item.meaningId}-${index}`} item={item} />
-                  ))}
-                  {isFetchingNextVocaPage && (
-                    <View style={{ paddingVertical: 10, alignItems: 'center' }}>
-                      <ActivityIndicator size="small" color="#b83535" />
+                <View>
+                  <View style={{ minHeight: 200 }}>
+                    {vocabularyProgress?.map((item, index) => (
+                      <VocabularyItem key={`voca-${item.meaningId || item.id}-${index}`} item={item} />
+                    ))}
+                    {isFetchingVoca && (
+                      <View style={{ paddingVertical: 10, alignItems: 'center' }}>
+                        <ActivityIndicator size="small" color="#b83535" />
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Pagination Controls */}
+                  {vocaTotalPages > 1 && (
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16, borderTopWidth: 1, borderColor: '#eee', marginTop: 8 }}>
+                      <TouchableOpacity
+                        onPress={() => setVocaPage(p => Math.max(1, p - 1))}
+                        disabled={vocaPage <= 1 || isFetchingVoca}
+                        style={{ padding: 8, opacity: vocaPage <= 1 ? 0.3 : 1 }}
+                      >
+                        <Ionicons name="chevron-back" size={24} color="#b83535" />
+                      </TouchableOpacity>
+
+                      <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#666' }}>
+                        Trang {vocaPage} / {vocaTotalPages}
+                      </Text>
+
+                      <TouchableOpacity
+                        onPress={() => setVocaPage(p => Math.min(vocaTotalPages, p + 1))}
+                        disabled={vocaPage >= vocaTotalPages || isFetchingVoca}
+                        style={{ padding: 8, opacity: vocaPage >= vocaTotalPages ? 0.3 : 1 }}
+                      >
+                        <Ionicons name="chevron-forward" size={24} color="#b83535" />
+                      </TouchableOpacity>
                     </View>
                   )}
-                </ScrollView>
+                </View>
               )}
             </View>
           </View>
@@ -616,9 +420,6 @@ const ProgressScreen = ({
                 <Text style={{ fontSize: 20 }}>🎬</Text>
                 <Text style={styles.sectionTitle}>Video đang xem</Text>
               </View>
-              <TouchableOpacity>
-                <Text style={styles.sectionLink}>Xem tất cả</Text>
-              </TouchableOpacity>
             </View>
 
             {videoProgress?.length === 0 ? (
@@ -628,10 +429,10 @@ const ProgressScreen = ({
                 </Text>
               </View>
             ) : (
-                <View>
-                  {videoProgress?.map((item, index) => (
+              <View>
+                {videoProgress?.map((item, index) => (
                   <VideoProgressCard key={`video-${item.id ?? index}`} item={item} />
-                  ))}
+                ))}
                 {isFetchingNextVideoPage && (
                   <View style={{ paddingVertical: 20, alignItems: 'center' }}>
                     <ActivityIndicator size="small" color="#b83535" />
@@ -647,3 +448,4 @@ const ProgressScreen = ({
 };
 
 export default ProgressScreen;
+

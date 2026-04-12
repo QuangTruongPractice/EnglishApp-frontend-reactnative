@@ -29,8 +29,8 @@ const SubTopicDetail = ({ route }) => {
           ...oldData,
           result: {
             ...oldData.result,
-            vocabularies: oldData.result.vocabularies.map(v => 
-               v.id === vocabularyId ? { ...v, isSave: !v.isSave } : v
+            vocabularies: oldData.result.vocabularies.map(v =>
+              v.id === vocabularyId ? { ...v, isSave: !v.isSave } : v
             )
           }
         };

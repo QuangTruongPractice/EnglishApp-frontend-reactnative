@@ -17,8 +17,8 @@ const LeaderBoardScreen = ({
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerContainer}>
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={onGoBack}
           activeOpacity={0.7}
         >

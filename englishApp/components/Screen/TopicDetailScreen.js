@@ -21,12 +21,12 @@ const CircularProgressRing = ({ percentage, size = 48, strokeWidth = 4, statusCo
   const radius = (size - strokeWidth) / 2;
   const pct = Math.min(Math.max(percentage, 0), 100);
   const angle = (pct / 100) * 360;
-  
+
   let currentAngle = -90; // Start at top
   const renderSegment = () => {
     if (pct === 0) return null;
     const segmentElements = [];
-    
+
     if (angle <= 180) {
       segmentElements.push(
         <View
@@ -145,11 +145,11 @@ const TopicDetailScreen = ({
         <View style={styles.subTopicRow}>
           {/* Left: Progress Ring + Number */}
           <View style={styles.ringContainer}>
-            <CircularProgressRing 
-              percentage={progressData.pct} 
-              size={56} 
-              strokeWidth={4} 
-              statusColor={statusInfo.color} 
+            <CircularProgressRing
+              percentage={progressData.pct}
+              size={56}
+              strokeWidth={4}
+              statusColor={statusInfo.color}
             />
             <View style={styles.ringInner}>
               <Text style={styles.ringNumber}>{index + 1}</Text>
@@ -190,7 +190,7 @@ const TopicDetailScreen = ({
         <View style={styles.heroSection}>
           {topicInfo?.image && (
             <View style={styles.imageContainer}>
-             <Image
+              <Image
                 source={{ uri: topicInfo.image }}
                 style={styles.heroImage}
                 resizeMode="cover"
@@ -208,7 +208,7 @@ const TopicDetailScreen = ({
                 <Ionicons name="arrow-back" size={24} color="#fff" />
               </TouchableOpacity>
             </View>
-            
+
             <View style={styles.heroTopicBadge}>
               <Text style={styles.heroTopicBadgeText}>📚 CHỦ ĐỀ</Text>
             </View>
@@ -227,7 +227,7 @@ const TopicDetailScreen = ({
             <Text style={styles.mainProgressLabel}>Tiến độ tổng thể</Text>
             <Text style={styles.mainProgressPct}>{mainProgressData.pct.toFixed(1)}%</Text>
           </View>
-          
+
           <View style={styles.mainProgressBarBox}>
             <View style={[styles.mainProgressBarFill, { width: `${mainProgressData.pct}%` }]} />
           </View>

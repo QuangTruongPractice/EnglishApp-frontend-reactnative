@@ -50,8 +50,8 @@ const QuizDetail = ({ route, navigation }) => {
     try {
       if (sound) await sound.unloadAsync();
       const uri = isCorrect
-        ? "https://res.cloudinary.com/dabb0yavq/video/upload/v1712415147/correct-6033_zqqx9w.mp3"
-        : "https://res.cloudinary.com/dabb0yavq/video/upload/v1712415147/wrong-47985_y2v3m6.mp3";
+        ? "https://www.myinstants.com/media/sounds/duolingo-correct.mp3"
+        : "https://www.myinstants.com/media/sounds/duolingo-wrong.mp3";
 
       const { sound: newSound } = await Audio.Sound.createAsync({ uri });
       setSound(newSound);

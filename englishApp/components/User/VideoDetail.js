@@ -93,11 +93,11 @@ const VideoDetail = ({ route }) => {
     setSelectedSubtitle(subtitle);
 
     if (playerRef.current && subtitle.startTime !== undefined) {
-        const seekTime = typeof subtitle.startTime === 'string'
-          ? parseFloat(subtitle.startTime)
-          : subtitle.startTime;
-  
-        playerRef.current.seekTo(seekTime, true);
+      const seekTime = typeof subtitle.startTime === 'string'
+        ? parseFloat(subtitle.startTime)
+        : subtitle.startTime;
+
+      playerRef.current.seekTo(seekTime, true);
     }
   }, []);
 

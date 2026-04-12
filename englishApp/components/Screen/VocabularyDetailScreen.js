@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,6 +7,7 @@ import {
   ScrollView,
   Image,
   Modal,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -43,7 +45,18 @@ const VocabularyDetailScreen = ({
   practiceResult = null,
   showPracticeModal = false,
   setShowPracticeModal = () => { },
+  // Text Selection TTS
+  selectedTextParams = null,
+  setSelectedTextParams = () => { },
+  onPronounceSelectedText = () => { },
+  isPronouncingSelected = false,
 }) => {
+  const [selectedPhonemeIndex, setSelectedPhonemeIndex] = useState(null);
+
+  useEffect(() => {
+    setSelectedPhonemeIndex(null);
+  }, [practiceResult, showPracticeModal]);
+
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -145,6 +158,42 @@ const VocabularyDetailScreen = ({
     return { text: "Mới", color: "#6b7280", bgColor: "#f3f4f6" };
   };
 
+  const renderSelectableText = (text, style, meaningId, source, children = null) => {
+    if (!text) return null;
+    return (
+      <View style={{ position: 'relative' }}>
+        <Text style={style}>
+          {children || text}
+        </Text>
+        <TextInput
+          style={[
+            style,
+            {
+              position: 'absolute', top: 0, bottom: 0, left: 0, right: 0,
+              color: 'transparent', padding: 0, margin: 0
+            }
+          ]}
+          value={text}
+          showSoftInputOnFocus={false}
+          caretHidden={true}
+          selectionColor="rgba(99, 102, 241, 0.4)"
+          multiline={true}
+          selectTextOnFocus={true}
+          onSelectionChange={(e) => {
+            const { start, end } = e.nativeEvent.selection;
+            if (start !== end && end > start) {
+              const selectedText = text.substring(start, end);
+              setSelectedTextParams({ text: selectedText, meaningId, source });
+            } else if (selectedTextParams?.meaningId === meaningId && selectedTextParams?.source === source) {
+              // user deselected in this area
+              setSelectedTextParams(null);
+            }
+          }}
+        />
+      </View>
+    );
+  };
+
   const renderPracticeModal = () => {
     const resultData = practiceResult?.data;
     const step1 = resultData?.step1_audio_similarity;
@@ -191,146 +240,177 @@ const VocabularyDetailScreen = ({
                 )}
               </View>
 
-              {/* Expected Text */}
-              <Text style={styles.pronExpectedText}>&quot;{practiceResult.example}&quot;</Text>
-
-              {/* Three Score Circles */}
-              <View style={styles.pronScoresCard}>
-                {renderScoreCircle(overallScore, 'TỔNG ĐIỂM', 'overall')}
-                {renderScoreCircle(audioScore, 'ÂM THANH', 'audio')}
-                {renderScoreCircle(phonemeAccuracy, 'ÂM VỊ', 'phoneme')}
-              </View>
-
-              {/* Step 1 - Word Analysis */}
-              {wordDetails.length > 0 && (
-                <View style={styles.pronSectionCard}>
-                  <View style={styles.pronSectionHeader}>
-                    <Text style={styles.pronSectionTitle}>PHÂN TÍCH TỪNG TỪ</Text>
-                    <View style={styles.pronStepBadge}>
-                      <Text style={styles.pronStepBadgeText}>Step 1</Text>
-                    </View>
+              {/* Handle success: false (Low Recognition) */}
+              {practiceResult.success === false && (
+                <View style={styles.pronErrorContainer}>
+                  <View style={styles.pronErrorIcon}>
+                    <Ionicons name="mic-off" size={32} color="#f56565" />
                   </View>
-
-                  {wordDetails.map((word, idx) => {
-                    const pct = Math.round(word.similarity_score * 100);
-                    const barColor = getBarColor(word.similarity_score);
-                    return (
-                      <View key={idx} style={styles.pronWordRow}>
-                        <View style={styles.pronWordInfo}>
-                          <Text style={styles.pronWordText}>{word.word}</Text>
-                          <View style={styles.pronWordMeta}>
-                            <Text style={styles.pronWordTime}>
-                              {word.start.toFixed(2)}s - {word.end.toFixed(2)}s
-                            </Text>
-                            <Text style={[styles.pronWordPct, { color: barColor }]}>{pct}%</Text>
-                          </View>
-                        </View>
-                        <View style={styles.pronBarTrack}>
-                          <View style={[styles.pronBarFill, { width: `${pct}%`, backgroundColor: barColor }]} />
-                        </View>
-                      </View>
-                    );
-                  })}
+                  <Text style={styles.pronErrorText}>Vui lòng phát âm lại</Text>
+                  <Text style={styles.pronErrorMessage}>{practiceResult.message || "Không nhận diện được giọng nói."}</Text>
                 </View>
               )}
 
-              {/* Step 2 - Phoneme Analysis */}
-              {step2?.details && (
-                <View style={styles.pronSectionCard}>
-                  <View style={styles.pronSectionHeader}>
-                    <Text style={styles.pronSectionTitle}>PHÂN TÍCH ÂM VỊ</Text>
-                    <View style={styles.pronStepBadge}>
-                      <Text style={styles.pronStepBadgeText}>Step 2</Text>
-                    </View>
+              {/* Expected Text */}
+              <Text style={styles.pronExpectedText}>&quot;{practiceResult.example}&quot;</Text>
+
+              {/* Only show scores and analysis if success: true */}
+              {practiceResult.success !== false && (
+                <>
+                  {/* Three Score Circles */}
+                  <View style={styles.pronScoresCard}>
+                    {renderScoreCircle(overallScore, 'TỔNG ĐIỂM', 'overall')}
+                    {renderScoreCircle(audioScore, 'ÂM THANH', 'audio')}
+                    {renderScoreCircle(phonemeAccuracy, 'ÂM VỊ', 'phoneme')}
                   </View>
 
-                  {/* Summary badges */}
-                  <View style={styles.pronSummaryRow}>
-                    <View style={styles.pronSummaryBadgeCorrect}>
-                      <Text style={styles.pronSummaryBadgeText}>✓ {correctCount} đúng</Text>
-                    </View>
-                    <View style={styles.pronSummaryBadgeWrong}>
-                      <Text style={styles.pronSummaryBadgeText}>✗ {wrongCount} sai</Text>
-                    </View>
-                  </View>
-
-                  {/* Phoneme Grid */}
-                  <View style={styles.pronPhonemeGrid}>
-                    {step2.details.map((item, idx) => {
-                      const isCorrect = item.status === 'correct';
-                      return (
-                        <View
-                          key={idx}
-                          style={[
-                            styles.pronPhonemeCell,
-                            {
-                              backgroundColor: isCorrect ? '#f0fdf4' : '#fef2f2',
-                              borderColor: isCorrect ? '#86efac' : '#fca5a5',
-                            }
-                          ]}
-                        >
-                          <Text style={[
-                            styles.pronPhonemeCellText,
-                            { color: isCorrect ? '#166534' : '#991b1b' }
-                          ]}>
-                            {item.phoneme}
-                          </Text>
-                          <View style={[
-                            styles.pronPhonemeIndicator,
-                            { backgroundColor: isCorrect ? '#22c55e' : '#ef4444' }
-                          ]} />
+                  {/* Step 1 - Word Analysis */}
+                  {wordDetails.length > 0 && (
+                    <View style={styles.pronSectionCard}>
+                      <View style={styles.pronSectionHeader}>
+                        <Text style={styles.pronSectionTitle}>PHÂN TÍCH TỪNG TỪ</Text>
+                        <View style={styles.pronStepBadge}>
+                          <Text style={styles.pronStepBadgeText}>Step 1</Text>
                         </View>
-                      );
-                    })}
-                  </View>
+                      </View>
 
-                  {/* Expected vs User Phonemes */}
-                  {step2.expected_phonemes && (
-                    <View style={styles.pronPhonemeComparison}>
-                      <Text style={styles.pronComparisonLabel}>CHUỖI MONG ĐỢI</Text>
-                      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        <View style={styles.pronPhonemeRow}>
-                          {step2.expected_phonemes.map((p, i) => (
-                            <View key={i} style={styles.pronPhonemeMiniCell}>
-                              <Text style={styles.pronPhonemeMiniText}>{p}</Text>
-                            </View>
-                          ))}
-                        </View>
-                      </ScrollView>
-                    </View>
-                  )}
-
-                  {step2.user_phonemes && (
-                    <View style={styles.pronPhonemeComparison}>
-                      <Text style={styles.pronComparisonLabel}>BẠN ĐÃ PHÁT ÂM</Text>
-                      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        <View style={styles.pronPhonemeRow}>
-                          {step2.user_phonemes.map((p, i) => {
-                            const expected = step2.expected_phonemes?.[i];
-                            const isMatch = expected === p;
-                            return (
-                              <View
-                                key={i}
-                                style={[
-                                  styles.pronPhonemeMiniCell,
-                                  {
-                                    backgroundColor: isMatch ? '#f0fdf4' : '#fef2f2',
-                                    borderColor: isMatch ? '#86efac' : '#fca5a5',
-                                  }
-                                ]}
-                              >
-                                <Text style={[
-                                  styles.pronPhonemeMiniText,
-                                  { color: isMatch ? '#166534' : '#991b1b' }
-                                ]}>{p}</Text>
+                      {wordDetails.map((word, idx) => {
+                        const pct = Math.round(word.similarity_score * 100);
+                        const barColor = getBarColor(word.similarity_score);
+                        return (
+                          <View key={idx} style={styles.pronWordRow}>
+                            <View style={styles.pronWordInfo}>
+                              <Text style={styles.pronWordText}>{word.word}</Text>
+                              <View style={styles.pronWordMeta}>
+                                <Text style={styles.pronWordTime}>
+                                  {(word.start ?? 0).toFixed(2)}s - {(word.end ?? 0).toFixed(2)}s
+                                </Text>
+                                <Text style={[styles.pronWordPct, { color: barColor }]}>{pct}%</Text>
                               </View>
-                            );
-                          })}
-                        </View>
-                      </ScrollView>
+                            </View>
+                            <View style={styles.pronBarTrack}>
+                              <View style={[styles.pronBarFill, { width: `${pct}%`, backgroundColor: barColor }]} />
+                            </View>
+                          </View>
+                        );
+                      })}
                     </View>
                   )}
-                </View>
+
+                  {/* Step 2 - Phoneme Analysis */}
+                  {step2?.details && (
+                    <View style={styles.pronSectionCard}>
+                      <View style={styles.pronSectionHeader}>
+                        <Text style={styles.pronSectionTitle}>PHÂN TÍCH ÂM VỊ</Text>
+                        <View style={styles.pronStepBadge}>
+                          <Text style={styles.pronStepBadgeText}>Step 2</Text>
+                        </View>
+                      </View>
+
+                      {/* Summary badges */}
+                      <View style={styles.pronSummaryRow}>
+                        <View style={styles.pronSummaryBadgeCorrect}>
+                          <Text style={styles.pronSummaryBadgeText}>✓ {correctCount} đúng</Text>
+                        </View>
+                        <View style={styles.pronSummaryBadgeWrong}>
+                          <Text style={styles.pronSummaryBadgeText}>✗ {wrongCount} sai</Text>
+                        </View>
+                      </View>
+
+                      {/* Phoneme Grid with Touch Interaction */}
+                      <View style={styles.pronPhonemeGrid}>
+                        {step2.details.map((item, idx) => {
+                          const isCorrect = item.status === 'correct';
+                          const isSelected = selectedPhonemeIndex === idx;
+                          return (
+                            <TouchableOpacity
+                              key={idx}
+                              activeOpacity={0.7}
+                              onPress={() => setSelectedPhonemeIndex(isSelected ? null : idx)}
+                              style={[
+                                styles.pronPhonemeCell,
+                                {
+                                  backgroundColor: isCorrect ? '#f0fdf4' : '#fef2f2',
+                                  borderColor: isCorrect ? '#86efac' : '#fca5a5',
+                                },
+                                isSelected && styles.pronPhonemeCellSelected
+                              ]}
+                            >
+                              <Text style={[
+                                styles.pronPhonemeCellText,
+                                { color: isCorrect ? '#166534' : '#991b1b' }
+                              ]}>
+                                {item.phoneme}
+                              </Text>
+                              <View style={[
+                                styles.pronPhonemeIndicator,
+                                { backgroundColor: isCorrect ? '#22c55e' : '#ef4444' }
+                              ]} />
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+
+                      {/* Tip Display Area */}
+                      {selectedPhonemeIndex !== null && step2.details[selectedPhonemeIndex]?.tip && (
+                        <View style={styles.pronTipContainer}>
+                          <View style={styles.pronTipHeader}>
+                            <Ionicons name="bulb-outline" size={16} color="#3182ce" />
+                            <Text style={styles.pronTipHeaderText}>Gợi ý phát âm ({step2.details[selectedPhonemeIndex].phoneme})</Text>
+                          </View>
+                          <Text style={styles.pronTipText}>{step2.details[selectedPhonemeIndex].tip}</Text>
+                        </View>
+                      )}
+
+                      {/* Expected vs User Phonemes */}
+                      {step2.expected_phonemes && (
+                        <View style={styles.pronPhonemeComparison}>
+                          <Text style={styles.pronComparisonLabel}>CHUỖI MONG ĐỢI</Text>
+                          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                            <View style={styles.pronPhonemeRow}>
+                              {step2.expected_phonemes.map((p, i) => (
+                                <View key={i} style={styles.pronPhonemeMiniCell}>
+                                  <Text style={styles.pronPhonemeMiniText}>{p}</Text>
+                                </View>
+                              ))}
+                            </View>
+                          </ScrollView>
+                        </View>
+                      )}
+
+                      {step2.user_phonemes && (
+                        <View style={styles.pronPhonemeComparison}>
+                          <Text style={styles.pronComparisonLabel}>BẠN ĐÃ PHÁT ÂM</Text>
+                          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                            <View style={styles.pronPhonemeRow}>
+                              {step2.user_phonemes.map((p, i) => {
+                                const expected = step2.expected_phonemes?.[i];
+                                const isMatch = expected === p;
+                                return (
+                                  <View
+                                    key={i}
+                                    style={[
+                                      styles.pronPhonemeMiniCell,
+                                      {
+                                        backgroundColor: isMatch ? '#f0fdf4' : '#fef2f2',
+                                        borderColor: isMatch ? '#86efac' : '#fca5a5',
+                                      }
+                                    ]}
+                                  >
+                                    <Text style={[
+                                      styles.pronPhonemeMiniText,
+                                      { color: isMatch ? '#166534' : '#991b1b' }
+                                    ]}>{p}</Text>
+                                  </View>
+                                );
+                              })}
+                            </View>
+                          </ScrollView>
+                        </View>
+                      )}
+                    </View>
+                  )}
+                </>
               )}
 
               {/* Close Button */}
@@ -582,12 +662,12 @@ const VocabularyDetailScreen = ({
                         <Text style={styles.typeText}>{meaning.type}</Text>
                       </View>
                       {/* Thêm Badge user_progress ở đây */}
-                      <View style={{ 
-                        marginLeft: 8, paddingHorizontal: 8, paddingVertical: 4, 
-                        borderRadius: 6, backgroundColor: getMeaningStatusInfo(meaning.user_progress?.status).bgColor 
+                      <View style={{
+                        marginLeft: 8, paddingHorizontal: 8, paddingVertical: 4,
+                        borderRadius: 6, backgroundColor: getMeaningStatusInfo(meaning.user_progress?.status).bgColor
                       }}>
-                        <Text style={{ 
-                          fontSize: 10, fontWeight: "700", color: getMeaningStatusInfo(meaning.user_progress?.status).color 
+                        <Text style={{
+                          fontSize: 10, fontWeight: "700", color: getMeaningStatusInfo(meaning.user_progress?.status).color
                         }}>
                           {getMeaningStatusInfo(meaning.user_progress?.status).text}
                         </Text>
@@ -599,17 +679,39 @@ const VocabularyDetailScreen = ({
                   {/* Definitions */}
                   <View style={styles.defContainer}>
                     <Text style={styles.defLabel}>DEFINITION</Text>
-                    <Text style={styles.defEn}>{meaning.definition}</Text>
+                    {renderSelectableText(meaning.definition, styles.defEn, meaning.id, 'definition')}
                     <Text style={styles.defVn}>{meaning.vnDefinition}</Text>
                   </View>
 
                   {/* Example */}
                   {meaning.example && (
                     <View style={styles.exampleBlock}>
-                      <Text style={styles.exampleEn}>
-                        {highlightWord(meaning.example, vocabulary.word)}
-                      </Text>
+                      {renderSelectableText(meaning.example, styles.exampleEn, meaning.id, 'example', highlightWord(meaning.example, vocabulary.word))}
                       <Text style={styles.exampleVn}>{meaning.vnExample}</Text>
+                    </View>
+                  )}
+
+                  {/* Display TTS selection action if text is highlighted for this meaning */}
+                  {selectedTextParams && selectedTextParams.meaningId === meaning.id && (
+                    <View style={{ marginTop: 12, marginBottom: 12, flexDirection: 'row', alignItems: 'center' }}>
+                      <TouchableOpacity
+                        onPress={() => onPronounceSelectedText(selectedTextParams.text)}
+                        disabled={isPronouncingSelected}
+                        style={{
+                          flexDirection: 'row', alignItems: 'center', backgroundColor: '#eef2ff',
+                          paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8,
+                          borderWidth: 1, borderColor: '#c7d2fe'
+                        }}
+                      >
+                        {isPronouncingSelected ? (
+                          <ActivityIndicator size="small" color="#6366f1" style={{ marginRight: 6 }} />
+                        ) : (
+                          <Ionicons name="volume-medium" size={18} color="#6366f1" style={{ marginRight: 6 }} />
+                        )}
+                        <Text style={{ color: '#4f46e5', fontWeight: 'bold', fontSize: 13 }}>
+                          Phát âm &quot;{selectedTextParams.text}&quot;
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   )}
 
@@ -617,24 +719,24 @@ const VocabularyDetailScreen = ({
                   {meaning.images && meaning.images.length > 0 && (
                     <View style={styles.imageGrid}>
                       <View style={styles.mainImage}>
-                        <Image 
-                          source={{ uri: (typeof meaning.images[0] === 'string' ? meaning.images[0] : meaning.images[0].imageUrl) || "https://res.cloudinary.com/dabb0yavq/image/upload/v1755275281/logo_png_oknyol.png" }} 
-                          style={styles.img} 
+                        <Image
+                          source={{ uri: (typeof meaning.images[0] === 'string' ? meaning.images[0] : meaning.images[0].imageUrl) || "https://res.cloudinary.com/dabb0yavq/image/upload/v1755275281/logo_png_oknyol.png" }}
+                          style={styles.img}
                         />
                       </View>
                       {meaning.images.length > 1 && (
                         <View style={styles.sideImages}>
                           <View style={styles.smallImage}>
-                            <Image 
-                              source={{ uri: (typeof meaning.images[1] === 'string' ? meaning.images[1] : meaning.images[1].imageUrl) || "https://res.cloudinary.com/dabb0yavq/image/upload/v1755275281/logo_png_oknyol.png" }} 
-                              style={styles.img} 
+                            <Image
+                              source={{ uri: (typeof meaning.images[1] === 'string' ? meaning.images[1] : meaning.images[1].imageUrl) || "https://res.cloudinary.com/dabb0yavq/image/upload/v1755275281/logo_png_oknyol.png" }}
+                              style={styles.img}
                             />
                           </View>
                           {meaning.images.length > 2 && (
                             <View style={styles.smallImage}>
-                              <Image 
-                                source={{ uri: (typeof meaning.images[2] === 'string' ? meaning.images[2] : meaning.images[2].imageUrl) || "https://res.cloudinary.com/dabb0yavq/image/upload/v1755275281/logo_png_oknyol.png" }} 
-                                style={styles.img} 
+                              <Image
+                                source={{ uri: (typeof meaning.images[2] === 'string' ? meaning.images[2] : meaning.images[2].imageUrl) || "https://res.cloudinary.com/dabb0yavq/image/upload/v1755275281/logo_png_oknyol.png" }}
+                                style={styles.img}
                               />
                             </View>
                           )}

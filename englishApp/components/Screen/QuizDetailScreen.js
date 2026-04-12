@@ -218,53 +218,70 @@ const QuizDetailScreen = ({
     <View style={styles.quizContainer}>
       <View style={styles.quizBadge}>
         <Icon name="link-variant" size={16} color="#f57f17" />
-        <Text style={styles.quizBadgeText}>GHÉP ĐÔI</Text>
+        <Text style={styles.quizBadgeText}>GHÉP ĐÔI (TỪ VỰNG - Ý NGHĨA)</Text>
       </View>
-      <Text style={styles.quizQuestion}>{quiz.question || "Ghép các từ với nghĩa tương ứng:"}</Text>
+      <Text style={[styles.quizQuestion, { marginBottom: 16 }]}>
+        {quiz.question || "Ghép mỗi từ với nghĩa đúng"}
+      </Text>
 
-      <View style={styles.matchRow}>
-        <View style={styles.matchColumn}>
-          <Text style={styles.matchHeader}>TỪ VỰNG</Text>
-          {quiz.left_items.map((item) => {
-            const isMatched = matches.some(m => m.leftId === item.id);
-            const isSelected = leftSelected === item.id;
-            return (
+      {/* Headers */}
+      <View style={{ flexDirection: 'row', gap: 12, marginBottom: 10, paddingHorizontal: 4 }}>
+        <Text style={[styles.matchHeader, { flex: 1, marginBottom: 0 }]}>TỪ VỰNG</Text>
+        <Text style={[styles.matchHeader, { flex: 1, marginBottom: 0 }]}>Ý NGHĨA</Text>
+      </View>
+
+      {/* Render bằng từng hàng ngang để 2 ô tự động co giãn bằng chiều cao của ô chứa chữ dài nhất */}
+      <View style={{ flexDirection: 'column' }}>
+        {quiz.left_items.map((leftItem, index) => {
+          const rightItem = quiz.right_items[index];
+
+          const isLeftMatched = matches.some(m => m.leftId === leftItem.id);
+          const isLeftSelected = leftSelected === leftItem.id;
+
+          const isRightMatched = rightItem ? matches.some(m => m.rightId === rightItem.id) : false;
+          const isRightSelected = rightItem ? rightSelected === rightItem.id : false;
+
+          return (
+            <View key={index} style={{ flexDirection: 'row', alignItems: 'stretch', gap: 12, marginBottom: 12 }}>
+              {/* 50% Width */}
               <TouchableOpacity
-                key={item.id}
                 style={[
                   styles.matchCard,
-                  isSelected && styles.matchSelected,
-                  isMatched && styles.matchMatched,
+                  { flex: 1, paddingVertical: 16, paddingHorizontal: 8 },
+                  isLeftSelected && styles.matchSelected,
+                  isLeftMatched && styles.matchMatched,
                 ]}
-                onPress={() => handleMatchLeft(item.id)}
-                disabled={isMatched || showResult}
+                onPress={() => handleMatchLeft(leftItem.id)}
+                disabled={isLeftMatched || showResult}
               >
-                <Text style={styles.matchText}>{item.word}</Text>
+                <Text style={styles.matchText}>{leftItem.word}</Text>
               </TouchableOpacity>
-            );
-          })}
-        </View>
-        <View style={styles.matchColumn}>
-          <Text style={styles.matchHeader}>Ý NGHĨA</Text>
-          {quiz.right_items.map((item) => {
-            const isMatched = matches.some(m => m.rightId === item.id);
-            const isSelected = rightSelected === item.id;
-            return (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.matchCard,
-                  isSelected && styles.matchSelected,
-                  isMatched && styles.matchMatched,
-                ]}
-                onPress={() => handleMatchRight(item.id)}
-                disabled={isMatched || showResult}
-              >
-                <Text style={styles.matchText} numberOfLines={4}>{item.text}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+
+              {/* 50% Width */}
+              {rightItem ? (
+                <TouchableOpacity
+                  style={[
+                    styles.matchCard,
+                    { flex: 1, paddingVertical: 16, paddingHorizontal: 16, alignItems: 'flex-start' },
+                    isRightSelected && styles.matchSelected,
+                    isRightMatched && styles.matchMatched,
+                  ]}
+                  onPress={() => handleMatchRight(rightItem.id)}
+                  disabled={isRightMatched || showResult}
+                >
+                  <Text 
+                    style={[styles.matchText, { textAlign: 'left', fontSize: 12, fontWeight: '500', lineHeight: 20 }]} 
+                    numberOfLines={undefined}
+                  >
+                    {rightItem.text}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={{ flex: 1 }} />
+              )}
+            </View>
+          );
+        })}
       </View>
     </View>
   );

@@ -9,11 +9,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 
 import styles from "../../styles/SessionStyles";
-import { 
-  fetchDailySession, 
-  submitQuizSession, 
-  submitWritingSession, 
-  checkSessionLevelUp 
+import {
+  fetchDailySession,
+  submitQuizSession,
+  submitWritingSession,
+  checkSessionLevelUp,
+  fetchLearningProfile
 } from "../../configs/LoadData";
 
 import SessionPhaseMeanings from "./SessionPhaseMeanings";
@@ -43,6 +44,7 @@ const DailySession = () => {
   const [showXPAnimation, setShowXPAnimation] = useState(false);
   const xpAnimY = useRef(new Animated.Value(0)).current;
   const xpAnimOpacity = useRef(new Animated.Value(0)).current;
+  const quizStartTimeRef = useRef(Date.now());
 
   const navigation = useNavigation();
   const queryClient = useQueryClient();
@@ -56,6 +58,9 @@ const DailySession = () => {
 
   useEffect(() => {
     setIsAnswered(false);
+    if (currentPhase === PHASES.QUIZZES) {
+      quizStartTimeRef.current = Date.now();
+    }
   }, [currentIndex, currentPhase]);
 
   const loadSession = async () => {
@@ -114,13 +119,41 @@ const DailySession = () => {
     try {
       const res = await checkSessionLevelUp(session.id);
       if (res.code === 1000) {
-        setLevelUpData(res.result);
-        if (res.result?.totalXP) {
-          setTotalXP(res.result.totalXP);
+        if (res.result === true) {
+          // Level up detected!
+          // 1. Get current level
+          let learningProfile = queryClient.getQueryData(['learningProfile']);
+          if (!learningProfile) {
+            const lpRes = await fetchLearningProfile();
+            learningProfile = lpRes?.result || lpRes;
+          }
+
+          const oldLevel = learningProfile?.level || "A1";
+
+          // 2. Determine new level (fallback if API doesn't provide it)
+          const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+          const currentIndex = LEVELS.indexOf(oldLevel);
+          const nextLevel = (currentIndex !== -1 && currentIndex < LEVELS.length - 1)
+            ? LEVELS[currentIndex + 1]
+            : oldLevel;
+
+          setLevelUpData({
+            isLevelUp: true,
+            oldLevel: oldLevel,
+            newLevel: nextLevel
+          });
+
+          // 3. Sync all data
+          queryClient.invalidateQueries({ queryKey: ['profile'] });
+          queryClient.invalidateQueries({ queryKey: ['summary'] });
+          // If other components use 'learningProfile' key in future
+          queryClient.invalidateQueries({ queryKey: ['learningProfile'] });
+        } else {
+          setLevelUpData({ isLevelUp: false });
         }
       }
     } catch (e) {
-      // Lỗi kiểm tra level up, bỏ qua và vẫn hiển thị kết quả
+      console.error("Level up check error:", e);
     } finally {
       setCurrentPhase(PHASES.RESULT);
     }
@@ -168,22 +201,22 @@ const DailySession = () => {
   const handleTabChange = (type) => {
     if (!session || !session.quizzes) return;
     const quizzes = session.quizzes;
-    
+
     // First try to find an unanswered quiz of that specific type
     let targetIndex = quizzes.findIndex(q => q.quiz.type === type && q.isCorrect === null);
-    
+
     // If all are answered, just go to the first quiz of that type
     if (targetIndex === -1) {
-       targetIndex = quizzes.findIndex(q => q.quiz.type === type);
+      targetIndex = quizzes.findIndex(q => q.quiz.type === type);
     }
-    
+
     if (targetIndex !== -1) {
-       if (currentPhase !== PHASES.QUIZZES) {
-          setCurrentPhase(PHASES.QUIZZES);
-       }
-       setCurrentIndex(targetIndex);
+      if (currentPhase !== PHASES.QUIZZES) {
+        setCurrentPhase(PHASES.QUIZZES);
+      }
+      setCurrentIndex(targetIndex);
     } else {
-       Toast.show({ type: 'info', text1: 'Thông báo', text2: 'Không có bài tập loại này.' });
+      Toast.show({ type: 'info', text1: 'Thông báo', text2: 'Không có bài tập loại này.' });
     }
   };
 
@@ -191,13 +224,13 @@ const DailySession = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     } else {
-       if (currentPhase === PHASES.QUIZZES) {
-         setCurrentPhase(PHASES.MEANINGS);
-         setCurrentIndex(session.meanings.length - 1);
-       } else if (currentPhase === PHASES.WRITING) {
-         setCurrentPhase(PHASES.QUIZZES);
-         setCurrentIndex(session.quizzes.length - 1);
-       }
+      if (currentPhase === PHASES.QUIZZES) {
+        setCurrentPhase(PHASES.MEANINGS);
+        setCurrentIndex(session.meanings.length - 1);
+      } else if (currentPhase === PHASES.WRITING) {
+        setCurrentPhase(PHASES.QUIZZES);
+        setCurrentIndex(session.quizzes.length - 1);
+      }
     }
   };
 
@@ -225,13 +258,16 @@ const DailySession = () => {
   };
 
   const onQuizAnswer = async (isCorrect) => {
+    const endTime = Date.now();
+    const responseTime = endTime - quizStartTimeRef.current;
+
     setIsAnswered(true);
     const quiz = session.quizzes[currentIndex];
-    
+
     let awardedXp = isCorrect ? (quiz.xpAwarded || 3) : 0;
-    
+
     try {
-      const res = await submitQuizSession(session.id, quiz.id, isCorrect);
+      const res = await submitQuizSession(session.id, quiz.id, isCorrect, responseTime);
       if (res.code === 1000) {
         // Invalidate cache
         queryClient.invalidateQueries({ queryKey: ['summary'] });
@@ -240,10 +276,10 @@ const DailySession = () => {
         queryClient.invalidateQueries({ queryKey: ['subTopicDetail'] });
 
         if (res.result && typeof res.result === 'object' && typeof res.result.xpAwarded === 'number') {
-           awardedXp = res.result.xpAwarded;
+          awardedXp = res.result.xpAwarded;
         } else if (typeof res.result === 'number') {
-           // We ignore direct number if it might be totalXP, but fallback to xpAwarded is safer
-           // awardedXp = res.result; 
+          // We ignore direct number if it might be totalXP, but fallback to xpAwarded is safer
+          // awardedXp = res.result; 
         }
       }
     } catch (e) {
@@ -259,19 +295,19 @@ const DailySession = () => {
   const onWritingAnswer = async (content) => {
     setIsAnswered(true);
     const prompt = session.writingPrompts[currentIndex];
-    
+
     try {
       const res = await submitWritingSession(session.id, prompt.id, content);
       if (res.code === 1000) {
         const aiResult = res.result; // Full AiAnalysisResponse
-        const xp = aiResult.score || 2; 
+        const xp = aiResult.score || 2;
 
         // Invalidate cache
         queryClient.invalidateQueries({ queryKey: ['summary'] });
-        
+
         setTotalXP(prev => prev + xp);
         triggerXPAnimation(xp);
-        
+
         return aiResult; // Return to component for display
       }
     } catch (e) {
@@ -283,7 +319,7 @@ const DailySession = () => {
   const renderProgressBar = () => {
     let progress = 0;
     let total = 1;
-    
+
     if (currentPhase === PHASES.MEANINGS) {
       progress = currentIndex + 1;
       total = session.meanings.length;
@@ -298,9 +334,9 @@ const DailySession = () => {
     const widthPercent = (progress / total) * 100;
 
     return (
-        <View style={styles.progressBarContainer}>
-          <View style={[styles.progressBarFill, { width: `${widthPercent}%` }]} />
-        </View>
+      <View style={styles.progressBarContainer}>
+        <View style={[styles.progressBarFill, { width: `${widthPercent}%` }]} />
+      </View>
     );
   };
 
@@ -308,25 +344,25 @@ const DailySession = () => {
     switch (currentPhase) {
       case PHASES.MEANINGS:
         return (
-          <SessionPhaseMeanings 
-            meaning={session.meanings[currentIndex]} 
-            onPlayAudio={() => playAudio(session.meanings[currentIndex]?.audioUrl)} 
+          <SessionPhaseMeanings
+            meaning={session.meanings[currentIndex]}
+            onPlayAudio={() => playAudio(session.meanings[currentIndex]?.audioUrl)}
           />
         );
       case PHASES.QUIZZES:
         return (
-          <SessionPhaseQuizzes 
-            quiz={session.quizzes[currentIndex]?.quiz} 
-            onAnswer={onQuizAnswer} 
+          <SessionPhaseQuizzes
+            quiz={session.quizzes[currentIndex]?.quiz}
+            onAnswer={onQuizAnswer}
             initialAnswerStatus={session.quizzes[currentIndex]?.isCorrect}
             onTabChange={handleTabChange}
           />
         );
       case PHASES.WRITING:
         return (
-          <SessionPhaseWriting 
+          <SessionPhaseWriting
             writingPrompt={session.writingPrompts[currentIndex]}
-            onAnswer={onWritingAnswer} 
+            onAnswer={onWritingAnswer}
             onFinish={completeSession}
           />
         );
@@ -356,15 +392,15 @@ const DailySession = () => {
           </TouchableOpacity>
           {renderProgressBar()}
           <Text style={styles.progressText}>
-            {currentPhase === PHASES.MEANINGS ? currentIndex + 1 : (currentPhase === PHASES.QUIZZES ? currentIndex + 1 : 1)} / 
+            {currentPhase === PHASES.MEANINGS ? currentIndex + 1 : (currentPhase === PHASES.QUIZZES ? currentIndex + 1 : 1)} /
             {currentPhase === PHASES.MEANINGS ? session.meanings.length : (currentPhase === PHASES.QUIZZES ? session.quizzes.length : 1)}
           </Text>
         </View>
 
         <View style={styles.phaseBadge}>
-          <Icon name="book-open-variant" size={16} color="#fff" style={{marginRight: 6}} />
+          <Icon name="book-open-variant" size={16} color="#fff" style={{ marginRight: 6 }} />
           <Text style={styles.phaseBadgeText}>
-              {currentPhase === PHASES.MEANINGS ? "Học từ vựng" : (currentPhase === PHASES.QUIZZES ? "Thực hành bài tập" : "Luyện kỹ năng viết")}
+            {currentPhase === PHASES.MEANINGS ? "Học từ vựng" : (currentPhase === PHASES.QUIZZES ? "Thực hành bài tập" : "Luyện kỹ năng viết")}
           </Text>
         </View>
       </LinearGradient>
@@ -383,13 +419,13 @@ const DailySession = () => {
             zIndex: 1000,
           }}
         >
-          <Text style={{ 
-            fontSize: 48, 
-            fontWeight: "900", 
-            color: "#FFD700", 
-            textShadowColor: 'rgba(0, 0, 0, 0.5)', 
-            textShadowOffset: { width: 0, height: 4 }, 
-            textShadowRadius: 10 
+          <Text style={{
+            fontSize: 48,
+            fontWeight: "900",
+            color: "#FFD700",
+            textShadowColor: 'rgba(0, 0, 0, 0.5)',
+            textShadowOffset: { width: 0, height: 4 },
+            textShadowRadius: 10
           }}>
             +{awardedXP} XP
           </Text>
@@ -406,20 +442,20 @@ const DailySession = () => {
           )}
 
           <View style={styles.footer}>
-            <TouchableOpacity 
-              style={[styles.buttonSecondary, currentPhase === PHASES.MEANINGS && currentIndex === 0 && { opacity: 0.5 }]} 
+            <TouchableOpacity
+              style={[styles.buttonSecondary, currentPhase === PHASES.MEANINGS && currentIndex === 0 && { opacity: 0.5 }]}
               onPress={handleBack}
               disabled={currentPhase === PHASES.MEANINGS && currentIndex === 0}
             >
-              <Icon name="arrow-left" size={20} color="#666" style={{marginRight: 8}} />
+              <Icon name="arrow-left" size={20} color="#666" style={{ marginRight: 8 }} />
               <Text style={styles.buttonTextSecondary}>Trước</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={[
-                styles.buttonPrimary, 
+                styles.buttonPrimary,
                 (currentPhase === PHASES.QUIZZES && !isAnswered && session.quizzes[currentIndex]?.isCorrect === null) && { opacity: 0.5 }
-              ]} 
+              ]}
               onPress={handleNext}
               disabled={currentPhase === PHASES.QUIZZES && !isAnswered && session.quizzes[currentIndex]?.isCorrect === null}
             >

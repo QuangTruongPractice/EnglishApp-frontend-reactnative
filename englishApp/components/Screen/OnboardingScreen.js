@@ -32,6 +32,7 @@ const OnboardingScreen = ({
         { label: "Mới bắt đầu (A1)", value: "A1", desc: "Chưa biết gì hoặc biết rất ít" },
         { label: "Cơ bản (A2)", value: "A2", desc: "Giao tiếp được những câu đơn giản" },
         { label: "Trung cấp (B1)", value: "B1", desc: "Có thể thảo luận các chủ đề quen thuộc" },
+        { label: "Trên trung cấp (B2)", value: "B2", desc: "Có thể thảo luận tốt nhiều chủ đề phức tạp" },
     ];
 
     const targets = [

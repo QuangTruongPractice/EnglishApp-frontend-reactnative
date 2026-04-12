@@ -72,7 +72,7 @@ const SubTopicDetailScreen = ({
               </Text>
             )}
           </View>
-          
+
           {/* Level Badge aligned center-right */}
           <View style={styles.cardRight}>
             {item.level && (
@@ -103,7 +103,7 @@ const SubTopicDetailScreen = ({
               </Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.heroTopicBadge}>
             <Ionicons name="book" size={14} color="#fff" style={{ marginRight: 4 }} />
             <Text style={styles.heroTopicBadgeText}>CHỦ ĐỀ NHỎ • #{subTopicInfo?.id || 1}</Text>
@@ -138,7 +138,7 @@ const SubTopicDetailScreen = ({
               <Text style={styles.fractionTotal}> / {progressData.total} nghĩa</Text>
             </View>
           </View>
-          
+
           <View style={styles.progressBarBg}>
             <View style={[styles.progressBarFill, { width: `${progressData.pct}%` }]} />
           </View>

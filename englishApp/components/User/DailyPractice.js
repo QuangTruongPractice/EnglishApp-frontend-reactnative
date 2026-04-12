@@ -26,6 +26,7 @@ const DailyPractice = () => {
 
     const [isFinished, setIsFinished] = useState(false);
     const [sound, setSound] = useState(null);
+    const quizStartTimeRef = useRef(Date.now());
     const navigation = useNavigation();
 
 
@@ -40,6 +41,7 @@ const DailyPractice = () => {
             const res = await generateQuiz(meanId);
             if (res.code === 1000) {
                 setQuizData(res.result);
+                quizStartTimeRef.current = Date.now();
             }
         } catch (err) {
             Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể tạo bài tập.' });
@@ -68,7 +70,10 @@ const DailyPractice = () => {
 
         // Gửi kết quả về server
         if (matchingMeaningIdForCurrentQuiz.current) {
-            submitQuiz(matchingMeaningIdForCurrentQuiz.current, selectedAnsObj?.isCorrect).catch(() => {
+            const endTime = Date.now();
+            const responseTime = endTime - quizStartTimeRef.current;
+            
+            submitQuiz(matchingMeaningIdForCurrentQuiz.current, selectedAnsObj?.isCorrect, responseTime).catch(() => {
             });
         }
     };

@@ -114,10 +114,10 @@ const VideoScreen = ({
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
-        <SharedHeader 
-          greetingText="Học qua nội dung thực tế" 
-          nameText="Video Học Tiếng Anh" 
-          userProfile={userProfile} 
+        <SharedHeader
+          greetingText="Học qua nội dung thực tế"
+          nameText="Video Học Tiếng Anh"
+          userProfile={userProfile}
           summary={summary}
         />
 

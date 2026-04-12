@@ -15,20 +15,20 @@ const LeaderBoard = () => {
   const { data, isLoading, isRefetching, error, refetch } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: async () => {
-       const response = await fetchLeaderBoard();
-       const profile = await getCache(CACHE_KEYS.USER_PROFILE);
-       
-       let fetchedLeaderBoard = [];
-       if (response && response.code === 1000) {
-         fetchedLeaderBoard = response.result || [];
-         if (profile && profile.userId) {
-           const userInList = fetchedLeaderBoard.find(u => u.userId === profile.userId);
-           if (userInList) {
-             setCurrentUser(userInList);
-           }
-         }
-       }
-       return fetchedLeaderBoard;
+      const response = await fetchLeaderBoard();
+      const profile = await getCache(CACHE_KEYS.USER_PROFILE);
+
+      let fetchedLeaderBoard = [];
+      if (response && response.code === 1000) {
+        fetchedLeaderBoard = response.result || [];
+        if (profile && profile.userId) {
+          const userInList = fetchedLeaderBoard.find(u => u.userId === profile.userId);
+          if (userInList) {
+            setCurrentUser(userInList);
+          }
+        }
+      }
+      return fetchedLeaderBoard;
     }
   });
 

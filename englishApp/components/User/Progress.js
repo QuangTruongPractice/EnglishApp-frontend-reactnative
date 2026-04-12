@@ -13,7 +13,6 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 const Progress = () => {
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeVocaStatus, setActiveVocaStatus] = useState("ALL");
   const nav = useNavigation();
 
   // Calendar month/year state
@@ -40,23 +39,16 @@ const Progress = () => {
     }
   });
 
+  const [vocaPage, setVocaPage] = useState(1);
+
   const {
     data: vocaRes,
     isLoading: vocaLoading,
     refetch: refetchVoca,
-    fetchNextPage: fetchNextVocaPage,
-    hasNextPage: hasNextVocaPage,
-    isFetchingNextPage: isFetchingNextVocaPage,
-  } = useInfiniteQuery({
-    queryKey: ['vocabularyProgress'],
-    queryFn: fetchVocabularyProgress,
-    initialPageParam: 1,
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage?.result?.last === false) {
-        return allPages.length + 1;
-      }
-      return undefined;
-    }
+    isFetching: isFetchingVoca,
+  } = useQuery({
+    queryKey: ['vocabularyProgress', vocaPage],
+    queryFn: () => fetchVocabularyProgress({ pageParam: vocaPage }),
   });
 
   const { data: summaryRes, isLoading: summaryLoading, refetch: refetchSummary } = useQuery({ queryKey: ['summary'], queryFn: fetchSummary });
@@ -69,7 +61,7 @@ const Progress = () => {
   const loading = videoLoading || vocaLoading || summaryLoading || profileLoading || streakLoading;
 
   const videoProgress = videoRes?.pages.flatMap(page => page.result?.content || []) || [];
-  const vocabularyProgress = vocaRes?.pages.flatMap(page => page.result?.content || []) || [];
+  const vocabularyProgress = vocaRes?.result?.content || [];
   const summary = summaryRes?.result || summaryRes;
   const userProfile = profileRes;
   const streakCalendar = streakRes?.result || streakRes;
@@ -126,14 +118,8 @@ const Progress = () => {
 
 
 
-  // Vocabulary counts
-  const totalVocaElements = vocaRes?.pages[0]?.result?.totalElements || 0;
-  const vocaCounts = {
-    ALL: totalVocaElements || vocabularyProgress?.length || 0,
-    NOT_STARTED: vocabularyProgress?.filter((v) => v.status === "NOT_STARTED").length || 0,
-    LEARNING: vocabularyProgress?.filter((v) => v.status === "LEARNING").length || 0,
-    MASTERED: vocabularyProgress?.filter((v) => v.status === "MASTERED").length || 0,
-  };
+  const totalVocaElements = vocaRes?.result?.totalElements || 0;
+  const vocaTotalPages = vocaRes?.result?.totalPages || 1;
 
   const loadMoreVideo = () => {
     if (hasNextVideoPage && !isFetchingNextVideoPage) {
@@ -141,25 +127,10 @@ const Progress = () => {
     }
   };
 
-  const loadMoreVoca = () => {
-    if (hasNextVocaPage && !isFetchingNextVocaPage) {
-      fetchNextVocaPage();
-    }
-  };
-
-  const filteredVocabulary =
-    vocabularyProgress?.filter((item) => {
-      if (activeVocaStatus === "ALL") return true;
-      return item.status === activeVocaStatus;
-    }) || [];
-
   return (
     <ProgressScreen
       videoProgress={videoProgress}
-      vocabularyProgress={filteredVocabulary}
-      vocaCounts={vocaCounts}
-      activeVocaStatus={activeVocaStatus}
-      setActiveVocaStatus={setActiveVocaStatus}
+      vocabularyProgress={vocabularyProgress}
       streakCalendar={streakCalendar}
       summary={summary}
       userProfile={userProfile}
@@ -176,9 +147,11 @@ const Progress = () => {
       nav={nav}
       retry={onRefresh}
       loadMoreVideo={loadMoreVideo}
-      loadMoreVoca={loadMoreVoca}
       isFetchingNextVideoPage={isFetchingNextVideoPage}
-      isFetchingNextVocaPage={isFetchingNextVocaPage}
+      isFetchingVoca={isFetchingVoca}
+      vocaPage={vocaPage}
+      vocaTotalPages={vocaTotalPages}
+      setVocaPage={setVocaPage}
     />
   );
 };
