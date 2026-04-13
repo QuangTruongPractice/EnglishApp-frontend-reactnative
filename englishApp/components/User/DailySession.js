@@ -44,6 +44,7 @@ const DailySession = () => {
   const [showXPAnimation, setShowXPAnimation] = useState(false);
   const xpAnimY = useRef(new Animated.Value(0)).current;
   const xpAnimOpacity = useRef(new Animated.Value(0)).current;
+  
   const quizStartTimeRef = useRef(Date.now());
 
   const navigation = useNavigation();
@@ -158,6 +159,7 @@ const DailySession = () => {
       setCurrentPhase(PHASES.RESULT);
     }
   };
+
 
   const handleNext = () => {
     if (currentPhase === PHASES.MEANINGS) {
@@ -275,11 +277,18 @@ const DailySession = () => {
         queryClient.invalidateQueries({ queryKey: ['mainTopicDetail'] });
         queryClient.invalidateQueries({ queryKey: ['subTopicDetail'] });
 
-        if (res.result && typeof res.result === 'object' && typeof res.result.xpAwarded === 'number') {
-          awardedXp = res.result.xpAwarded;
-        } else if (typeof res.result === 'number') {
-          // We ignore direct number if it might be totalXP, but fallback to xpAwarded is safer
-          // awardedXp = res.result; 
+        // Handling Retry
+        if (res.result && typeof res.result === 'object') {
+          if (typeof res.result.xpAwarded === 'number') {
+            awardedXp = res.result.xpAwarded;
+          }
+          
+          if (res.result.retryQuiz) {
+            setSession(prev => ({
+              ...prev,
+              quizzes: [...prev.quizzes, res.result.retryQuiz]
+            }));
+          }
         }
       }
     } catch (e) {
@@ -345,6 +354,7 @@ const DailySession = () => {
       case PHASES.MEANINGS:
         return (
           <SessionPhaseMeanings
+            key={`meaning-${session.meanings[currentIndex]?.id}`}
             meaning={session.meanings[currentIndex]}
             onPlayAudio={() => playAudio(session.meanings[currentIndex]?.audioUrl)}
           />
@@ -352,6 +362,7 @@ const DailySession = () => {
       case PHASES.QUIZZES:
         return (
           <SessionPhaseQuizzes
+            key={`quiz-${session.quizzes[currentIndex]?.id}`}
             quiz={session.quizzes[currentIndex]?.quiz}
             onAnswer={onQuizAnswer}
             initialAnswerStatus={session.quizzes[currentIndex]?.isCorrect}
@@ -361,6 +372,7 @@ const DailySession = () => {
       case PHASES.WRITING:
         return (
           <SessionPhaseWriting
+            key={`writing-${session.writingPrompts[currentIndex]?.id}`}
             writingPrompt={session.writingPrompts[currentIndex]}
             onAnswer={onWritingAnswer}
             onFinish={completeSession}

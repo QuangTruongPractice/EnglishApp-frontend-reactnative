@@ -1,41 +1,318 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
+import { THEME_COLORS } from "../constants/theme";
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: '#1E1B4B', // Deep rich indigo/purple background typical of games
   },
-  headerContainer: {
+  headerGradient: {
+    paddingTop: 16,
+    paddingBottom: 40,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+  },
+  headerInner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#2196F3',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    zIndex: 10,
   },
   backButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 10,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
   },
   headerTitleMain: {
     color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '900',
     textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
     flex: 1,
   },
   headerSpacer: {
-    width: 40,
+    width: 44,
   },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+  },
+  contentContainer: {
+    paddingBottom: 100, // Leave space for sticky current user
+  },
+  // PODIUM STYLES
+  podiumWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    marginTop: 20,
+    marginBottom: 30,
+    paddingHorizontal: 10,
+  },
+  podiumItem: {
+    alignItems: 'center',
+    marginHorizontal: 8,
+  },
+  podiumAvatarWrapper: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: -15, // Overlap the cylinder
+    zIndex: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 8,
+  },
+  podiumAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+  },
+  podiumAvatar1: { width: 80, height: 80, borderRadius: 40, borderColor: '#FFD700', backgroundColor: '#FFF'},
+  podiumAvatar2: { borderColor: '#E0E0E0', backgroundColor: '#FFF' },
+  podiumAvatar3: { borderColor: '#CD7F32', backgroundColor: '#FFF' },
+  podiumAvatarText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  podiumAvatarText1: { fontSize: 32 },
+  podiumCrown: {
+    position: 'absolute',
+    top: -25,
+  },
+  podiumCylinder: {
+    width: width * 0.25,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingTop: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  podiumCylinder1: { height: 140, backgroundColor: 'rgba(255, 215, 0, 0.2)', borderWidth: 1, borderColor: 'rgba(255, 215, 0, 0.5)' },
+  podiumCylinder2: { height: 100, backgroundColor: 'rgba(224, 224, 224, 0.2)', borderWidth: 1, borderColor: 'rgba(224, 224, 224, 0.5)' },
+  podiumCylinder3: { height: 80, backgroundColor: 'rgba(205, 127, 50, 0.2)', borderWidth: 1, borderColor: 'rgba(205, 127, 50, 0.5)' },
+  podiumRankText: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: 'white',
+    opacity: 0.9,
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 3,
+  },
+  podiumNameText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
+    maxWidth: width * 0.22,
+  },
+  podiumXpBlock: {
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  podiumXpText: {
+    color: '#FFD700',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  // LIST STYLES
+  listContainer: {
+    backgroundColor: '#F3F4F6',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingTop: 20,
+    minHeight: Dimensions.get('window').height * 0.5,
+  },
+  userCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    marginHorizontal: 16,
+    marginBottom: 12,
+    padding: 12,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  rankBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  rankBadgeText: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#6B7280',
+  },
+  userInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarSmall: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: THEME_COLORS.primary + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  avatarSmallText: {
+    color: THEME_COLORS.primary,
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  userDetails: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1F2937',
+    marginBottom: 2,
+  },
+  levelPill: {
+    backgroundColor: '#E5E7EB',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  levelPillText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#4B5563',
+  },
+  userStats: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  completedCount: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: THEME_COLORS.primary,
+  },
+  completedLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#9CA3AF',
+  },
+  // STICKY CURRENT USER
+  stickyCurrentUser: {
+    position: 'absolute',
+    bottom: 20,
+    left: 16,
+    right: 16,
+    backgroundColor: THEME_COLORS.primary,
+    borderRadius: 24,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: THEME_COLORS.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 15,
+    elevation: 10,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  stickyRankBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  stickyRankBadgeText: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: 'white',
+  },
+  stickyUserDetails: {
+    flex: 1,
+  },
+  stickyUserName: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: 'white',
+    marginBottom: 4,
+  },
+  stickyLevelPill: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  stickyLevelPillText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: 'white',
+  },
+  stickyStats: {
+    alignItems: 'flex-end',
+  },
+  stickyXp: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: 'white',
+  },
+  stickyXpLabel: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.8)',
+    fontWeight: '700',
+  },
+  // UNRANKED
+  unrankedContainer: {
+    padding: 20,
+    alignItems: 'center',
+    backgroundColor: 'white',
+    margin: 16,
+    borderRadius: 20,
+  },
+  unrankedTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  unrankedDesc: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
   },
   center: {
     flex: 1,
@@ -45,81 +322,52 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-  },
-  headerCard: {
-    margin: 16,
-    backgroundColor: '#2196F3',
-  },
-  headerContent: {
-    alignItems: 'center',
-  },
-  headerTitle: {
     color: 'white',
-    fontSize: 24,
-  },
-  currentUserCard: {
-    margin: 16,
-    backgroundColor: '#E3F2FD',
-  },
-  unrankedCard: {
-    margin: 16,
-    backgroundColor: '#EEEEEE',
-  },
-  userCard: {
-    marginHorizontal: 16,
-    marginBottom: 8,
-  },
-  currentUserHighlight: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#2196F3',
-  },
-  userRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  rankText: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  userDetails: {
-    flex: 1,
-  },
-  userName: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  youChip: {
-    marginLeft: 8,
-  },
-  userStats: {
-    alignItems: 'center',
-  },
-  completedCount: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2196F3',
-  },
-  completedLabel: {
-    fontSize: 12,
-    color: '#666',
-  },
-  levelChip: {
-    backgroundColor: '#E0E0E0',
-    height: 24,
   },
   errorCard: {
     margin: 16,
-    backgroundColor: '#FFEBEE',
+    backgroundColor: '#FEE2E2',
+    borderRadius: 12,
+    padding: 16,
   },
   errorText: {
-    color: '#D32F2F',
+    color: '#DC2626',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
+  motivationalBanner: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFFBEB',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FEF3C7',
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 4,
+  },
+  motivationalTextWrapper: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  motivationalTitle: {
+    color: '#D97706',
+    fontWeight: '900',
+    fontSize: 14,
+    marginBottom: 2,
+    textTransform: 'uppercase',
+  },
+  motivationalDesc: {
+    color: '#92400E',
+    fontWeight: '600',
+    fontSize: 12,
+  }
 });
 
 export default styles;

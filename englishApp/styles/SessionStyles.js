@@ -770,6 +770,10 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginHorizontal: 12,
   },
+  overlayFullScreen: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
 });
 
 export default styles;

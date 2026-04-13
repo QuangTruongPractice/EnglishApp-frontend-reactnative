@@ -20,12 +20,18 @@ const LeaderBoard = () => {
 
       let fetchedLeaderBoard = [];
       if (response && response.code === 1000) {
-        fetchedLeaderBoard = response.result || [];
-        if (profile && profile.userId) {
-          const userInList = fetchedLeaderBoard.find(u => u.userId === profile.userId);
-          if (userInList) {
-            setCurrentUser(userInList);
-          }
+        if (response.result && response.result.leaderBoard) {
+           fetchedLeaderBoard = response.result.leaderBoard;
+           setCurrentUser(response.result.currentUser || null);
+        } else {
+           // Fallback in case backend returns old structure
+           fetchedLeaderBoard = Array.isArray(response.result) ? response.result : [];
+           if (profile && profile.userId) {
+             const userInList = fetchedLeaderBoard.find(u => u.userId === profile.userId);
+             if (userInList) {
+               setCurrentUser(userInList);
+             }
+           }
         }
       }
       return fetchedLeaderBoard;

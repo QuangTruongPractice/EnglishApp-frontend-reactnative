@@ -44,7 +44,7 @@ export const endpoints = {
     'submit-writing-session': (sessionId, promptId) => `/secure/sessions/${sessionId}/writing/${promptId}/submit`,
     'check-level-up': (sessionId) => `/sessions/${sessionId}/levelup-check`,
     // -- Others --
-    'leader-board': '/leaderboard/weekly',
+    'leader-board': '/secure/leaderboard/weekly',
     'learning-profile': '/secure/learning-profile',
     'streak-calendar': '/secure/stats/streak-calendar',
     'summary': '/secure/stats/summary',
