@@ -1,14 +1,14 @@
-﻿import { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { login, googleLogin, loadProfile, fetchLearningProfile } from "../../configs/LoadData";
 import { MyDispatchContext } from "../../configs/Context";
 import LoginScreen from "../Screen/LoginScreen";
 // Cấu hình Google Sign-In
-// import {
-//   GoogleSignin,
-//   statusCodes,
-// } from "@react-native-google-signin/google-signin";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 import keys from "../../key";
 
 const Login = ({ onLogin }) => {
@@ -82,7 +82,6 @@ const Login = ({ onLogin }) => {
     }
   };
 
-  /*
   const handleGoogleLogin = async () => {
     setLoading(true);
     setMsg("");
@@ -116,13 +115,7 @@ const Login = ({ onLogin }) => {
       setLoading(false);
     }
   };
-  */
 
-  const handleGoogleLogin = () => {
-    alert("Chức năng Google Sign-in tạm thời không khả dụng trên Expo Go. Vui lòng sử dụng tài khoản hệ thống.");
-  };
-
-  /*
   GoogleSignin.configure({
     webClientId: keys.webClientId,
     scopes: ["https://www.googleapis.com/auth/drive.readonly"],
@@ -130,7 +123,6 @@ const Login = ({ onLogin }) => {
     forceCodeForRefreshToken: true,
     iosClientId: keys.iosClientId,
   });
-  */
 
   return (
     <LoginScreen

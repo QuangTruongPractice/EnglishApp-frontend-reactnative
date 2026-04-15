@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-// import { Switch } from "react-native-paper";
+import { Switch } from "react-native-paper";
 import styles from "../../styles/ProfileStyles";
 import { useNavigation } from "@react-navigation/native";
 import ScreenContainer from "../common/ScreenContainer";
@@ -70,10 +70,10 @@ const ProfileScreen = ({
   handleEdit,
   handleLearningUpdate,
   cooldownInfo,
-  // reminderEnabled,
-  // reminderTime,
-  // onToggleReminder,
-  // onShowTimePicker,
+  reminderEnabled,
+  reminderTime,
+  onToggleReminder,
+  onShowTimePicker,
 }) => {
   const navigation = useNavigation();
 
@@ -346,7 +346,7 @@ const ProfileScreen = ({
             <Ionicons name="chevron-forward" size={18} color="#EEE" />
           </TouchableOpacity>
 
-          {/* <View style={styles.settingsItem}>
+          <View style={styles.settingsItem}>
             <View style={styles.settingIconContainer}>
               <Ionicons name="notifications" size={20} color={reminderEnabled ? "#F45B69" : "#BBB"} />
             </View>
@@ -367,7 +367,7 @@ const ProfileScreen = ({
               onValueChange={onToggleReminder}
               color="#F45B69"
             />
-          </View> */}
+          </View>
 
           <TouchableOpacity style={styles.settingsItem}>
             <View style={styles.settingIconContainer}>

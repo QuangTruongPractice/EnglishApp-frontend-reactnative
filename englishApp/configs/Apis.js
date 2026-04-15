@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const IDENTITY_BASE_URL = 'http://192.168.1.204:8080/identity/api';
-const LEARNING_BASE_URL = 'http://192.168.1.204:8090/learning/api';
+const IDENTITY_BASE_URL = 'https://englishapp-backend-springboot-1.onrender.com/identity/api';
+const LEARNING_BASE_URL = 'https://englishapp-backend-springboot-1-x9mg.onrender.com/learning/api';
 const AI_BASE_URL = 'https://satyr-dashing-officially.ngrok-free.app';
 
 export const endpoints = {

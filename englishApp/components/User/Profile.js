@@ -5,12 +5,12 @@ import * as ImagePicker from "expo-image-picker";
 import ProfileScreen from "../Screen/ProfileScreen";
 import { updateProfile, fetchLearningProfile, fetchSummary, loadProfile, updateLearningProfile } from "../../configs/LoadData";
 import Toast from "react-native-toast-message";
-// import { 
-//   getReminderSettings, 
-//   scheduleDailyReminder, 
-//   cancelAllReminders 
-// } from "../../utils/NotificationManager";
-// import DateTimePicker from "@react-native-community/datetimepicker";
+import { 
+  getReminderSettings, 
+  scheduleDailyReminder, 
+  cancelAllReminders 
+} from "../../utils/NotificationManager";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation } from "@react-navigation/native";
 import { clearAllCache } from "../../utils/cache";
 
@@ -24,10 +24,10 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [updateLoading, setUpdateLoading] = useState(false);
   
-  // Notification State (Commented out)
-  // const [reminderEnabled, setReminderEnabled] = useState(false);
-  // const [reminderTime, setReminderTime] = useState(new Date());
-  // const [showTimePicker, setShowTimePicker] = useState(false);
+  // Notification State
+  const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [reminderTime, setReminderTime] = useState(new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const fetchAllData = async () => {
     try {
@@ -57,17 +57,17 @@ const Profile = () => {
 
   useEffect(() => {
     fetchAllData();
-    // loadReminderSettings();
+    loadReminderSettings();
   }, []);
 
-  // const loadReminderSettings = async () => {
-  //   const settings = await getReminderSettings();
-  //   setReminderEnabled(settings.enabled);
-  //   const time = new Date();
-  //   time.setHours(settings.hour);
-  //   time.setMinutes(settings.minute);
-  //   setReminderTime(time);
-  // };
+  const loadReminderSettings = async () => {
+    const settings = await getReminderSettings();
+    setReminderEnabled(settings.enabled);
+    const time = new Date();
+    time.setHours(settings.hour);
+    time.setMinutes(settings.minute);
+    setReminderTime(time);
+  };
 
   const logout = async () => {
     try {
@@ -162,37 +162,37 @@ const Profile = () => {
     }
   };
 
-  // const handleToggleReminder = async (val) => {
-  //   setReminderEnabled(val);
-  //   if (!val) {
-  //     await cancelAllReminders();
-  //     Toast.show({ type: "info", text1: "Thông báo", text2: "Đã tắt nhắc nhở hàng ngày" });
-  //   } else {
-  //     setShowTimePicker(true);
-  //   }
-  // };
+  const handleToggleReminder = async (val) => {
+    setReminderEnabled(val);
+    if (!val) {
+      await cancelAllReminders();
+      Toast.show({ type: "info", text1: "Thông báo", text2: "Đã tắt nhắc nhở hàng ngày" });
+    } else {
+      setShowTimePicker(true);
+    }
+  };
 
-  // const onTimeChange = async (event, selectedDate) => {
-  //   setShowTimePicker(false);
-  //   if (selectedDate) {
-  //     setReminderTime(selectedDate);
-  //     const success = await scheduleDailyReminder(selectedDate.getHours(), selectedDate.getMinutes());
-  //     if (success) {
-  //       setReminderEnabled(true);
-  //       Toast.show({ 
-  //         type: "success", 
-  //         text1: "Thành công", 
-  //         text2: `Đã đặt nhắc nhở vào lúc ${selectedDate.getHours().toString().padStart(2, '0')}:${selectedDate.getMinutes().toString().padStart(2, '0')} hàng ngày` 
-  //       });
-  //     } else {
-  //       setReminderEnabled(false);
-  //       Toast.show({ type: "error", text1: "Lỗi", text2: "Không thể cấp quyền thông báo!" });
-  //     }
-  //   } else if (event.type === 'dismissed') {
-  //     const settings = await getReminderSettings();
-  //     setReminderEnabled(settings.enabled);
-  //   }
-  // };
+  const onTimeChange = async (event, selectedDate) => {
+    setShowTimePicker(false);
+    if (selectedDate) {
+      setReminderTime(selectedDate);
+      const success = await scheduleDailyReminder(selectedDate.getHours(), selectedDate.getMinutes());
+      if (success) {
+        setReminderEnabled(true);
+        Toast.show({ 
+          type: "success", 
+          text1: "Thành công", 
+          text2: `Đã đặt nhắc nhở vào lúc ${selectedDate.getHours().toString().padStart(2, '0')}:${selectedDate.getMinutes().toString().padStart(2, '0')} hàng ngày` 
+        });
+      } else {
+        setReminderEnabled(false);
+        Toast.show({ type: "error", text1: "Lỗi", text2: "Không thể cấp quyền thông báo!" });
+      }
+    } else if (event.type === 'dismissed') {
+      const settings = await getReminderSettings();
+      setReminderEnabled(settings.enabled);
+    }
+  };
 
   const cooldownInfo = getCooldownInfo(learningProfile?.profileUpdatedAt);
 
@@ -210,12 +210,12 @@ const Profile = () => {
         handleLearningUpdate={handleLearningUpdate}
         cooldownInfo={cooldownInfo}
         onRefresh={fetchAllData}
-        // reminderEnabled={reminderEnabled}
-        // reminderTime={reminderTime}
-        // onToggleReminder={handleToggleReminder}
-        // onShowTimePicker={() => setShowTimePicker(true)}
+        reminderEnabled={reminderEnabled}
+        reminderTime={reminderTime}
+        onToggleReminder={handleToggleReminder}
+        onShowTimePicker={() => setShowTimePicker(true)}
       />
-      {/* {showTimePicker && (
+      {showTimePicker && (
         <DateTimePicker
           value={reminderTime}
           mode="time"
@@ -223,7 +223,7 @@ const Profile = () => {
           display="default"
           onChange={onTimeChange}
         />
-      )} */}
+      )}
     </>
   );
 };
