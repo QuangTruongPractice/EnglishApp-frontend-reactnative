@@ -67,14 +67,15 @@ const QuizScreen = ({
   };
 
   const renderHeader = () => (
-    <View>
+    <View style={{ backgroundColor: "#fcf9f9", zIndex: 0 }}>
       <LinearGradient colors={["#4a0d0d", "#6b1a1a", "#7e2222"]} style={styles.headerBackground}>
+        <View style={styles.headerDecorativeCircle} />
         <View style={styles.headerTop}>
           <View>
             <Text style={styles.headerTitle}>Thử thách Quiz</Text>
             <Text style={styles.headerSubtitle}>Củng cố kiến thức mỗi ngày</Text>
           </View>
-          <Icon name="trophy-variant" size={32} color="rgba(255,255,255,0.3)" />
+          <Icon name="trophy-variant" size={40} color="rgba(255,255,255,0.3)" />
         </View>
       </LinearGradient>
       

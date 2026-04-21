@@ -1,9 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, Animated, Image } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
-import { ActivityIndicator, Button } from "react-native-paper";
+import { ActivityIndicator } from "react-native-paper";
 import styles from "../../styles/SessionStyles";
 
 const QuizDetailScreen = ({

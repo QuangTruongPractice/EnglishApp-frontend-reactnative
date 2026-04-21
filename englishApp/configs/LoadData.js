@@ -14,6 +14,14 @@ export const login = async (username, password) => {
   return res.data;
 };
 
+export const googleLogin = async (idToken, email) => {
+  const res = await IdentityApis.post(endpoints["google-login"], {
+    idToken: idToken,
+    email: email,
+  });
+  return res.data;
+};
+
 export const register = async (formDataToSend) => {
   const res = await IdentityApis.post(endpoints["register"], formDataToSend, {
     headers: {

@@ -1,14 +1,14 @@
 import axios from "axios";
 
-const IDENTITY_BASE_URL = 'https://englishapp-backend-springboot-1.onrender.com/identity/api';
-const LEARNING_BASE_URL = 'https://englishapp-backend-springboot-1-x9mg.onrender.com/learning/api';
+const IDENTITY_BASE_URL = 'https://englishapp-identity-truong-d7eeb7gmfffggzhz.southeastasia-01.azurewebsites.net/identity/api';
+const LEARNING_BASE_URL = 'https://englishapp-learning-truong-bgejhqcmd6fdgabt.southeastasia-01.azurewebsites.net/learning/api';
 const AI_BASE_URL = 'https://satyr-dashing-officially.ngrok-free.app';
 
 export const endpoints = {
     // ===== IDENTITY SERVICE =====
     'login': '/login',
     'register': '/register',
-    // 'google-login': '/auth/google-signin',
+    'google-login': '/auth/google-signin',
     'profile': '/secure/profile',
     'reset-password': '/reset-password',
     'verify-otp': '/verified-otp',

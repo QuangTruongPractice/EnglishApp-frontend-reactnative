@@ -22,7 +22,8 @@
       },
       "permissions": [
         "INTERNET",
-        "ACCESS_NETWORK_STATE"
+        "ACCESS_NETWORK_STATE",
+        "NOTIFICATIONS"
       ],
       "edgeToEdgeEnabled": true,
       "package": "com.tranquangtruong25.englishApp"
@@ -31,7 +32,8 @@
       "favicon": "./assets/logo-image.png"
     },
     "plugins": [
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "@react-native-google-signin/google-signin"
     ],
     "extra": {
       "eas": {

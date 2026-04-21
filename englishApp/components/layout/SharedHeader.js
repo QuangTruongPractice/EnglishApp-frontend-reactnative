@@ -22,7 +22,7 @@ const SharedHeader = ({ greetingText, nameText, userProfile, summary }) => {
       <View style={styles.headerTop}>
         <View style={styles.greetingWrapper}>
           <Text style={styles.greetingText}>{greetingText || "Chào buổi sáng ☀️"}</Text>
-          <Text style={styles.nameText}>{titleText}</Text>
+          <Text style={styles.nameText} numberOfLines={1} ellipsizeMode="tail">{titleText}</Text>
         </View>
         <View style={styles.avatarContainer}>
           <Text style={styles.avatarText}>{initials}</Text>

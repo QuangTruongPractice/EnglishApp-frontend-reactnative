@@ -43,7 +43,9 @@ const HomeScreen = ({
   error,
   retry,
 }) => {
-  const userName = userProfile?.fullName || userProfile?.username || "Learner";
+  const userName = (userProfile?.firstName || userProfile?.lastName)
+    ? `${userProfile.firstName || ""} ${userProfile.lastName || ""}`.trim()
+    : userProfile?.fullName || userProfile?.username || "Learner";
   const initials = getInitials(userName);
 
   const getProgressColor = (pct) => {

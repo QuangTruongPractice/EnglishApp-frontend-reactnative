@@ -4,7 +4,6 @@ import { useNavigation } from "@react-navigation/native";
 import { login, googleLogin, loadProfile, fetchLearningProfile } from "../../configs/LoadData";
 import { MyDispatchContext } from "../../configs/Context";
 import LoginScreen from "../Screen/LoginScreen";
-// Cấu hình Google Sign-In
 import {
   GoogleSignin,
   statusCodes,
@@ -98,7 +97,25 @@ const Login = ({ onLogin }) => {
 
         const userRes = await loadProfile(token);
 
-        dispatch({ type: "login", payload: userRes });
+        // Kiểm tra Learning Profile để xác định onboarding
+        try {
+          const learningProfile = await fetchLearningProfile();
+          
+          if (learningProfile && learningProfile.result?.onboardingCompleted) {
+            // Đã hoàn thành Onboarding -> Vào trang chủ
+            dispatch({ type: "login", payload: userRes });
+          } else {
+            // chưa hoàn thành Onboarding -> Chuyển qua Onboarding
+            nav.navigate("Onboarding", { userData: userRes });
+          }
+        } catch (lpError) {
+          // Nếu lỗi (404 = chưa có profile) -> Chuyển qua Onboarding
+          nav.navigate("Onboarding", { userData: userRes });
+        }
+
+        if (onLogin && typeof onLogin === 'function') {
+          onLogin();
+        }
       }
     } catch (error) {
       // console.error("Google Sign-In Error:", error);

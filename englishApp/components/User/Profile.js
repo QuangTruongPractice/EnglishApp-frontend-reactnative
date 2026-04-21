@@ -186,7 +186,11 @@ const Profile = () => {
         });
       } else {
         setReminderEnabled(false);
-        Toast.show({ type: "error", text1: "Lỗi", text2: "Không thể cấp quyền thông báo!" });
+        Toast.show({ 
+          type: "error", 
+          text1: "Lỗi", 
+          text2: "Không thể thiết lập nhắc nhở. Vui lòng kiểm tra lại quyền thông báo của ứng dụng!" 
+        });
       }
     } else if (event.type === 'dismissed') {
       const settings = await getReminderSettings();

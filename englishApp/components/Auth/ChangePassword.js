@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import Toast from "react-native-toast-message";
 import { changePasswordRequest } from "../../configs/LoadData";
-import ChangePasswordScreen from "../Screen/ChangePasswordScreen";
+import ResetPasswordScreen from "../Screen/ResetPasswordScreen";
 
 const ChangePassword = ({ route }) => {
   const { email } = route.params;
@@ -72,7 +72,7 @@ const ChangePassword = ({ route }) => {
   };
 
   return (
-    <ChangePasswordScreen
+    <ResetPasswordScreen
       email={email}
       newPassword={newPassword}
       confirmPassword={confirmPassword}

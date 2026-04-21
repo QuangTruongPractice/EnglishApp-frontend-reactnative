@@ -9,11 +9,23 @@ const styles = StyleSheet.create({
   },
   // Header
   headerBackground: {
-    paddingTop: 40,
-    paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 48,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
+    marginBottom: -20,
+    zIndex: 1,
+    overflow: 'hidden',
+  },
+  headerDecorativeCircle: {
+    position: 'absolute',
+    top: -50,
+    right: -50,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
   headerTop: {
     flexDirection: 'row',
@@ -22,7 +34,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: '900',
     color: '#fff',
     letterSpacing: 0.5,
@@ -36,10 +48,11 @@ const styles = StyleSheet.create({
   // Stats Card
   statsCard: {
     backgroundColor: '#fff',
-    marginHorizontal: 20,
+    marginHorizontal: 16,
     marginTop: -30,
     borderRadius: 20,
     padding: 16,
+    zIndex: 2,
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: "#000",
@@ -72,9 +85,8 @@ const styles = StyleSheet.create({
 
   // List
   scrollContent: {
-    paddingTop: 20,
+    paddingTop: 0,
     paddingBottom: 40,
-    paddingHorizontal: 20,
   },
 
   // Quiz Card
@@ -83,6 +95,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 20,
     marginBottom: 16,
+    marginHorizontal: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
