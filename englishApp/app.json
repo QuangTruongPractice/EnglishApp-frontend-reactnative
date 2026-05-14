@@ -23,7 +23,8 @@
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE",
-        "NOTIFICATIONS"
+        "NOTIFICATIONS",
+        "SCHEDULE_EXACT_ALARM"
       ],
       "edgeToEdgeEnabled": true,
       "package": "com.tranquangtruong25.englishApp"
@@ -32,6 +33,7 @@
       "favicon": "./assets/logo-image.png"
     },
     "plugins": [
+      "expo-notifications",
       "@react-native-community/datetimepicker",
       "@react-native-google-signin/google-signin"
     ],

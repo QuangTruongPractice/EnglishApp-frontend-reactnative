@@ -2,7 +2,6 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Configure how notifications should be handled when the app is running
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -11,12 +10,9 @@ Notifications.setNotificationHandler({
   }),
 });
 
-
 const STORAGE_KEY = "daily_reminder_settings";
+const CHANNEL_ID = "daily-reminders";
 
-/**
- * Request permissions for local notifications
- */
 export const registerForPushNotificationsAsync = async () => {
   let { status } = await Notifications.getPermissionsAsync();
   if (status !== "granted") {
@@ -26,79 +22,86 @@ export const registerForPushNotificationsAsync = async () => {
   return status === "granted";
 };
 
-/**
- * Schedule a daily local notification at a specific time
- * @param {number} hour - 0-23
- * @param {number} minute - 0-59
- */
 export const scheduleDailyReminder = async (hour, minute) => {
   try {
-    // 1. Ensure notification channel exists (Crucial for Android)
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('daily-reminders', {
-        name: 'Daily Reminders',
+    // 1. Tạo channel (Android only)
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
+        name: "Daily Reminders",
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
       });
     }
 
-    // 2. Ensure permissions
+    // 2. Kiểm tra permission
     const hasPermission = await registerForPushNotificationsAsync();
     if (!hasPermission) {
       console.warn("Notification permission not granted");
       return false;
     }
 
-    // 3. Clear existing reminders
+    // 3. Hủy thông báo cũ
     await Notifications.cancelAllScheduledNotificationsAsync();
 
-    // 4. Schedule new one
+    // 4. Tự detect version để dùng đúng trigger format
+    const triggerInputTypes = Notifications.SchedulableTriggerInputTypes;
+
+    const trigger = triggerInputTypes
+      ? // SDK 50+ (expo-notifications >= 0.28)
+        {
+          type: triggerInputTypes.DAILY,
+          hour,
+          minute,
+          ...(Platform.OS === "android" && { channelId: CHANNEL_ID }),
+        }
+      : // SDK cũ hơn
+        {
+          hour,
+          minute,
+          repeats: true,
+        };
+
+    // 5. Schedule
     const id = await Notifications.scheduleNotificationAsync({
       content: {
         title: "⏰ Giờ học tiếng Anh đến rồi!",
-        body: "Hãy dành 15 phút hôm nay để mở rộng vốn từ của bạn nhé. Đừng để chuỗi học tập (streak) bị gián đoạn!",
-        sound: true,
-        priority: Notifications.AndroidNotificationPriority.MAX,
-        channelId: "daily-reminders",
+        body: "Hãy dành 15 phút hôm nay để mở rộng vốn từ của bạn nhé. Đừng để chuỗi học tập bị gián đoạn!",
       },
-      trigger: {
-        hour,
-        minute,
-        repeats: true,
-      },
+      trigger,
     });
 
-    // 5. Save settings
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ enabled: true, hour, minute, id }));
+    // 6. Lưu settings
+    await AsyncStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ enabled: true, hour, minute, id })
+    );
     return true;
   } catch (error) {
-    console.error("Error scheduling reminder:", error);
+    console.error("Chi tiết lỗi:", JSON.stringify(error), error?.message);
     return false;
   }
 };
 
-/**
- * Cancel all scheduled reminders
- */
 export const cancelAllReminders = async () => {
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
     const settings = await getReminderSettings();
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ ...settings, enabled: false }));
+    await AsyncStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ ...settings, enabled: false })
+    );
   } catch (error) {
-    // Bỏ qua
+    console.error("Error cancelling reminders:", error);
   }
 };
 
-/**
- * Get current reminder settings from storage
- */
 export const getReminderSettings = async () => {
   try {
     const settings = await AsyncStorage.getItem(STORAGE_KEY);
-    return settings ? JSON.parse(settings) : { enabled: false, hour: 20, minute: 0 };
-  } catch (error) {
+    return settings
+      ? JSON.parse(settings)
+      : { enabled: false, hour: 20, minute: 0 };
+  } catch {
     return { enabled: false, hour: 20, minute: 0 };
   }
 };

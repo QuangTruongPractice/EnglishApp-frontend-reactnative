@@ -8,7 +8,7 @@ import MyUserReducer from "./reducers/MyUserReducer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect } from "react";
 import { getCache, clearAllCache, CACHE_KEYS } from "./utils/cache";
-import { loadProfile, fetchLearningProfile } from "./configs/LoadData";
+import { loadProfile, fetchLearningProfile, clearTokens } from "./configs/LoadData";
 import { registerUnauthorizedHandler } from "./configs/Apis";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
@@ -105,7 +105,7 @@ export default function App() {
 
   useEffect(() => {
     const handleLogout = async () => {
-      await AsyncStorage.removeItem("token");
+      await clearTokens();
       await clearAllCache();
       queryClient.clear();
       dispatch({ type: "logout" });

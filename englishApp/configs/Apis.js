@@ -1,13 +1,17 @@
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const IDENTITY_BASE_URL = 'https://englishapp-identity-truong-d7eeb7gmfffggzhz.southeastasia-01.azurewebsites.net/identity/api';
-const LEARNING_BASE_URL = 'https://englishapp-learning-truong-bgejhqcmd6fdgabt.southeastasia-01.azurewebsites.net/learning/api';
-const AI_BASE_URL = 'https://satyr-dashing-officially.ngrok-free.app';
+const GATEWAY_URL = 'https://api-gateway-truong-ehdahkaybrfxbfc8.southeastasia-01.azurewebsites.net';
+
+const IDENTITY_BASE_URL = `${GATEWAY_URL}/identity/api`;
+const LEARNING_BASE_URL = `${GATEWAY_URL}/learning/api`;
+const AI_BASE_URL = `${GATEWAY_URL}/ai`;
 
 export const endpoints = {
     // ===== IDENTITY SERVICE =====
     'login': '/login',
     'register': '/register',
+    'refresh-token': '/auth/refresh',
     'google-login': '/auth/google-signin',
     'profile': '/secure/profile',
     'reset-password': '/reset-password',
@@ -57,11 +61,6 @@ export const endpoints = {
     'tts': '/tts'
 };
 
-// Create a base Apis instance for global configs
-const Apis = axios.create({
-    timeout: 15000,
-});
-
 // Global callback for unauthorized access
 let onUnauthorizedCallback = null;
 
@@ -69,19 +68,40 @@ export const registerUnauthorizedHandler = (callback) => {
     onUnauthorizedCallback = callback;
 };
 
-// Helper to add interceptors to any instance
-const addInterceptors = (instance) => {
-    instance.interceptors.request.use((config) => {
+// Variable to track if refreshing is in progress
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    failedQueue = [];
+};
+
+const addInterceptors = (instance, isAuth = false) => {
+    instance.interceptors.request.use(async (config) => {
         console.log(`📤 REQUEST: [${config.method?.toUpperCase()}] ${config.baseURL}${config.url}`);
+        
+        if (isAuth) {
+            const token = await AsyncStorage.getItem("token");
+            if (token) {
+                config.headers['Authorization'] = `Bearer ${token}`;
+            }
+        }
+
         if (config.data) console.log('📦 DATA:', config.data);
         return config;
-    });
+    }, (error) => Promise.reject(error));
 
     instance.interceptors.response.use(
         (response) => {
             console.log(`📥 RESPONSE: [${response.status}] ${response.config.url}`);
-            if (response.data) console.log('✅ DATA:', response.data);
-
+            
             // Check for HTML response when JSON was expected (Backend redirect)
             if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
                 console.warn('⚠️ Received HTML instead of JSON. Possible session expiration.');
@@ -92,16 +112,62 @@ const addInterceptors = (instance) => {
 
             return response;
         },
-        (error) => {
-            // console.log(`❌ ERROR: ${error.config?.url || 'Unknown URL'}`);
-            if (error.response) {
-                // console.log(`🔴 STATUS: ${error.response.status}`);
-                // console.log('🔴 DATA:', error.response.data);
+        async (error) => {
+            const originalRequest = error.config;
 
+            if (error.response) {
                 // Handle 401 Unauthorized
-                if (error.response.status === 401 || error.response.status === 403) {
-                    if (onUnauthorizedCallback) {
-                        onUnauthorizedCallback();
+                if ((error.response.status === 401 || error.response.status === 403) && !originalRequest._retry) {
+                    
+                    // If it's a login or refresh request, don't try to refresh
+                    if (originalRequest.url === endpoints['login'] || originalRequest.url === endpoints['refresh-token']) {
+                        if (onUnauthorizedCallback) onUnauthorizedCallback();
+                        return Promise.reject(error);
+                    }
+
+                    if (isRefreshing) {
+                        return new Promise(function(resolve, reject) {
+                            failedQueue.push({ resolve, reject });
+                        }).then(token => {
+                            originalRequest.headers['Authorization'] = 'Bearer ' + token;
+                            return axios(originalRequest);
+                        }).catch(err => {
+                            return Promise.reject(err);
+                        });
+                    }
+
+                    originalRequest._retry = true;
+                    isRefreshing = true;
+
+                    try {
+                        const refreshToken = await AsyncStorage.getItem("refreshToken");
+                        if (!refreshToken) throw new Error("No refresh token");
+
+                        console.log("🔄 Attempting to refresh token...");
+                        const res = await axios.post(`${IDENTITY_BASE_URL}${endpoints['refresh-token']}`, {
+                            token: refreshToken
+                        });
+
+                        if (res.data.code === 1000) {
+                            const { token, refreshToken: newRefreshToken } = res.data.result;
+                            await AsyncStorage.setItem("token", token);
+                            await AsyncStorage.setItem("refreshToken", newRefreshToken);
+
+                            console.log("✅ Token refreshed successfully!");
+                            processQueue(null, token);
+                            
+                            originalRequest.headers['Authorization'] = `Bearer ${token}`;
+                            return axios(originalRequest);
+                        } else {
+                            throw new Error("Refresh failed with code " + res.data.code);
+                        }
+                    } catch (refreshError) {
+                        console.error("❌ Refresh token failed:", refreshError);
+                        processQueue(refreshError, null);
+                        if (onUnauthorizedCallback) onUnauthorizedCallback();
+                        return Promise.reject(refreshError);
+                    } finally {
+                        isRefreshing = false;
                     }
                 }
             } else {
@@ -111,6 +177,10 @@ const addInterceptors = (instance) => {
         }
     );
 };
+
+// ===== BASE API =====
+const Apis = axios.create({ timeout: 15000 });
+addInterceptors(Apis);
 
 // ===== IDENTITY API =====
 export const IdentityApis = axios.create({
@@ -137,7 +207,7 @@ addInterceptors(LearningApis);
 // ===== AI API =====
 export const AIApis = axios.create({
     baseURL: AI_BASE_URL,
-    timeout: 30000, // Voice processing might take longer
+    timeout: 30000,
     headers: {
         'Content-Type': 'multipart/form-data',
         'Accept': 'application/json',
@@ -145,35 +215,29 @@ export const AIApis = axios.create({
 });
 addInterceptors(AIApis);
 
-export const authIdentityApis = (token) => {
-    const instance = axios.create({
-        baseURL: IDENTITY_BASE_URL,
-        timeout: 15000,
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': token ? `Bearer ${token}` : '',
-        }
-    });
-    addInterceptors(instance);
-    return instance;
-};
+// ===== AUTHENTICATED APIS (Singletons) =====
+export const authIdentityApisInstance = axios.create({
+    baseURL: IDENTITY_BASE_URL,
+    timeout: 15000,
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
+});
+addInterceptors(authIdentityApisInstance, true);
 
-export const authLearningApis = (token) => {
-    const instance = axios.create({
-        baseURL: LEARNING_BASE_URL,
-        timeout: 15000,
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': token ? `Bearer ${token}` : '',
-        }
-    });
-    addInterceptors(instance);
-    return instance;
-};
+export const authLearningApisInstance = axios.create({
+    baseURL: LEARNING_BASE_URL,
+    timeout: 15000,
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
+});
+addInterceptors(authLearningApisInstance, true);
 
-// Apply interceptors to the default Apis as well
-addInterceptors(Apis);
+// Keep compatibility with existing code that calls these as functions
+export const authIdentityApis = () => authIdentityApisInstance;
+export const authLearningApis = () => authLearningApisInstance;
 
 export default Apis;

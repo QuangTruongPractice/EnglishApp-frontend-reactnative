@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import { login, googleLogin, loadProfile, fetchLearningProfile } from "../../configs/LoadData";
+import { login, googleLogin, loadProfile, fetchLearningProfile, saveTokens } from "../../configs/LoadData";
 import { MyDispatchContext } from "../../configs/Context";
 import LoginScreen from "../Screen/LoginScreen";
 import {
@@ -44,8 +44,8 @@ const Login = ({ onLogin }) => {
         const { username, password } = formData;
         const res = await login(username.trim(), password.trim());
         if (res.code === 1000) {
-          const token = res.result.token;
-          await AsyncStorage.setItem("token", token);
+          const { token, refreshToken } = res.result;
+          await saveTokens(token, refreshToken);
           
           // Lấy thông tin profile người dùng (Identity)
           const userRes = await loadProfile();
@@ -91,9 +91,8 @@ const Login = ({ onLogin }) => {
         const { idToken } = response.data;
 
         const authResponse = await googleLogin(idToken, response.data.user.email);
-        const token = authResponse.result.token;
-
-        await AsyncStorage.setItem("token", token);
+        const { token, refreshToken } = authResponse.result;
+        await saveTokens(token, refreshToken);
 
         const userRes = await loadProfile(token);
 

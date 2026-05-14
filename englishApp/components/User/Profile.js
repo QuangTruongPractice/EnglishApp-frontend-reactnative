@@ -3,12 +3,19 @@ import { MyDispatchContext, MyUserContext } from "../../configs/Context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import ProfileScreen from "../Screen/ProfileScreen";
-import { updateProfile, fetchLearningProfile, fetchSummary, loadProfile, updateLearningProfile } from "../../configs/LoadData";
+import {
+  updateProfile,
+  fetchLearningProfile,
+  fetchSummary,
+  loadProfile,
+  updateLearningProfile,
+  clearTokens,
+} from "../../configs/LoadData";
 import Toast from "react-native-toast-message";
-import { 
-  getReminderSettings, 
-  scheduleDailyReminder, 
-  cancelAllReminders 
+import {
+  getReminderSettings,
+  scheduleDailyReminder,
+  cancelAllReminders,
 } from "../../utils/NotificationManager";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation } from "@react-navigation/native";
@@ -23,7 +30,7 @@ const Profile = () => {
   const [summaryData, setSummaryData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updateLoading, setUpdateLoading] = useState(false);
-  
+
   // Notification State
   const [reminderEnabled, setReminderEnabled] = useState(false);
   const [reminderTime, setReminderTime] = useState(new Date());
@@ -32,24 +39,31 @@ const Profile = () => {
   const fetchAllData = async () => {
     try {
       setLoading(true);
-      const [identityStatus, learningStatus, summaryStatus] = await Promise.allSettled([
-        loadProfile(),
-        fetchLearningProfile(),
-        fetchSummary()
-      ]);
+      const [identityStatus, learningStatus, summaryStatus] =
+        await Promise.allSettled([
+          loadProfile(),
+          fetchLearningProfile(),
+          fetchSummary(),
+        ]);
 
-      if (identityStatus.status === 'fulfilled') {
+      if (identityStatus.status === "fulfilled") {
         dispatch({ type: "login", payload: identityStatus.value });
       }
-      if (learningStatus.status === 'fulfilled') {
-        setLearningProfile(learningStatus.value?.result || learningStatus.value);
+      if (learningStatus.status === "fulfilled") {
+        setLearningProfile(
+          learningStatus.value?.result || learningStatus.value
+        );
       }
-      if (summaryStatus.status === 'fulfilled') {
+      if (summaryStatus.status === "fulfilled") {
         setSummaryData(summaryStatus.value);
       }
     } catch (error) {
       console.error("Error fetching profile data:", error);
-      Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể tải thông tin hồ sơ.' });
+      Toast.show({
+        type: "error",
+        text1: "Lỗi",
+        text2: "Không thể tải thông tin hồ sơ.",
+      });
     } finally {
       setLoading(false);
     }
@@ -71,11 +85,15 @@ const Profile = () => {
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem("token");
+      await clearTokens();
       await clearAllCache();
       dispatch({ type: "logout" });
     } catch (error) {
-      Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể đăng xuất.' });
+      Toast.show({
+        type: "error",
+        text1: "Lỗi",
+        text2: "Không thể đăng xuất.",
+      });
     }
   };
 
@@ -96,24 +114,41 @@ const Profile = () => {
     setUpdateLoading(true);
     try {
       const formData = new FormData();
-      formData.append("firstName", field === "firstName" ? editedData : (user?.firstName || ""));
-      formData.append("lastName", field === "lastName" ? editedData : (user?.lastName || ""));
-      formData.append("dob", field === "dob" ? editedData : (user?.dob || ""));
+      formData.append(
+        "firstName",
+        field === "firstName" ? editedData : user?.firstName || ""
+      );
+      formData.append(
+        "lastName",
+        field === "lastName" ? editedData : user?.lastName || ""
+      );
+      formData.append("dob", field === "dob" ? editedData : user?.dob || "");
 
       if (field === "avatar") {
         formData.append("avatar", {
           uri: editedData.uri,
           name: editedData.fileName || "avatar.jpg",
-          type: editedData.type && editedData.type.startsWith("image/") ? editedData.type : "image/jpeg",
+          type:
+            editedData.type && editedData.type.startsWith("image/")
+              ? editedData.type
+              : "image/jpeg",
         });
       }
 
       const response = await updateProfile(formData);
       dispatch({ type: "login", payload: response });
-      Toast.show({ type: 'success', text1: 'Thành công', text2: 'Đã cập nhật thông tin.' });
+      Toast.show({
+        type: "success",
+        text1: "Thành công",
+        text2: "Đã cập nhật thông tin.",
+      });
     } catch (err) {
       console.error("Update profile error:", err);
-      Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể cập nhật thông tin.' });
+      Toast.show({
+        type: "error",
+        text1: "Lỗi",
+        text2: "Không thể cập nhật thông tin.",
+      });
     } finally {
       setUpdateLoading(false);
     }
@@ -125,76 +160,108 @@ const Profile = () => {
     const now = new Date();
     const diffMs = now.getTime() - lastUpdate.getTime();
     const cooldownMs = 7 * 24 * 60 * 60 * 1000;
-    
+
     if (diffMs >= cooldownMs) {
       return { canUpdate: true, countdownStr: "" };
     }
-    
+
     const remainingMs = cooldownMs - diffMs;
     const days = Math.floor(remainingMs / (24 * 60 * 60 * 1000));
-    const hours = Math.floor((remainingMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+    const hours = Math.floor(
+      (remainingMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
+    );
     const countdownStr = `Bạn có thể thay đổi mục tiêu sau: ${days} ngày ${hours} giờ`;
     return { canUpdate: false, countdownStr };
   };
 
   const handleLearningUpdate = async (dailyTarget, goal) => {
-    const { canUpdate, countdownStr } = getCooldownInfo(learningProfile?.profileUpdatedAt);
-    
+    const { canUpdate, countdownStr } = getCooldownInfo(
+      learningProfile?.profileUpdatedAt
+    );
+
     if (!canUpdate) {
-        Toast.show({ type: 'info', text1: 'Thông báo', text2: countdownStr });
-        return;
+      Toast.show({ type: "info", text1: "Thông báo", text2: countdownStr });
+      return;
     }
-    
+
     setUpdateLoading(true);
     try {
-        await updateLearningProfile({
-            dailyTarget: dailyTarget || learningProfile?.dailyTarget,
-            goal: goal || learningProfile?.goal
-        });
-        
-        Toast.show({ type: 'success', text1: 'Thành công', text2: 'Đã cập nhật mục tiêu học tập.' });
-        fetchAllData();
+      await updateLearningProfile({
+        dailyTarget: dailyTarget || learningProfile?.dailyTarget,
+        goal: goal || learningProfile?.goal,
+      });
+
+      Toast.show({
+        type: "success",
+        text1: "Thành công",
+        text2: "Đã cập nhật mục tiêu học tập.",
+      });
+      fetchAllData();
     } catch (err) {
-        console.error("Update learning profile error:", err);
-        Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Không thể cập nhật mục tiêu.' });
+      console.error("Update learning profile error:", err);
+      Toast.show({
+        type: "error",
+        text1: "Lỗi",
+        text2: "Không thể cập nhật mục tiêu.",
+      });
     } finally {
-        setUpdateLoading(false);
+      setUpdateLoading(false);
     }
   };
 
+  // ✅ Fix: KHÔNG set enabled=true vội, chờ kết quả từ picker
   const handleToggleReminder = async (val) => {
-    setReminderEnabled(val);
     if (!val) {
+      setReminderEnabled(false);
       await cancelAllReminders();
-      Toast.show({ type: "info", text1: "Thông báo", text2: "Đã tắt nhắc nhở hàng ngày" });
+      Toast.show({
+        type: "info",
+        text1: "Thông báo",
+        text2: "Đã tắt nhắc nhở hàng ngày",
+      });
     } else {
+      // Chỉ mở picker, chưa set enabled — chờ onTimeChange xác nhận
       setShowTimePicker(true);
     }
   };
 
   const onTimeChange = async (event, selectedDate) => {
     setShowTimePicker(false);
-    if (selectedDate) {
-      setReminderTime(selectedDate);
-      const success = await scheduleDailyReminder(selectedDate.getHours(), selectedDate.getMinutes());
-      if (success) {
-        setReminderEnabled(true);
-        Toast.show({ 
-          type: "success", 
-          text1: "Thành công", 
-          text2: `Đã đặt nhắc nhở vào lúc ${selectedDate.getHours().toString().padStart(2, '0')}:${selectedDate.getMinutes().toString().padStart(2, '0')} hàng ngày` 
-        });
-      } else {
-        setReminderEnabled(false);
-        Toast.show({ 
-          type: "error", 
-          text1: "Lỗi", 
-          text2: "Không thể thiết lập nhắc nhở. Vui lòng kiểm tra lại quyền thông báo của ứng dụng!" 
-        });
-      }
-    } else if (event.type === 'dismissed') {
+
+    // ✅ User bấm Cancel / dismiss → giữ nguyên trạng thái cũ
+    if (event.type === "dismissed" || !selectedDate) {
       const settings = await getReminderSettings();
       setReminderEnabled(settings.enabled);
+      return;
+    }
+
+    // ✅ User chọn giờ xong mới xử lý
+    setReminderTime(selectedDate);
+    const success = await scheduleDailyReminder(
+      selectedDate.getHours(),
+      selectedDate.getMinutes()
+    );
+
+    if (success) {
+      setReminderEnabled(true);
+      Toast.show({
+        type: "success",
+        text1: "Thành công",
+        text2: `Đã đặt nhắc nhở lúc ${selectedDate
+          .getHours()
+          .toString()
+          .padStart(2, "0")}:${selectedDate
+          .getMinutes()
+          .toString()
+          .padStart(2, "0")} hàng ngày`,
+      });
+    } else {
+      setReminderEnabled(false);
+      Toast.show({
+        type: "error",
+        text1: "Lỗi",
+        text2: "Không thể thiết lập nhắc nhở. Kiểm tra lại quyền thông báo!",
+      });
     }
   };
 
