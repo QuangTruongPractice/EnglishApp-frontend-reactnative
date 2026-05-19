@@ -496,6 +496,29 @@ const styles = StyleSheet.create({
     opacity: 0.3,
     backgroundColor: "#f5f5f5",
   },
+  correctAnswerBlock: {
+    marginTop: 20,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  correctAnswerLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#475569",
+    marginBottom: 6,
+  },
+  correctAnswerText: {
+    fontSize: 16,
+    color: "#334155",
+    lineHeight: 24,
+  },
+  correctAnswerBold: {
+    fontWeight: "800",
+    color: "#0f766e",
+  },
 
   // Match
   matchRow: {

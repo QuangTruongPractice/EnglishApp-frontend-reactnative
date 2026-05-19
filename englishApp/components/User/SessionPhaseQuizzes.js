@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Animated } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import styles from "../../styles/SessionStyles";
 
-const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus, onTabChange }) => {
+const SessionPhaseQuizzes = ({ quiz, isAnswered, onSelectOption, initialAnswerStatus, onTabChange }) => {
   const [selectedOption, setSelectedOption] = useState(null);
-  const [isAnswered, setIsAnswered] = useState(false);
   
   // For MATCH type
   const [leftSelected, setLeftSelected] = useState(null);
@@ -15,22 +14,43 @@ const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus, onTabChange 
   // For FILL type
   const [fillValue, setFillValue] = useState(null);
 
+  const normalizeAnswer = (value) => {
+    if (value === null || value === undefined) return "";
+    return String(value)
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ");
+  };
+
+  const applyAnswerCasing = (text, pattern) => {
+    if (!text) return text;
+    if (!pattern) return text;
+    if (pattern === pattern.toUpperCase()) return text.toUpperCase();
+    if (pattern === pattern.toLowerCase()) return text.toLowerCase();
+    if (pattern[0] === pattern[0].toUpperCase() && pattern.slice(1) === pattern.slice(1).toLowerCase()) {
+      return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+    }
+    return text;
+  };
+
+  const getDisplayAnswer = (answer) => {
+    const correctAns = quiz.answers.find(a => a.isCorrect);
+    return applyAnswerCasing(answer, correctAns?.answer);
+  };
+
   useEffect(() => {
     setLeftSelected(null);
     setRightSelected(null);
     setMatches([]);
     setFillValue(null);
+    setSelectedOption(null);
     
-    if (initialAnswerStatus !== null && initialAnswerStatus !== undefined) {
-      setSelectedOption(null);
-      setIsAnswered(true);
-      // We don't have the user's specific past inputs, but setting isAnswered=true 
-      // is enough to show the correct answer and lock the quiz.
-    } else {
-      setSelectedOption(null);
-      setIsAnswered(false);
+    if (initialAnswerStatus === null || initialAnswerStatus === undefined) {
+      if (onSelectOption) onSelectOption(null);
     }
-  }, [quiz, initialAnswerStatus]);
+  }, [quiz]);
 
   if (!quiz) return null;
 
@@ -38,16 +58,15 @@ const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus, onTabChange 
     if (isAnswered) return;
     const option = quiz.answers.find(a => a.id === optionId);
     setSelectedOption(optionId);
-    setIsAnswered(true);
-    onAnswer(option.isCorrect);
+    if (onSelectOption) onSelectOption(option.isCorrect);
   };
 
   const handleFillPress = (word) => {
     if (isAnswered) return;
     setFillValue(word);
-    setIsAnswered(true);
     const correctAns = quiz.answers.find(a => a.isCorrect);
-    onAnswer(word === correctAns.answer);
+    const isCorrect = normalizeAnswer(word) === normalizeAnswer(correctAns?.answer);
+    if (onSelectOption) onSelectOption(isCorrect);
   };
 
   const handleMatchLeft = (id) => {
@@ -75,8 +94,7 @@ const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus, onTabChange 
       setRightSelected(null);
       
       if (newMatches.length === quiz.left_items.length) {
-        setIsAnswered(true);
-        onAnswer(true);
+        if (onSelectOption) onSelectOption(true);
       }
     } else {
       // Shaky animation or reset
@@ -117,13 +135,14 @@ const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus, onTabChange 
         const isSelected = selectedOption === answer.id;
         const isCorrect = isAnswered && answer.isCorrect;
         const isWrong = isAnswered && isSelected && !answer.isCorrect;
+        const showSelected = isSelected && !isAnswered;
 
         return (
           <TouchableOpacity
             key={answer.id}
             style={[
               styles.quizOption,
-              isSelected && styles.optionSelected,
+              showSelected && styles.optionSelected,
               isCorrect && styles.optionCorrect,
               isWrong && styles.optionWrong,
             ]}
@@ -131,11 +150,15 @@ const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus, onTabChange 
             activeOpacity={0.7}
             disabled={isAnswered}
           >
-            <View style={[styles.optionIndex, (isCorrect || isWrong) && { backgroundColor: "transparent" }]}>
+            <View style={[
+              styles.optionIndex,
+              isCorrect && { backgroundColor: "#ecfdf5" },
+              isWrong && { backgroundColor: "#fef2f2" },
+            ]}>
               {isCorrect ? (
-                <Icon name="check-circle" size={24} color="#10b981" />
+                <Icon name="check" size={18} color="#10b981" />
               ) : isWrong ? (
-                <Icon name="close-circle" size={24} color="#ef4444" />
+                <Icon name="close" size={18} color="#ef4444" />
               ) : (
                 <Text style={styles.optionIndexText}>{letters[index]}</Text>
               )}
@@ -161,25 +184,37 @@ const SessionPhaseQuizzes = ({ quiz, onAnswer, initialAnswerStatus, onTabChange 
         <Text style={styles.quizQuestion}>Chọn từ đúng để hoàn thành câu:</Text>
         <View style={styles.fillContainer}>
           <Text style={styles.fillText}>
-            "{quiz.text.split("...")[0]} 
+            {"\""}{quiz.text.split("...")[0]} 
             <Text style={[styles.fillBlank, isCorrect && { color: "#10b981" }, isWrong && { color: "#ef4444" }]}>
               {fillValue || "_______"}
             </Text>
-            {quiz.text.split("...")[1]}"
+            {quiz.text.split("...")[1]}{"\""}
           </Text>
         </View>
 
+        {isAnswered && (
+          <View style={styles.correctAnswerBlock}>
+            <Text style={styles.correctAnswerLabel}>Đáp án đúng:</Text>
+            <Text style={styles.correctAnswerText}>
+              {quiz.text.split("...")[0]}
+              <Text style={styles.correctAnswerBold}>{quiz.answers.find(a => a.isCorrect)?.answer}</Text>
+              {quiz.text.split("...")[1]}
+            </Text>
+          </View>
+        )}
+
         <View style={styles.wordBank}>
           {quiz.answers.map((answer) => {
-            const isUsed = fillValue === answer.answer;
+            const displayAnswer = getDisplayAnswer(answer.answer);
+            const isUsed = fillValue === displayAnswer;
             return (
               <TouchableOpacity
                 key={answer.id}
                 style={[styles.wordChip, isUsed && styles.wordChipUsed]}
-                onPress={() => handleFillPress(answer.answer)}
+                onPress={() => handleFillPress(displayAnswer)}
                 disabled={isAnswered}
               >
-                <Text style={styles.wordChipText}>{answer.answer}</Text>
+                <Text style={styles.wordChipText}>{displayAnswer}</Text>
               </TouchableOpacity>
             );
           })}

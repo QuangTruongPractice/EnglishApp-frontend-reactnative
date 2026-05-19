@@ -253,7 +253,6 @@ export const fetchRecommendedTopics = async () => {
 
 export const fetchDailySession = async () => {
   const token = await getToken();
-  console.log("🔑 TOKEN:", token ? `${token.substring(0, 30)}...` : "NULL");
   const res = await authLearningApis(token).post(endpoints["session"], null);
   return res.data;
 };

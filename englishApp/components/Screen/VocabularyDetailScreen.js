@@ -361,53 +361,6 @@ const VocabularyDetailScreen = ({
                           <Text style={styles.pronTipText}>{step2.details[selectedPhonemeIndex].tip}</Text>
                         </View>
                       )}
-
-                      {/* Expected vs User Phonemes */}
-                      {step2.expected_phonemes && (
-                        <View style={styles.pronPhonemeComparison}>
-                          <Text style={styles.pronComparisonLabel}>CHUỖI MONG ĐỢI</Text>
-                          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                            <View style={styles.pronPhonemeRow}>
-                              {step2.expected_phonemes.map((p, i) => (
-                                <View key={i} style={styles.pronPhonemeMiniCell}>
-                                  <Text style={styles.pronPhonemeMiniText}>{p}</Text>
-                                </View>
-                              ))}
-                            </View>
-                          </ScrollView>
-                        </View>
-                      )}
-
-                      {step2.user_phonemes && (
-                        <View style={styles.pronPhonemeComparison}>
-                          <Text style={styles.pronComparisonLabel}>BẠN ĐÃ PHÁT ÂM</Text>
-                          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                            <View style={styles.pronPhonemeRow}>
-                              {step2.user_phonemes.map((p, i) => {
-                                const expected = step2.expected_phonemes?.[i];
-                                const isMatch = expected === p;
-                                return (
-                                  <View
-                                    key={i}
-                                    style={[
-                                      styles.pronPhonemeMiniCell,
-                                      {
-                                        backgroundColor: isMatch ? '#f0fdf4' : '#fef2f2',
-                                        borderColor: isMatch ? '#86efac' : '#fca5a5',
-                                      }
-                                    ]}
-                                  >
-                                    <Text style={[
-                                      styles.pronPhonemeMiniText,
-                                      { color: isMatch ? '#166534' : '#991b1b' }
-                                    ]}>{p}</Text>
-                                  </View>
-                                );
-                              })}
-                            </View>
-                          </ScrollView>
-                        </View>
-                      )}
                     </View>
                   )}
                 </>

@@ -85,26 +85,19 @@ const processQueue = (error, token = null) => {
 
 const addInterceptors = (instance, isAuth = false) => {
     instance.interceptors.request.use(async (config) => {
-        console.log(`📤 REQUEST: [${config.method?.toUpperCase()}] ${config.baseURL}${config.url}`);
-        
         if (isAuth) {
             const token = await AsyncStorage.getItem("token");
             if (token) {
                 config.headers['Authorization'] = `Bearer ${token}`;
             }
         }
-
-        if (config.data) console.log('📦 DATA:', config.data);
         return config;
     }, (error) => Promise.reject(error));
 
     instance.interceptors.response.use(
         (response) => {
-            console.log(`📥 RESPONSE: [${response.status}] ${response.config.url}`);
-            
             // Check for HTML response when JSON was expected (Backend redirect)
             if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
-                console.warn('⚠️ Received HTML instead of JSON. Possible session expiration.');
                 if (onUnauthorizedCallback) {
                     onUnauthorizedCallback();
                 }
@@ -119,8 +112,10 @@ const addInterceptors = (instance, isAuth = false) => {
                 // Handle 401 Unauthorized
                 if ((error.response.status === 401 || error.response.status === 403) && !originalRequest._retry) {
                     
-                    // If it's a login or refresh request, don't try to refresh
-                    if (originalRequest.url === endpoints['login'] || originalRequest.url === endpoints['refresh-token']) {
+                    const isLoginOrRefresh = originalRequest.url?.includes(endpoints['login']) || 
+                                           originalRequest.url?.includes(endpoints['refresh-token']);
+
+                    if (isLoginOrRefresh) {
                         if (onUnauthorizedCallback) onUnauthorizedCallback();
                         return Promise.reject(error);
                     }
@@ -129,8 +124,8 @@ const addInterceptors = (instance, isAuth = false) => {
                         return new Promise(function(resolve, reject) {
                             failedQueue.push({ resolve, reject });
                         }).then(token => {
-                            originalRequest.headers['Authorization'] = 'Bearer ' + token;
-                            return axios(originalRequest);
+                            originalRequest.headers['Authorization'] = `Bearer ${token}`;
+                            return instance(originalRequest);
                         }).catch(err => {
                             return Promise.reject(err);
                         });
@@ -143,7 +138,6 @@ const addInterceptors = (instance, isAuth = false) => {
                         const refreshToken = await AsyncStorage.getItem("refreshToken");
                         if (!refreshToken) throw new Error("No refresh token");
 
-                        console.log("🔄 Attempting to refresh token...");
                         const res = await axios.post(`${IDENTITY_BASE_URL}${endpoints['refresh-token']}`, {
                             token: refreshToken
                         });
@@ -153,16 +147,14 @@ const addInterceptors = (instance, isAuth = false) => {
                             await AsyncStorage.setItem("token", token);
                             await AsyncStorage.setItem("refreshToken", newRefreshToken);
 
-                            console.log("✅ Token refreshed successfully!");
                             processQueue(null, token);
                             
                             originalRequest.headers['Authorization'] = `Bearer ${token}`;
-                            return axios(originalRequest);
+                            return instance(originalRequest);
                         } else {
-                            throw new Error("Refresh failed with code " + res.data.code);
+                            throw new Error("Refresh failed");
                         }
                     } catch (refreshError) {
-                        console.error("❌ Refresh token failed:", refreshError);
                         processQueue(refreshError, null);
                         if (onUnauthorizedCallback) onUnauthorizedCallback();
                         return Promise.reject(refreshError);
@@ -170,8 +162,6 @@ const addInterceptors = (instance, isAuth = false) => {
                         isRefreshing = false;
                     }
                 }
-            } else {
-                console.log('🌐 NETWORK ERROR:', error.message);
             }
             return Promise.reject(error);
         }

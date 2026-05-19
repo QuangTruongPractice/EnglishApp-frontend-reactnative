@@ -38,6 +38,7 @@ const DailySession = () => {
   const [isAnswered, setIsAnswered] = useState(false);
   const [totalXP, setTotalXP] = useState(0);
   const [levelUpData, setLevelUpData] = useState(null);
+  const [selectedCorrectness, setSelectedCorrectness] = useState(null);
 
   // Animation values for XP
   const [awardedXP, setAwardedXP] = useState(0);
@@ -58,11 +59,17 @@ const DailySession = () => {
   }, []);
 
   useEffect(() => {
-    setIsAnswered(false);
+    if (currentPhase === PHASES.QUIZZES) {
+      const isAlreadyAnswered = session?.quizzes?.[currentIndex]?.isCorrect !== null && session?.quizzes?.[currentIndex]?.isCorrect !== undefined;
+      setIsAnswered(isAlreadyAnswered);
+    } else {
+      setIsAnswered(false);
+    }
+    setSelectedCorrectness(null);
     if (currentPhase === PHASES.QUIZZES) {
       quizStartTimeRef.current = Date.now();
     }
-  }, [currentIndex, currentPhase]);
+  }, [currentIndex, currentPhase, session]);
 
   const loadSession = async () => {
     try {
@@ -114,6 +121,32 @@ const DailySession = () => {
     } catch (e) {
       // Lỗi phát âm thanh, bỏ qua
     }
+  };
+
+  const playFeedbackSound = async (isCorrect) => {
+    try {
+      if (sound) await sound.unloadAsync();
+      const uri = isCorrect
+        ? "https://www.myinstants.com/media/sounds/duolingo-correct.mp3"
+        : "https://www.myinstants.com/media/sounds/duolingo-wrong.mp3";
+
+      const { sound: newSound } = await Audio.Sound.createAsync({ uri });
+      setSound(newSound);
+      await newSound.playAsync();
+    } catch (e) {
+      // Ignore audio errors
+    }
+  };
+
+  const currentQuiz = session?.quizzes?.[currentIndex]?.quiz;
+
+  const handleQuizSelect = (isCorrect, type) => {
+    if (type === "MATCH" && isCorrect === true) {
+      playFeedbackSound(true);
+      onQuizAnswer(true);
+      return;
+    }
+    setSelectedCorrectness(isCorrect);
   };
 
   const completeSession = async () => {
@@ -266,6 +299,15 @@ const DailySession = () => {
     setIsAnswered(true);
     const quiz = session.quizzes[currentIndex];
 
+    // Mark the current quiz as answered in local session state
+    // so useEffect won't reset isAnswered when session changes
+    const quizIdx = currentIndex;
+    setSession(prev => {
+      const updatedQuizzes = [...prev.quizzes];
+      updatedQuizzes[quizIdx] = { ...updatedQuizzes[quizIdx], isCorrect };
+      return { ...prev, quizzes: updatedQuizzes };
+    });
+
     let awardedXp = isCorrect ? (quiz.xpAwarded || 3) : 0;
 
     try {
@@ -364,7 +406,8 @@ const DailySession = () => {
           <SessionPhaseQuizzes
             key={`quiz-${session.quizzes[currentIndex]?.id}`}
             quiz={session.quizzes[currentIndex]?.quiz}
-            onAnswer={onQuizAnswer}
+            isAnswered={isAnswered}
+            onSelectOption={(isCorrect) => handleQuizSelect(isCorrect, currentQuiz?.type)}
             initialAnswerStatus={session.quizzes[currentIndex]?.isCorrect}
             onTabChange={handleTabChange}
           />
@@ -454,26 +497,52 @@ const DailySession = () => {
           )}
 
           <View style={styles.footer}>
-            <TouchableOpacity
-              style={[styles.buttonSecondary, currentPhase === PHASES.MEANINGS && currentIndex === 0 && { opacity: 0.5 }]}
-              onPress={handleBack}
-              disabled={currentPhase === PHASES.MEANINGS && currentIndex === 0}
-            >
-              <Icon name="arrow-left" size={20} color="#666" style={{ marginRight: 8 }} />
-              <Text style={styles.buttonTextSecondary}>Trước</Text>
-            </TouchableOpacity>
+            {currentPhase !== PHASES.QUIZZES && (
+              <TouchableOpacity
+                style={[styles.buttonSecondary, currentPhase === PHASES.MEANINGS && currentIndex === 0 && { opacity: 0.5 }]}
+                onPress={handleBack}
+                disabled={currentPhase === PHASES.MEANINGS && currentIndex === 0}
+              >
+                <Icon name="arrow-left" size={20} color="#666" style={{ marginRight: 8 }} />
+                <Text style={styles.buttonTextSecondary}>Trước</Text>
+              </TouchableOpacity>
+            )}
 
-            <TouchableOpacity
-              style={[
-                styles.buttonPrimary,
-                (currentPhase === PHASES.QUIZZES && !isAnswered && session.quizzes[currentIndex]?.isCorrect === null) && { opacity: 0.5 }
-              ]}
-              onPress={handleNext}
-              disabled={currentPhase === PHASES.QUIZZES && !isAnswered && session.quizzes[currentIndex]?.isCorrect === null}
-            >
-              <Text style={styles.buttonTextPrimary}>Tiếp theo</Text>
-              <Icon name="arrow-right" size={20} color="#fff" />
-            </TouchableOpacity>
+            {currentPhase === PHASES.QUIZZES && !isAnswered && currentQuiz?.type !== 'MATCH' ? (
+              <TouchableOpacity
+                style={[styles.buttonPrimary, { flex: 1, marginLeft: 0 }, selectedCorrectness === null && { opacity: 0.5 }]}
+                onPress={() => {
+                  if (selectedCorrectness !== null) {
+                    playFeedbackSound(selectedCorrectness);
+                    onQuizAnswer(selectedCorrectness);
+                  }
+                }}
+                disabled={selectedCorrectness === null}
+              >
+                <Text style={styles.buttonTextPrimary}>Xác nhận</Text>
+                <Icon name="check" size={20} color="#fff" />
+              </TouchableOpacity>
+            ) : currentPhase === PHASES.QUIZZES && !isAnswered && currentQuiz?.type === 'MATCH' ? (
+              <TouchableOpacity
+                style={[styles.buttonPrimary, { flex: 1, marginLeft: 0, opacity: 0.5 }]}
+                disabled
+              >
+                <Text style={styles.buttonTextPrimary}>Hoàn thành ghép đôi để tiếp tục</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[
+                  styles.buttonPrimary,
+                  currentPhase === PHASES.QUIZZES && { flex: 1, marginLeft: 0 },
+                  (currentPhase === PHASES.WRITING && !isAnswered) && { opacity: 0.5 }
+                ]}
+                onPress={handleNext}
+                disabled={currentPhase === PHASES.WRITING && !isAnswered}
+              >
+                <Text style={styles.buttonTextPrimary}>Tiếp theo</Text>
+                <Icon name="arrow-right" size={20} color="#fff" />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       )}
