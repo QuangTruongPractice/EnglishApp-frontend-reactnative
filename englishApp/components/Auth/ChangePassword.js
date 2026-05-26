@@ -5,7 +5,7 @@ import { changePasswordRequest } from "../../configs/LoadData";
 import ResetPasswordScreen from "../Screen/ResetPasswordScreen";
 
 const ChangePassword = ({ route }) => {
-  const { email } = route.params;
+  const { email, resetToken } = route.params;
   const nav = useNavigation();
 
   const [newPassword, setNewPassword] = useState("");
@@ -55,7 +55,7 @@ const ChangePassword = ({ route }) => {
 
     setLoading(true);
     try {
-      const res = await changePasswordRequest(email, newPassword);
+      const res = await changePasswordRequest(resetToken, newPassword);
       Toast.show({
         type: "success",
         text1: "Thành công",
@@ -63,9 +63,26 @@ const ChangePassword = ({ route }) => {
       });
       nav.navigate("Login");
     } catch (err) {
-      const errMsg =
-        err.response?.data?.message || err.message || "Có lỗi xảy ra";
-      Toast.show({ type: "error", text1: "Lỗi", text2: errMsg });
+      const errorCode = err.response?.data?.code;
+      if (errorCode === 1019) {
+        Toast.show({
+          type: "error",
+          text1: "Lỗi",
+          text2: "Phiên đổi mật khẩu không hợp lệ",
+        });
+        nav.navigate("ForgotPassword");
+      } else if (errorCode === 1020) {
+        Toast.show({
+          type: "error",
+          text1: "Lỗi",
+          text2: "Phiên đổi mật khẩu đã hết hạn (quá 10 phút)",
+        });
+        nav.navigate("ForgotPassword");
+      } else {
+        const errMsg =
+          err.response?.data?.message || err.message || "Có lỗi xảy ra";
+        Toast.show({ type: "error", text1: "Lỗi", text2: errMsg });
+      }
     } finally {
       setLoading(false);
     }

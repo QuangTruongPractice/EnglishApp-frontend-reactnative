@@ -62,6 +62,8 @@ const ForgotPassword = () => {
     try {
       const res = await verifyOtpConfirm(email.trim(), otp.trim());
       setMsg(res.message);
+      
+      const resetToken = res.result;
 
       Toast.show({
         type: "success",
@@ -70,14 +72,31 @@ const ForgotPassword = () => {
       });
 
       setTimeout(() => {
-        nav.navigate("ChangePassword", { email });
+        nav.navigate("ChangePassword", { email, resetToken });
       }, 2000);
     } catch (error) {
-      Toast.show({
-        type: "error",
-        text1: "Lỗi",
-        text2: error.message,
-      });
+      const errorCode = error.response?.data?.code;
+      
+      if (errorCode === 1017) {
+        Toast.show({
+          type: "error",
+          text1: "Lỗi",
+          text2: "Mã OTP không đúng, vui lòng thử lại",
+        });
+      } else if (errorCode === 1018) {
+        Toast.show({
+          type: "error",
+          text1: "Lỗi",
+          text2: "Mã OTP đã hết hạn",
+        });
+        handleBackToEmail();
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Lỗi",
+          text2: error.response?.data?.message || error.message,
+        });
+      }
     } finally {
       setLoading(false);
     }

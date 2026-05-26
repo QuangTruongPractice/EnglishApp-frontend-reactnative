@@ -170,10 +170,18 @@ const VocabularyDetailScreen = ({
             style,
             {
               position: 'absolute', top: 0, bottom: 0, left: 0, right: 0,
-              color: 'transparent', padding: 0, margin: 0
+              color: 'rgba(0, 0, 0, 0)',
+              padding: 0,
+              paddingTop: 0,
+              paddingBottom: 0,
+              paddingLeft: 0,
+              paddingRight: 0,
+              margin: 0,
+              textAlignVertical: 'top'
             }
           ]}
           value={text}
+          underlineColorAndroid="transparent"
           showSoftInputOnFocus={false}
           caretHidden={true}
           selectionColor="rgba(99, 102, 241, 0.4)"
@@ -205,7 +213,17 @@ const VocabularyDetailScreen = ({
     const processingTime = resultData?.processing_time;
 
     const correctCount = step2?.details?.filter(d => d.status === 'correct').length || 0;
-    const wrongCount = step2?.details?.filter(d => d.status !== 'correct').length || 0;
+    const slightCount = step2?.details?.filter(d => d.status === 'slight' || String(d.status).includes('slight')).length || 0;
+    const wrongCount = step2?.details?.filter(d => d.status !== 'correct' && d.status !== 'slight' && !String(d.status).includes('slight') && d.status !== 'space').length || 0;
+
+    const getPhonemeColor = (status) => {
+      const s = String(status || "").toLowerCase();
+      if (s === 'correct') return '#22c55e';
+      if (s === 'slight' || s.includes('slight')) return '#eab308';
+      return '#ef4444';
+    };
+
+    const isSuccess = practiceResult?.success !== false && resultData?.success !== false;
 
     return (
       <Modal
@@ -241,13 +259,15 @@ const VocabularyDetailScreen = ({
               </View>
 
               {/* Handle success: false (Low Recognition) */}
-              {practiceResult.success === false && (
+              {!isSuccess && (
                 <View style={styles.pronErrorContainer}>
                   <View style={styles.pronErrorIcon}>
                     <Ionicons name="mic-off" size={32} color="#f56565" />
                   </View>
                   <Text style={styles.pronErrorText}>Vui lòng phát âm lại</Text>
-                  <Text style={styles.pronErrorMessage}>{practiceResult.message || "Không nhận diện được giọng nói."}</Text>
+                  <Text style={styles.pronErrorMessage}>
+                    {resultData?.message || practiceResult?.message || "Không nhận diện được giọng nói."}
+                  </Text>
                 </View>
               )}
 
@@ -255,7 +275,7 @@ const VocabularyDetailScreen = ({
               <Text style={styles.pronExpectedText}>&quot;{practiceResult.example}&quot;</Text>
 
               {/* Only show scores and analysis if success: true */}
-              {practiceResult.success !== false && (
+              {isSuccess && (
                 <>
                   {/* Three Score Circles */}
                   <View style={styles.pronScoresCard}>
@@ -312,6 +332,9 @@ const VocabularyDetailScreen = ({
                         <View style={styles.pronSummaryBadgeCorrect}>
                           <Text style={styles.pronSummaryBadgeText}>✓ {correctCount} đúng</Text>
                         </View>
+                        <View style={styles.pronSummaryBadgeSlight}>
+                          <Text style={styles.pronSummaryBadgeText}>~ {slightCount} slight</Text>
+                        </View>
                         <View style={styles.pronSummaryBadgeWrong}>
                           <Text style={styles.pronSummaryBadgeText}>✗ {wrongCount} sai</Text>
                         </View>
@@ -320,8 +343,27 @@ const VocabularyDetailScreen = ({
                       {/* Phoneme Grid with Touch Interaction */}
                       <View style={styles.pronPhonemeGrid}>
                         {step2.details.map((item, idx) => {
-                          const isCorrect = item.status === 'correct';
+                          const status = String(item.status || "").toLowerCase();
+                          if (status === 'space') return null;
                           const isSelected = selectedPhonemeIndex === idx;
+                          
+                          let bgColor = '#fef2f2';
+                          let borderColor = '#fca5a5';
+                          let textColor = '#991b1b';
+                          let indicatorColor = '#ef4444';
+                          
+                          if (status === 'correct') {
+                            bgColor = '#f0fdf4';
+                            borderColor = '#86efac';
+                            textColor = '#166534';
+                            indicatorColor = '#22c55e';
+                          } else if (status === 'slight' || status.includes('slight')) {
+                            bgColor = '#fefcbf';
+                            borderColor = '#fef08a';
+                            textColor = '#854d0e';
+                            indicatorColor = '#eab308';
+                          }
+
                           return (
                             <TouchableOpacity
                               key={idx}
@@ -330,21 +372,21 @@ const VocabularyDetailScreen = ({
                               style={[
                                 styles.pronPhonemeCell,
                                 {
-                                  backgroundColor: isCorrect ? '#f0fdf4' : '#fef2f2',
-                                  borderColor: isCorrect ? '#86efac' : '#fca5a5',
+                                  backgroundColor: bgColor,
+                                  borderColor: borderColor,
                                 },
                                 isSelected && styles.pronPhonemeCellSelected
                               ]}
                             >
                               <Text style={[
                                 styles.pronPhonemeCellText,
-                                { color: isCorrect ? '#166534' : '#991b1b' }
+                                { color: textColor }
                               ]}>
                                 {item.phoneme}
                               </Text>
                               <View style={[
                                 styles.pronPhonemeIndicator,
-                                { backgroundColor: isCorrect ? '#22c55e' : '#ef4444' }
+                                { backgroundColor: indicatorColor }
                               ]} />
                             </TouchableOpacity>
                           );
@@ -361,6 +403,106 @@ const VocabularyDetailScreen = ({
                           <Text style={styles.pronTipText}>{step2.details[selectedPhonemeIndex].tip}</Text>
                         </View>
                       )}
+
+                      {/* Compact Phoneme Flow — grouped by word */}
+                      {(() => {
+                        // Split phoneme details into word groups using space tokens as delimiters
+                        const wordGroups = [];
+                        let currentGroup = [];
+                        (step2.details || []).forEach((item) => {
+                          if (item.status === 'space') {
+                            if (currentGroup.length > 0) {
+                              wordGroups.push(currentGroup);
+                              currentGroup = [];
+                            }
+                          } else {
+                            currentGroup.push(item);
+                          }
+                        });
+                        if (currentGroup.length > 0) wordGroups.push(currentGroup);
+
+                        return (
+                          <View style={{
+                            backgroundColor: '#f8fafc',
+                            borderRadius: 16,
+                            paddingVertical: 14,
+                            paddingHorizontal: 12,
+                            marginTop: 20,
+                            borderWidth: 1,
+                            borderColor: '#e2e8f0',
+                            width: '100%',
+                          }}>
+                            {/* Phoneme word groups — wraps between words */}
+                            <View style={{
+                              flexDirection: 'row',
+                              flexWrap: 'wrap',
+                              justifyContent: 'center',
+                              alignItems: 'flex-end',
+                              gap: 10,
+                              rowGap: 14,
+                            }}>
+                              {wordGroups.map((group, gIdx) => (
+                                <View key={gIdx} style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'flex-end',
+                                }}>
+                                  {group.map((item, pIdx) => {
+                                    const phonemeColor = getPhonemeColor(item.status);
+                                    return (
+                                      <View key={pIdx} style={{
+                                        alignItems: 'center',
+                                        marginHorizontal: 2,
+                                      }}>
+                                        <Text style={{
+                                          fontSize: 17,
+                                          fontWeight: '700',
+                                          color: phonemeColor,
+                                          marginBottom: 3,
+                                          fontFamily: 'monospace',
+                                          lineHeight: 20,
+                                        }}>
+                                          {item.phoneme}
+                                        </Text>
+                                        <View style={{
+                                          width: 7,
+                                          height: 7,
+                                          borderRadius: 4,
+                                          backgroundColor: phonemeColor,
+                                        }} />
+                                      </View>
+                                    );
+                                  })}
+                                </View>
+                              ))}
+                            </View>
+
+                            {/* Legend */}
+                            <View style={{
+                              flexDirection: 'row',
+                              flexWrap: 'wrap',
+                              justifyContent: 'center',
+                              gap: 14,
+                              marginTop: 14,
+                              paddingTop: 12,
+                              borderTopWidth: 1,
+                              borderTopColor: '#e2e8f0',
+                            }}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: '#22c55e' }} />
+                                <Text style={{ fontSize: 10, fontWeight: '700', color: '#64748b' }}>ĐÚNG</Text>
+                              </View>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: '#eab308' }} />
+                                <Text style={{ fontSize: 10, fontWeight: '700', color: '#64748b' }}>HƠI MISS</Text>
+                              </View>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: '#ef4444' }} />
+                                <Text style={{ fontSize: 10, fontWeight: '700', color: '#64748b' }}>SAI</Text>
+                              </View>
+                            </View>
+                          </View>
+                        );
+                      })()}
                     </View>
                   )}
                 </>

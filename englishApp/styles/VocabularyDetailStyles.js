@@ -765,6 +765,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 10,
   },
+  pronSummaryBadgeSlight: {
+    backgroundColor: '#fefcbf',
+    borderWidth: 1,
+    borderColor: '#fef08a',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
   pronSummaryBadgeWrong: {
     backgroundColor: '#fef2f2',
     borderWidth: 1,

@@ -20,23 +20,6 @@ export const clearTokens = async () => {
   await AsyncStorage.removeItem("refreshToken");
 };
 
-export const refreshAccessToken = async () => {
-  const refreshToken = await getRefreshToken();
-  if (!refreshToken) throw new Error("No refresh token available");
-
-  const res = await IdentityApis.post(endpoints["refresh-token"], {
-    token: refreshToken,
-  });
-
-  if (res.data.code === 1000) {
-    const { token, refreshToken: newRefreshToken } = res.data.result;
-    await saveTokens(token, newRefreshToken);
-    return token;
-  } else {
-    throw new Error("Refresh token failed");
-  }
-};
-
 export const login = async (username, password) => {
   const res = await IdentityApis.post(endpoints["login"], {
     username: username,
@@ -173,9 +156,9 @@ export const verifyOtpConfirm = async (email, otp) => {
   return res.data;
 }
 
-export const changePasswordRequest = async (email, newPassword) => {
+export const changePasswordRequest = async (resetToken, newPassword) => {
   const res = await IdentityApis.post(endpoints["change-password"], {
-    email,
+    resetToken,
     password: newPassword,
   });
   return res.data;

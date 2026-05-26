@@ -3,6 +3,7 @@
     "name": "EnglishApp",
     "slug": "englishApp",
     "version": "1.0.0",
+    "owner": "truongtranquang91",
     "orientation": "portrait",
     "icon": "./assets/logo-image.png",
     "userInterfaceStyle": "light",
@@ -27,7 +28,7 @@
         "SCHEDULE_EXACT_ALARM"
       ],
       "edgeToEdgeEnabled": true,
-      "package": "com.tranquangtruong25.englishApp"
+      "package": "com.truongtranquang91.englishApp"
     },
     "web": {
       "favicon": "./assets/logo-image.png"
@@ -39,7 +40,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "7a3b441d-941b-46f9-9de6-0ae859c13bd9"
+        "projectId": "749b1c30-c986-45f8-8462-992d7207fdb0"
       }
     }
   }
