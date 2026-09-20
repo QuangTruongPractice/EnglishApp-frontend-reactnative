@@ -32,6 +32,7 @@ import DailySession from "./components/User/DailySession";
 import Chatbot from "./components/User/Chatbot";
 import SaveVocabulary from "./components/User/SaveVocabulary";
 import UpdatePasswordScreen from "./components/User/ChangePassword";
+import ProfileCustomization from "./components/User/ProfileCustomization";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const Stack = createNativeStackNavigator();
@@ -217,6 +218,11 @@ export default function App() {
                   <Stack.Screen
                     name="UpdatePassword"
                     component={UpdatePasswordScreen}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="ProfileCustomization"
+                    component={ProfileCustomization}
                     options={{ headerShown: false }}
                   />
                 </>

@@ -1,7 +1,8 @@
-import React from "react";
+﻿import React from "react";
 import { View, TouchableOpacity, Image } from "react-native";
 import { Text } from "react-native-paper";
-import { GoogleSigninButton } from "@react-native-google-signin/google-signin";
+// [TEMPORARY COMMENTED FOR EXPO GO TESTING - UNCOMMENT TO RESTORE]
+// import { GoogleSigninButton } from "@react-native-google-signin/google-signin";
 import styles from "../../styles/LoginStyles";
 import ScreenContainer from "../common/ScreenContainer";
 import CustomInput from "../common/CustomInput";
@@ -54,6 +55,7 @@ const LoginScreen = ({ formData, msg, loading, onInputChange, onLogin, onGoogleS
           <Text style={styles.link}>Quên mật khẩu?</Text>
         </TouchableOpacity>
 
+        {/* [TEMPORARY COMMENTED FOR EXPO GO TESTING - UNCOMMENT TO RESTORE]
         <View style={styles.googleSignInContainer}>
           <GoogleSigninButton
             style={styles.googleButton}
@@ -63,6 +65,7 @@ const LoginScreen = ({ formData, msg, loading, onInputChange, onLogin, onGoogleS
             disabled={loading}
           />
         </View>
+        */}
 
         <View style={styles.registerContainer}>
           <Text>Bạn chưa có tài khoản? </Text>

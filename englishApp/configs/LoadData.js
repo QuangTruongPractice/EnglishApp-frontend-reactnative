@@ -48,7 +48,29 @@ export const register = async (formDataToSend) => {
 export const loadProfile = async () => {
   const token = await getToken();
   const user = await authIdentityApis(token).get(endpoints["profile"]);
-  return user.data;
+  const userData = user.data?.result || user.data;
+
+  // Sync equipped frame if available
+  try {
+    const frames = await fetchAvatarFrames();
+    if (frames && Array.isArray(frames)) {
+      const equipped = frames.find(f => (f.status || '').toLowerCase() === 'equipped');
+      if (equipped) {
+        userData.equippedFrame = {
+          id: equipped.id,
+          frameKey: equipped.frameKey,
+          name: equipped.name,
+          rarity: equipped.rarity,
+        };
+      }
+    }
+  } catch (e) {
+    // Ignore frame sync error
+  }
+
+  // Update user profile cache
+  setCache(CACHE_KEYS.USER_PROFILE, userData);
+  return userData;
 };
 
 export const fetchMainTopicsDetail = async (topicId) => {
@@ -347,3 +369,230 @@ export const fetchAIChat = async (userId, audioUri = null, reset = false) => {
   });
   return response.data;
 };
+
+// =========================================================================
+// GAMIFICATION SERVICE (GEMS, AVATAR FRAMES, ACHIEVEMENTS)
+// =========================================================================
+
+// =========================================================================
+// GAMIFICATION SERVICE (GEMS, AVATAR FRAMES, ACHIEVEMENTS - IDENTITY SERVICE)
+// =========================================================================
+
+const GEMS_STORAGE_KEY = 'user_gems_balance';
+const FRAMES_STORAGE_KEY = 'user_avatar_frames';
+const ACHIEVEMENTS_STORAGE_KEY = 'user_achievements_data';
+
+export const getUserGems = async () => {
+  try {
+    const token = await getToken();
+    if (token) {
+      try {
+        const res = await authIdentityApis(token).get(endpoints['user-gems']);
+        if (res.data?.result !== undefined) {
+          const serverGems = Number(res.data.result) || 0;
+          await AsyncStorage.setItem(GEMS_STORAGE_KEY, String(serverGems));
+          return serverGems;
+        }
+      } catch (e) {
+        // Fallback to local storage
+      }
+    }
+    const saved = await AsyncStorage.getItem(GEMS_STORAGE_KEY);
+    return saved !== null ? parseInt(saved, 10) : 0;
+  } catch (error) {
+    return 0;
+  }
+};
+
+export const saveUserGems = async (gems) => {
+  try {
+    const safeGems = Number(gems) || 0;
+    await AsyncStorage.setItem(GEMS_STORAGE_KEY, String(safeGems));
+    return safeGems;
+  } catch (error) {
+    return Number(gems) || 0;
+  }
+};
+
+export const addGems = async (amount) => {
+  try {
+    const token = await getToken();
+    if (token) {
+      try {
+        const res = await authIdentityApis(token).post(endpoints['reward-gems'], null, {
+          params: { amount },
+        });
+        if (res.data?.result !== undefined) {
+          const updated = Number(res.data.result) || 0;
+          await AsyncStorage.setItem(GEMS_STORAGE_KEY, String(updated));
+          return updated;
+        }
+      } catch (e) {
+        // Fallback to local calculation
+      }
+    }
+    const currentGems = await getUserGems();
+    const newGems = currentGems + (Number(amount) || 0);
+    await saveUserGems(newGems);
+    return newGems;
+  } catch (error) {
+    console.warn('Error adding gems:', error);
+    return 0;
+  }
+};
+
+export const fetchAvatarFrames = async () => {
+  try {
+    const token = await getToken();
+    if (token) {
+      try {
+        const res = await authIdentityApis(token).get(endpoints['avatar-frames']);
+        if (res.data?.result && Array.isArray(res.data.result) && res.data.result.length > 0) {
+          const sorted = res.data.result.slice().sort((a, b) => Number(a.gemCost ?? a.gem_cost ?? 0) - Number(b.gemCost ?? b.gem_cost ?? 0));
+          await AsyncStorage.setItem(FRAMES_STORAGE_KEY, JSON.stringify(sorted));
+          return sorted;
+        }
+      } catch (e) {
+        // Fallback to local storage
+      }
+    }
+    const saved = await AsyncStorage.getItem(FRAMES_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.sort((a, b) => Number(a.gemCost ?? a.gem_cost ?? 0) - Number(b.gemCost ?? b.gem_cost ?? 0));
+      }
+      return parsed;
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
+
+export const buyAvatarFrame = async (frameKey, frameId) => {
+  try {
+    const token = await getToken();
+    if (token) {
+      try {
+        await authIdentityApis(token).post(endpoints['buy-frame'](frameKey));
+      } catch (e) {
+        // Fallback
+      }
+    }
+    // Update local storage
+    const saved = await AsyncStorage.getItem(FRAMES_STORAGE_KEY);
+    if (saved) {
+      const frames = JSON.parse(saved);
+      const updated = frames.map((f) => 
+        (f.frameKey === frameKey || f.id === frameId) ? { ...f, status: 'unlocked' } : f
+      );
+      await AsyncStorage.setItem(FRAMES_STORAGE_KEY, JSON.stringify(updated));
+    }
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+export const equipAvatarFrame = async (frameKey, frameId) => {
+  try {
+    const token = await getToken();
+    if (token) {
+      try {
+        await authIdentityApis(token).post(endpoints['equip-frame'](frameKey));
+      } catch (e) {
+        // Fallback
+      }
+    }
+    // Update local storage
+    const saved = await AsyncStorage.getItem(FRAMES_STORAGE_KEY);
+    if (saved) {
+      const frames = JSON.parse(saved);
+      const updated = frames.map((f) => ({
+        ...f,
+        status: (f.frameKey === frameKey || f.id === frameId) ? 'equipped' : f.status === 'equipped' ? 'unlocked' : f.status,
+      }));
+      await AsyncStorage.setItem(FRAMES_STORAGE_KEY, JSON.stringify(updated));
+    }
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+export const unequipAvatarFrame = async () => {
+  try {
+    const token = await getToken();
+    if (token) {
+      try {
+        await authIdentityApis(token).post(endpoints['unequip-frame']);
+      } catch (e) {
+        // Fallback
+      }
+    }
+    // Update local storage
+    const saved = await AsyncStorage.getItem(FRAMES_STORAGE_KEY);
+    if (saved) {
+      const frames = JSON.parse(saved);
+      const updated = frames.map((f) => ({
+        ...f,
+        status: f.status === 'equipped' ? 'unlocked' : f.status,
+      }));
+      await AsyncStorage.setItem(FRAMES_STORAGE_KEY, JSON.stringify(updated));
+    }
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+export const fetchAchievements = async () => {
+  try {
+    const token = await getToken();
+    if (token) {
+      try {
+        const res = await authIdentityApis(token).get(endpoints['achievements']);
+        if (res.data?.result && Array.isArray(res.data.result) && res.data.result.length > 0) {
+          await AsyncStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(res.data.result));
+          return res.data.result;
+        }
+      } catch (e) {
+        // Fallback to local storage
+      }
+    }
+    const saved = await AsyncStorage.getItem(ACHIEVEMENTS_STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
+
+export const claimAchievementReward = async (code, achievementId) => {
+  try {
+    const token = await getToken();
+    if (token) {
+      try {
+        await authIdentityApis(token).post(endpoints['claim-achievement'](code));
+      } catch (e) {
+        // Fallback
+      }
+    }
+    // Update local storage
+    const saved = await AsyncStorage.getItem(ACHIEVEMENTS_STORAGE_KEY);
+    if (saved) {
+      const achievements = JSON.parse(saved);
+      const updated = achievements.map((a) => 
+        (a.code === code || a.id === achievementId) ? { ...a, status: 'claimed' } : a
+      );
+      await AsyncStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(updated));
+    }
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+

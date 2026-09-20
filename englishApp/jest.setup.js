@@ -1,11 +1,11 @@
-import '@testing-library/jest-native/extend-expect';
+﻿import '@testing-library/jest-native/extend-expect';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () =>
     require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );
 
-// ✅ Mock Expo vector icons
+// Mock Expo vector icons
 const mockIcon = (props) => require('react').createElement('Icon', props);
 const iconMock = {
     MaterialIcons: mockIcon,
@@ -165,19 +165,24 @@ jest.mock('react-native-toast-message', () => {
     return MockToast;
 });
 
-// Mock expo-av
-jest.mock('expo-av', () => ({
-    Audio: {
-        Sound: jest.fn(),
-        setIsEnabledAsync: jest.fn(),
-        setAudioModeAsync: jest.fn(),
+// Mock expo-audio
+jest.mock('expo-audio', () => ({
+    createAudioPlayer: jest.fn(() => ({
+        play: jest.fn(),
+        pause: jest.fn(),
+        seekTo: jest.fn(),
+        release: jest.fn(),
+        addListener: jest.fn(),
+    })),
+    requestRecordingPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted', granted: true })),
+    getRecordingPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted', granted: true })),
+    setAudioModeAsync: jest.fn(() => Promise.resolve()),
+    RecordingPresets: {
+        HIGH_QUALITY: {},
+        LOW_QUALITY: {},
     },
-    Video: {
-        props: {
-            resizeMode: {},
-        },
-    },
-}));
+    AudioModule: {},
+}), { virtual: true });
 
 // Mock react-native-webview
 jest.mock('react-native-webview', () => {
@@ -216,4 +221,4 @@ jest.mock('@react-native-google-signin/google-signin', () => {
             PLAY_SERVICES_NOT_AVAILABLE: 'PLAY_SERVICES_NOT_AVAILABLE',
         },
     };
-});
+}, { virtual: true });

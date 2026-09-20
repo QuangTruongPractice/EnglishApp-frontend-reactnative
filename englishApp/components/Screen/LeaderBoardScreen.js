@@ -1,16 +1,18 @@
 import React, { useEffect, useRef } from "react";
-import { ScrollView, View, Text, RefreshControl, TouchableOpacity, Dimensions, Animated, Easing } from "react-native";
+import { ScrollView, View, Text, Image, RefreshControl, TouchableOpacity, Dimensions, Animated, Easing } from "react-native";
 import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../../styles/LeaderBoardStyles";
 import { THEME_COLORS } from "../../constants/theme";
+import { CustomSvgFrame } from "../Gamification/CustomSvgFrames";
 
 const { width } = Dimensions.get('window');
 
 const LeaderBoardScreen = ({
   leaderBoard = [],
   currentUser,
+  userContext,
   loading,
   refreshing,
   onRefresh,
@@ -30,6 +32,34 @@ const LeaderBoardScreen = ({
   const getInitials = (name) => {
     if (!name) return "?";
     return name.charAt(0).toUpperCase();
+  };
+
+  const getUserAvatar = (u) => {
+    if (!u) return null;
+    // Use avatar directly from backend leaderboard response
+    if (u.avatar) return u.avatar;
+    if (u.avatarUrl) return u.avatarUrl;
+    // Fallback to userContext for current user
+    const isCur = (currentUser && u.userId === currentUser.userId) || (userContext && u.userId === userContext.userId);
+    if (isCur && (userContext?.avatar || userContext?.avatarUrl)) {
+      return userContext.avatar || userContext.avatarUrl;
+    }
+    return null;
+  };
+
+  const getUserFrameKey = (u) => {
+    if (!u) return null;
+    // Use frameAvatar / equippedFrameKey from backend leaderboard response
+    if (u.equippedFrameKey) return u.equippedFrameKey;
+    if (u.frameAvatar) return u.frameAvatar;
+    if (u.equippedFrame?.frameKey) return u.equippedFrame.frameKey;
+    if (u.frameKey) return u.frameKey;
+    // Fallback to userContext for current user
+    const isCur = (currentUser && u.userId === currentUser.userId) || (userContext && u.userId === userContext.userId);
+    if (isCur && userContext?.equippedFrame?.frameKey) {
+      return userContext.equippedFrame.frameKey;
+    }
+    return null;
   };
 
   // ANIMATION REFS
@@ -85,6 +115,13 @@ const LeaderBoardScreen = ({
   const renderPodiumAvatar = (user, position) => {
     if (!user) return <View style={[styles.podiumAvatar, styles[`podiumAvatar${position}`], { opacity: 0.3 }]} />;
     
+    const frameKey = getUserFrameKey(user);
+    const avatarUrl = getUserAvatar(user);
+    const isTop1 = position === 1;
+    const frameSize = isTop1 ? 92 : 76;
+    const avatarSize = isTop1 ? 66 : 54;
+    const avatarRadius = avatarSize / 2;
+
     return (
       <View style={styles.podiumAvatarWrapper}>
         {position === 1 && (
@@ -92,10 +129,36 @@ const LeaderBoardScreen = ({
             <FontAwesome5 name="crown" size={28} color="#FFD700" solid />
           </Animated.View>
         )}
-        <View style={[styles.podiumAvatar, styles[`podiumAvatar${position}`]]}>
-          <Text style={[styles.podiumAvatarText, position === 1 && styles.podiumAvatarText1]}>
-            {getInitials(user.username)}
-          </Text>
+        <View style={{ width: frameSize, height: frameSize, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+          <View
+            style={[
+              styles.podiumAvatar,
+              styles[`podiumAvatar${position}`],
+              {
+                width: avatarSize,
+                height: avatarSize,
+                borderRadius: avatarRadius,
+                borderWidth: frameKey ? 0 : (isTop1 ? 3 : 2),
+                overflow: 'hidden',
+                position: 'absolute',
+              }
+            ]}
+          >
+            {avatarUrl ? (
+              <Image
+                source={{ uri: avatarUrl }}
+                style={{ width: avatarSize, height: avatarSize, borderRadius: avatarRadius }}
+                resizeMode="cover"
+              />
+            ) : (
+              <Text style={[styles.podiumAvatarText, isTop1 && styles.podiumAvatarText1]}>
+                {getInitials(user.username)}
+              </Text>
+            )}
+          </View>
+          {frameKey && (
+            <CustomSvgFrame frameKey={frameKey} size={frameSize} />
+          )}
         </View>
         <View style={styles.podiumXpBlock}>
           <Text style={styles.podiumXpText}>{user.weeklyXp} XP</Text>
@@ -122,11 +185,16 @@ const LeaderBoardScreen = ({
 
   const renderListItem = (user, index) => {
     if (!user) return null;
-    const isCurrentUser = currentUser && user.userId === currentUser.userId;
+    const isCurrentUser = (currentUser && user.userId === currentUser.userId) || (userContext && user.userId === userContext.userId);
+    const frameKey = getUserFrameKey(user);
+    const avatarUrl = getUserAvatar(user);
+    const frameSize = 56;
+    const avatarSize = 40;
+    const avatarRadius = 20;
 
     return (
       <Animated.View 
-        key={user.userId} 
+        key={user.userId || index} 
         style={[
           styles.userCard, 
           isCurrentUser && { borderWidth: 2, borderColor: THEME_COLORS.primary },
@@ -137,8 +205,33 @@ const LeaderBoardScreen = ({
           <View style={styles.rankBadge}>
             <Text style={styles.rankBadgeText}>{user.rank}</Text>
           </View>
-          <View style={styles.avatarSmall}>
-            <Text style={styles.avatarSmallText}>{getInitials(user.username)}</Text>
+          <View style={{ width: frameSize, height: frameSize, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 10 }}>
+            <View
+              style={[
+                styles.avatarSmall,
+                {
+                  width: avatarSize,
+                  height: avatarSize,
+                  borderRadius: avatarRadius,
+                  marginRight: 0,
+                  overflow: 'hidden',
+                  position: 'absolute',
+                }
+              ]}
+            >
+              {avatarUrl ? (
+                <Image
+                  source={{ uri: avatarUrl }}
+                  style={{ width: avatarSize, height: avatarSize, borderRadius: avatarRadius }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Text style={styles.avatarSmallText}>{getInitials(user.username)}</Text>
+              )}
+            </View>
+            {frameKey && (
+              <CustomSvgFrame frameKey={frameKey} size={frameSize} />
+            )}
           </View>
           <View style={styles.userDetails}>
             <Text style={styles.userName} numberOfLines={1}>{user.username}</Text>
@@ -194,6 +287,45 @@ const LeaderBoardScreen = ({
                 </View>
               )}
 
+              {/* REWARD CALLOUT BANNER: 500 GEMS FOR TOP 1 */}
+              <View style={{
+                marginHorizontal: 16,
+                marginTop: 10,
+                marginBottom: 6,
+                backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                borderWidth: 1,
+                borderColor: '#F59E0B',
+                borderRadius: 14,
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                  <Text style={{ fontSize: 22, marginRight: 8 }}>👑</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: '#FCD34D', fontSize: 13, fontWeight: '800' }}>
+                      Phần Thưởng Quán Quân Tuần
+                    </Text>
+                    <Text style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: 11 }}>
+                      Đứng đầu bảng xếp hạng tuần nhận ngay
+                    </Text>
+                  </View>
+                </View>
+                <View style={{
+                  backgroundColor: '#F59E0B',
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 10,
+                  flexDirection: 'row',
+                  alignItems: 'center'
+                }}>
+                  <Text style={{ fontSize: 13, marginRight: 4 }}>💎</Text>
+                  <Text style={{ color: '#0F172A', fontWeight: '900', fontSize: 13 }}>+500</Text>
+                </View>
+              </View>
+
               {/* MOTIVATIONAL BANNER */}
               <Animated.View style={[styles.motivationalBanner, { opacity: listAnim }]}>
                 <MaterialCommunityIcons name="fire" size={28} color="#EA580C" />
@@ -234,6 +366,35 @@ const LeaderBoardScreen = ({
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
               <View style={styles.stickyRankBadge}>
                 <Text style={styles.stickyRankBadgeText}>{currentUser.rank || '-'}</Text>
+              </View>
+              <View style={{ width: 44, height: 44, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 10 }}>
+                <View
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                    position: 'absolute',
+                  }}
+                >
+                  {getUserAvatar(currentUser) ? (
+                    <Image
+                      source={{ uri: getUserAvatar(currentUser) }}
+                      style={{ width: 32, height: 32, borderRadius: 16 }}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 13 }}>
+                      {getInitials(currentUser.username)}
+                    </Text>
+                  )}
+                </View>
+                {getUserFrameKey(currentUser) && (
+                  <CustomSvgFrame frameKey={getUserFrameKey(currentUser)} size={44} />
+                )}
               </View>
               <View style={styles.stickyUserDetails}>
                 <Text style={styles.stickyUserName} numberOfLines={1}>Bạn ({currentUser.username})</Text>

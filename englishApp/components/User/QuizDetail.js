@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
+﻿import { useEffect, useState, useCallback } from "react";
 import { Alert } from "react-native";
-import { Audio } from "expo-av";
+import { Audio } from "../../utils/AudioCompat";
 import { fetchQuizDetail, doQuiz } from "../../configs/LoadData";
 import QuizDetailScreen from "../Screen/QuizDetailScreen";
 import Toast from "react-native-toast-message";

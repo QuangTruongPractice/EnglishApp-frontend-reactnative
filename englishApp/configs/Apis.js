@@ -3,8 +3,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const GATEWAY_URL = 'https://api-gateway-truong-ehdahkaybrfxbfc8.southeastasia-01.azurewebsites.net';
 
-const IDENTITY_BASE_URL = `${GATEWAY_URL}/identity/api`;
-const LEARNING_BASE_URL = `${GATEWAY_URL}/learning/api`;
+const IDENTITY_BASE_URL = `http://192.168.1.204:8080/identity/api`;
+const LEARNING_BASE_URL = `http://192.168.1.204:8090/learning/api`;
 const AI_BASE_URL       = `${GATEWAY_URL}/ai`;
 
 export const endpoints = {
@@ -52,6 +52,16 @@ export const endpoints = {
     'chat-voice': '/chat',
     'get-score':  '/v2/score',
     'tts':        '/tts',
+
+    // ===== GAMIFICATION SERVICE (IDENTITY SERVICE) =====
+    'avatar-frames':      '/secure/gamification/frames',
+    'buy-frame':          (frameKey) => `/secure/gamification/frames/${frameKey}/buy`,
+    'equip-frame':        (frameKey) => `/secure/gamification/frames/${frameKey}/equip`,
+    'unequip-frame':      '/secure/gamification/frames/unequip',
+    'achievements':       '/secure/gamification/achievements',
+    'claim-achievement':  (code) => `/secure/gamification/achievements/${code}/claim`,
+    'user-gems':          '/secure/gamification/gems',
+    'reward-gems':        '/secure/gamification/gems/reward',
 };
 
 // ---------------------------------------------------------------------------

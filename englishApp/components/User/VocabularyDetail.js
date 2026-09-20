@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { Audio } from "expo-av";
+﻿import { useState, useEffect, useRef } from "react";
+import { Audio } from "../../utils/AudioCompat";
 import VocabularyDetailScreen from "../Screen/VocabularyDetailScreen";
 import { fetchVocabularyDetail, generateQuiz, submitQuiz, toggleVocabularySave, fetchTTS, fetchPronunciationScore } from "../../configs/LoadData";
 import { useNavigation } from "@react-navigation/native";

@@ -1,28 +1,35 @@
-import * as Notifications from "expo-notifications";
+﻿// [TEMPORARY COMMENTED FOR EXPO GO TESTING - UNCOMMENT TO RESTORE]
+// import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+// Notifications.setNotificationHandler({
+//   handleNotification: async () => ({
+//     shouldShowAlert: true,
+//     shouldPlaySound: true,
+//     shouldSetBadge: false,
+//   }),
+// });
 
 const STORAGE_KEY = "daily_reminder_settings";
 const CHANNEL_ID = "daily-reminders";
 
 export const registerForPushNotificationsAsync = async () => {
+  // [TEMPORARY COMMENTED FOR EXPO GO TESTING - UNCOMMENT TO RESTORE]
+  /*
   let { status } = await Notifications.getPermissionsAsync();
   if (status !== "granted") {
     const { status: newStatus } = await Notifications.requestPermissionsAsync();
     status = newStatus;
   }
   return status === "granted";
+  */
+  return false;
 };
 
 export const scheduleDailyReminder = async (hour, minute) => {
+  // [TEMPORARY COMMENTED FOR EXPO GO TESTING - UNCOMMENT TO RESTORE]
+  /*
   try {
     // 1. Tạo channel (Android only)
     if (Platform.OS === "android") {
@@ -80,9 +87,14 @@ export const scheduleDailyReminder = async (hour, minute) => {
     console.error("Chi tiết lỗi:", JSON.stringify(error), error?.message);
     return false;
   }
+  */
+  console.log("Expo notifications are temporarily commented out for Expo Go testing.");
+  return false;
 };
 
 export const cancelAllReminders = async () => {
+  // [TEMPORARY COMMENTED FOR EXPO GO TESTING - UNCOMMENT TO RESTORE]
+  /*
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
     const settings = await getReminderSettings();
@@ -93,6 +105,7 @@ export const cancelAllReminders = async () => {
   } catch (error) {
     console.error("Error cancelling reminders:", error);
   }
+  */
 };
 
 export const getReminderSettings = async () => {

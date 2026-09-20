@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Audio } from "expo-av";
+import { Audio } from "../../utils/AudioCompat";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -14,7 +14,8 @@ import {
   submitQuizSession,
   submitWritingSession,
   checkSessionLevelUp,
-  fetchLearningProfile
+  fetchLearningProfile,
+  addGems
 } from "../../configs/LoadData";
 
 import SessionPhaseMeanings from "./SessionPhaseMeanings";
@@ -151,6 +152,10 @@ const DailySession = () => {
 
   const completeSession = async () => {
     try {
+      // Thưởng 50 gems khi hoàn thành session
+      await addGems(50);
+      queryClient.invalidateQueries({ queryKey: ['user-gems'] });
+
       const res = await checkSessionLevelUp(session.id);
       if (res.code === 1000) {
         if (res.result === true) {
@@ -422,7 +427,15 @@ const DailySession = () => {
           />
         );
       case PHASES.RESULT:
-        return <SessionResult totalXP={totalXP} levelUpData={levelUpData} onFinish={() => navigation.navigate("Home")} onClose={() => navigation.goBack()} />;
+        return (
+          <SessionResult
+            totalXP={totalXP || 0}
+            gemsEarned={50}
+            levelUpData={levelUpData}
+            onFinish={() => navigation.navigate("Home")}
+            onClose={() => navigation.goBack()}
+          />
+        );
       default:
         return null;
     }

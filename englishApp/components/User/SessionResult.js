@@ -1,15 +1,46 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StatusBar } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, TouchableOpacity, StatusBar, Animated } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import styles from "../../styles/SessionStyles";
 import LevelUpgrade from "../Effects/LevelUpgrade";
 
-const SessionResult = ({ totalXP, levelUpData, onFinish, onClose }) => {
+const SessionResult = ({ totalXP = 0, gemsEarned = 50, levelUpData, onFinish, onClose }) => {
   const [showAnimation, setShowAnimation] = useState(levelUpData?.isLevelUp || false);
   const isLevelUp = levelUpData?.isLevelUp || false;
   const oldLevel = levelUpData?.oldLevel || "A1";
   const newLevel = levelUpData?.newLevel || "A2";
+
+  // Animations
+  const scaleAnim = useRef(new Animated.Value(0.7)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const cardsAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!showAnimation) {
+      Animated.sequence([
+        Animated.parallel([
+          Animated.spring(scaleAnim, {
+            toValue: 1,
+            friction: 6,
+            tension: 40,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityAnim, {
+            toValue: 1,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.spring(cardsAnim, {
+          toValue: 1,
+          friction: 6,
+          tension: 50,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [showAnimation]);
 
   if (showAnimation) {
     return (
@@ -50,9 +81,9 @@ const SessionResult = ({ totalXP, levelUpData, onFinish, onClose }) => {
         <Icon name="close" size={24} color="#fff" />
       </TouchableOpacity>
 
-      <View style={styles.resultHeader}>
+      <Animated.View style={[styles.resultHeader, { opacity: opacityAnim, transform: [{ scale: scaleAnim }] }]}>
         <View style={styles.trophyContainer}>
-          <Icon name="trophy" size={80} color="#FFD700" />
+          <Icon name="trophy" size={72} color="#FFD700" />
         </View>
 
         <Text style={styles.congratsTitle}>
@@ -63,24 +94,58 @@ const SessionResult = ({ totalXP, levelUpData, onFinish, onClose }) => {
             ? `Chúc mừng! Bạn đã đạt đến cấp độ ${newLevel}. Hãy tiếp tục chinh phục những thử thách mới nhé!`
             : "Tuyệt vời! Bạn đã hoàn thành tất cả các bài tập trong phiên học hôm nay."}
         </Text>
-      </View>
+      </Animated.View>
 
-      <View style={styles.xpCard}>
-        <View style={styles.xpBadge}>
-          <Icon name="flash" size={40} color="#FFD700" />
-          <Text style={styles.xpText}>+{totalXP} XP</Text>
+      {/* REWARDS CARDS */}
+      <Animated.View
+        style={[
+          styles.xpCard,
+          {
+            opacity: cardsAnim,
+            transform: [
+              {
+                translateY: cardsAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [30, 0],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
+        <View style={styles.rewardsRow}>
+          {/* XP Reward Card */}
+          <View style={styles.rewardCardXP}>
+            <View style={styles.rewardIconCircleXP}>
+              <Icon name="flash" size={26} color="#FFD700" />
+            </View>
+            <Text style={styles.rewardValueXP}>+{totalXP}</Text>
+            <Text style={styles.rewardLabelXP}>KINH NGHIỆM</Text>
+          </View>
+
+          {/* Gems Reward Card */}
+          {gemsEarned > 0 && (
+            <View style={styles.rewardCardGem}>
+              <View style={styles.rewardIconCircleGem}>
+                <Text style={{ fontSize: 22 }}>💎</Text>
+              </View>
+              <Text style={styles.rewardValueGem}>+{gemsEarned}</Text>
+              <Text style={styles.rewardLabelGem}>GEMS THƯỞNG</Text>
+            </View>
+          )}
         </View>
         
         {isLevelUp && (
-          <View style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}>
-            <Icon name="chevron-double-up" size={24} color="#818cf8" />
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: '700', marginLeft: 8 }}>{oldLevel} → {newLevel}</Text>
+          <View style={styles.levelUpProgressBadge}>
+            <Icon name="school" size={22} color="#818CF8" />
+            <Text style={styles.levelUpProgressText}>Cấp độ mới: {oldLevel} → {newLevel}</Text>
+            <Icon name="chevron-double-up" size={22} color="#818CF8" />
           </View>
         )}
-      </View>
+      </Animated.View>
 
       <View style={styles.resultFooter}>
-        <TouchableOpacity style={styles.buttonPrimaryResult} onPress={onFinish}>
+        <TouchableOpacity style={styles.buttonPrimaryResult} onPress={onFinish} activeOpacity={0.85}>
           <Text style={styles.buttonTextPrimaryResult}>TIẾP TỤC</Text>
           <Icon name="arrow-right" size={24} color="#9B2C2C" />
         </TouchableOpacity>

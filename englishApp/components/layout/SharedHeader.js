@@ -1,6 +1,7 @@
-import { View, Text } from "react-native";
+import { View, Text, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import styles from "../../styles/HomeStyles";
+import { CustomSvgFrame } from "../Gamification/CustomSvgFrames";
 
 const SharedHeader = ({ greetingText, nameText, userProfile, summary }) => {
   const userName = userProfile?.firstName
@@ -11,6 +12,7 @@ const SharedHeader = ({ greetingText, nameText, userProfile, summary }) => {
     : userName.charAt(0).toUpperCase();
 
   const titleText = nameText || userName;
+  const equippedFrameKey = userProfile?.equippedFrame?.frameKey;
 
   return (
     <LinearGradient
@@ -24,8 +26,21 @@ const SharedHeader = ({ greetingText, nameText, userProfile, summary }) => {
           <Text style={styles.greetingText}>{greetingText || "Chào buổi sáng ☀️"}</Text>
           <Text style={styles.nameText} numberOfLines={1} ellipsizeMode="tail">{titleText}</Text>
         </View>
-        <View style={styles.avatarContainer}>
-          <Text style={styles.avatarText}>{initials}</Text>
+        <View style={{ width: 56, height: 56, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+          <View style={styles.avatarContainer}>
+            {userProfile?.avatar ? (
+              <Image
+                source={{ uri: userProfile.avatar }}
+                style={{ width: 44, height: 44, borderRadius: 22 }}
+                resizeMode="cover"
+              />
+            ) : (
+              <Text style={styles.avatarText}>{initials}</Text>
+            )}
+          </View>
+          {equippedFrameKey && (
+            <CustomSvgFrame frameKey={equippedFrameKey} size={58} />
+          )}
         </View>
       </View>
 

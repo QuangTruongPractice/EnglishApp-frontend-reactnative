@@ -7,12 +7,6 @@
     "orientation": "portrait",
     "icon": "./assets/logo-image.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/logo-image.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true
     },
@@ -24,19 +18,27 @@
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE",
-        "NOTIFICATIONS",
         "SCHEDULE_EXACT_ALARM"
       ],
-      "edgeToEdgeEnabled": true,
       "package": "com.truongtranquang91.englishApp"
     },
     "web": {
       "favicon": "./assets/logo-image.png"
     },
     "plugins": [
-      "expo-notifications",
       "@react-native-community/datetimepicker",
-      "@react-native-google-signin/google-signin"
+      "expo-status-bar",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/logo-image.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-audio"
     ],
     "extra": {
       "eas": {

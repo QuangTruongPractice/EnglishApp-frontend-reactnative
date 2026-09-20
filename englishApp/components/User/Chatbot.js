@@ -1,5 +1,5 @@
-import React, { useState, useContext, useRef, useEffect } from 'react';
-import { Audio } from 'expo-av';
+﻿import React, { useState, useContext, useRef, useEffect } from 'react';
+import { Audio } from "../../utils/AudioCompat";
 import Toast from 'react-native-toast-message';
 import { MyUserContext } from '../../configs/Context';
 import { fetchAIChat } from '../../configs/LoadData';

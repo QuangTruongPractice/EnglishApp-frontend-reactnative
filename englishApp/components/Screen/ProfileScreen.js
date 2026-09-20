@@ -13,6 +13,7 @@ import { Switch } from "react-native-paper";
 import styles from "../../styles/ProfileStyles";
 import { useNavigation } from "@react-navigation/native";
 import ScreenContainer from "../common/ScreenContainer";
+import { CustomSvgFrame } from "../Gamification/CustomSvgFrames";
 
 const InfoItemRow = ({ item, handleEdit }) => {
   // ... (omitted for brevity in search)
@@ -137,14 +138,17 @@ const ProfileScreen = ({
         <Text style={styles.welcomeText}>Hồ sơ cá nhân</Text>
 
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
-            <View style={styles.avatar}>
+          <TouchableOpacity onPress={pickImage} style={[styles.avatarContainer, { width: 105, height: 105, justifyContent: 'center', alignItems: 'center', position: 'relative' }]}>
+            <View style={[styles.avatar, { position: 'absolute', width: 76, height: 76, borderRadius: 38, overflow: 'hidden', justifyContent: 'center', alignItems: 'center' }]}>
               {user.avatar ? (
-                <Image source={{ uri: user.avatar }} style={{ width: 80, height: 80, borderRadius: 40 }} />
+                <Image source={{ uri: user.avatar }} style={{ width: 76, height: 76, borderRadius: 38 }} />
               ) : (
                 <Text style={styles.avatarText}>{getInitials()}</Text>
               )}
             </View>
+            {user?.equippedFrame?.frameKey && (
+              <CustomSvgFrame frameKey={user.equippedFrame.frameKey} size={105} />
+            )}
             <View style={styles.statusDot} />
           </TouchableOpacity>
 
@@ -187,6 +191,72 @@ const ProfileScreen = ({
           <Text style={styles.statLabel}>Level</Text>
         </View>
       </View>
+
+      {/* Gamification Showcase Banner (Khung Avatar 3D & Danh Hiệu) */}
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => navigation.navigate("ProfileCustomization")}
+        style={{
+          marginHorizontal: 16,
+          marginTop: 14,
+          marginBottom: 4,
+          borderRadius: 18,
+          overflow: "hidden",
+          elevation: 3,
+          shadowColor: "#7C3AED",
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+        }}
+      >
+        <LinearGradient
+          colors={["#4C1D95", "#6D28D9", "#8B5CF6"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+          }}
+        >
+          <View
+            style={{
+              width: 46,
+              height: 46,
+              borderRadius: 23,
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              justifyContent: "center",
+              alignItems: "center",
+              marginRight: 12,
+            }}
+          >
+            <Text style={{ fontSize: 24 }}>👑</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "900" }}>
+                Khung Avatar 3D & Danh Hiệu
+              </Text>
+              <View
+                style={{
+                  backgroundColor: "#F59E0B",
+                  paddingHorizontal: 6,
+                  paddingVertical: 1.5,
+                  borderRadius: 8,
+                  marginLeft: 6,
+                }}
+              >
+                <Text style={{ color: "#FFFFFF", fontSize: 9, fontWeight: "900" }}>MỚI</Text>
+              </View>
+            </View>
+            <Text style={{ color: "#DDD6FE", fontSize: 11.5, marginTop: 2 }}>
+              Trang bị 10 khung avatar 3D độc quyền & nhận thưởng Gem 💎
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+        </LinearGradient>
+      </TouchableOpacity>
 
       {/* XP Progress Section */}
       <View style={styles.section}>

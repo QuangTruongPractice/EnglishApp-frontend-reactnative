@@ -46,8 +46,12 @@ const Profile = () => {
           fetchSummary(),
         ]);
 
-      if (identityStatus.status === "fulfilled") {
-        dispatch({ type: "login", payload: identityStatus.value });
+      if (identityStatus.status === "fulfilled" && identityStatus.value) {
+        const loadedUser = identityStatus.value;
+        if (!loadedUser.equippedFrame && user?.equippedFrame) {
+          loadedUser.equippedFrame = user.equippedFrame;
+        }
+        dispatch({ type: "login", payload: loadedUser });
       }
       if (learningStatus.status === "fulfilled") {
         setLearningProfile(

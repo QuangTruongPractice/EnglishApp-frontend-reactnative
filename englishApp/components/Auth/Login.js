@@ -1,13 +1,14 @@
-import { useState, useContext } from "react";
+﻿import { useState, useContext } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { login, googleLogin, loadProfile, fetchLearningProfile, saveTokens } from "../../configs/LoadData";
 import { MyDispatchContext } from "../../configs/Context";
 import LoginScreen from "../Screen/LoginScreen";
-import {
-  GoogleSignin,
-  statusCodes,
-} from "@react-native-google-signin/google-signin";
+// [TEMPORARY COMMENTED FOR EXPO GO TESTING - UNCOMMENT TO RESTORE]
+// import {
+//   GoogleSignin,
+//   statusCodes,
+// } from "@react-native-google-signin/google-signin";
 import keys from "../../key";
 
 const Login = ({ onLogin }) => {
@@ -58,7 +59,7 @@ const Login = ({ onLogin }) => {
               // Đã hoàn thành Onboarding -> Vào trang chủ
               dispatch({ type: "login", payload: userRes });
             } else {
-              // chưa hoàn thành Onboarding -> Chuyển qua Onboarding
+              // Chưa hoàn thành Onboarding -> Chuyển qua Onboarding
               nav.navigate("Onboarding", { userData: userRes });
             }
           } catch (lpError) {
@@ -82,6 +83,8 @@ const Login = ({ onLogin }) => {
   };
 
   const handleGoogleLogin = async () => {
+    // [TEMPORARY COMMENTED FOR EXPO GO TESTING - UNCOMMENT TO RESTORE]
+    /*
     setLoading(true);
     setMsg("");
     try {
@@ -104,7 +107,7 @@ const Login = ({ onLogin }) => {
             // Đã hoàn thành Onboarding -> Vào trang chủ
             dispatch({ type: "login", payload: userRes });
           } else {
-            // chưa hoàn thành Onboarding -> Chuyển qua Onboarding
+            // Chưa hoàn thành Onboarding -> Chuyển qua Onboarding
             nav.navigate("Onboarding", { userData: userRes });
           }
         } catch (lpError) {
@@ -130,15 +133,18 @@ const Login = ({ onLogin }) => {
     } finally {
       setLoading(false);
     }
+    */
+    console.log("Google Sign-In is temporarily disabled for Expo Go testing.");
   };
 
-  GoogleSignin.configure({
-    webClientId: keys.webClientId,
-    scopes: ["https://www.googleapis.com/auth/drive.readonly"],
-    offlineAccess: true,
-    forceCodeForRefreshToken: true,
-    iosClientId: keys.iosClientId,
-  });
+  // [TEMPORARY COMMENTED FOR EXPO GO TESTING - UNCOMMENT TO RESTORE]
+  // GoogleSignin.configure({
+  //   webClientId: keys.webClientId,
+  //   scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+  //   offlineAccess: true,
+  //   forceCodeForRefreshToken: true,
+  //   iosClientId: keys.iosClientId,
+  // });
 
   return (
     <LoginScreen
